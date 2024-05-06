@@ -1,0 +1,23 @@
+{
+  "environment": "web",
+  "format": "md",
+  "prefix": "https://storage.googleapis.com",
+  "mainga": "UA-49880327-14",
+  "updated": "2024-05-06T15:03:57Z",
+  "id": "observability-workshop",
+  "duration": 26,
+  "title": "Introduction",
+  "summary": "Observability",
+  "source": "docs/workshop.md",
+  "theme": "",
+  "status": [
+    "published"
+  ],
+  "category": [
+    "observability"
+  ],
+  "tags": [
+    "web"
+  ],
+  "url": "observability-workshop"
+}
