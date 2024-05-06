@@ -10,32 +10,19 @@ on:
 jobs:
   export:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Export codelab
-        uses: "khammami/claat-action@v1.0.1"
-        with:
-          source: 'docs/observability-workshop/workshop.md'
-          format: 'html'
-  deploy:
-    runs-on: ubuntu-22.04
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
-          submodules: true  # Fetch Hugo themes (true OR recursive)
-          fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
-      - name: Setup Hugo
-        uses: peaceiris/actions-hugo@v2
-        with:
-          hugo-version: 'latest'
-          extended: true
-      - name: Build
-        run: hugo --minify
+          go-version: '1.22.2' # The Go version to download (if necessary) and use.
+      - run: go install github.com/googlecodelabs/tools/claat@latest`
+      - name: Export
+        run: mkdir -p ./public/ && claat export -f md -o public docs/workshop.md
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         if: github.ref == 'refs/heads/main' # Authorize the deployment for the main branch only
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs
+          publish_dir: ./public
