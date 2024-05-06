@@ -3,13 +3,12 @@ name: Export codelab from Google Doc
 on:
   push:
     branches:
-      - main  # Set a branch that will trigger a deployment
-      - feature/documentation
+      - main
   pull_request:
   workflow_dispatch:
 
 jobs:
-  export:
+  publish-codelab:
     runs-on: ubuntu-latest
     permissions:
       contents: write
