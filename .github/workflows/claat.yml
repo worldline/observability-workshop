@@ -25,8 +25,8 @@ jobs:
         with:
           go-version: '1.22.2' # The Go version to download (if necessary) and use.
       - run: go install github.com/googlecodelabs/tools/claat@latest
-      - name: Export
-        run: mkdir -p ./public/ && claat export -f md -o public docs/workshop.md
+      - name: Export with CLAAT
+        run: mkdir -p ./public/ && claat export -f html -o public docs/workshop.md
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
