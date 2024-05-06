@@ -1,0 +1,28 @@
+name: Export codelab from Google Doc
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  publish-codelab:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22.2' # The Go version to download (if necessary) and use.
+      - run: go install github.com/googlecodelabs/tools/claat@latest
+      - name: Export
+        run: mkdir -p ./public/ && claat export -f md -o public docs/workshop.md
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        if: github.ref == 'refs/heads/main' # Authorize the deployment for the main branch only
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
