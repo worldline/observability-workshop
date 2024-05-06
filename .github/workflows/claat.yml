@@ -2,8 +2,7 @@ name: Export codelab from Google Doc
 
 on:
   push:
-    branches:
-      - main
+    branches: ["main"]
   pull_request:
   workflow_dispatch:
 
@@ -12,6 +11,14 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pages: write
+      id-token: write
+    concurrency:
+      group: "pages"
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
