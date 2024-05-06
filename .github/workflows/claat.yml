@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Export codelab
-        uses: "khammami/claat-action@[version|main]"
+        uses: "khammami/claat-action@v1.0.1"
         with:
           source: 'docs/observability-workshop/workshop.md'
           format: 'html'
