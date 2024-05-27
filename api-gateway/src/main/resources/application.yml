@@ -12,5 +12,15 @@ spring:
           - Path=/api/smartbank/**
           filters:
           - StripPrefix=2
+        - id: easypay-service
+          uri: lb://EASYPAY-SERVICE
+          predicates:
+          - Path=/api/easypay/**
+          filters:
+          - StripPrefix=2
+        - id: fraudetect-service
+          uri: lb://FRAUDETECT-SERVICE
+          predicates:
+          - Path=/api/fraudetect/**
 #    refresh:
 #      enabled: false # AOT / Native Image does not support Spring Cloud Refresh Scope
