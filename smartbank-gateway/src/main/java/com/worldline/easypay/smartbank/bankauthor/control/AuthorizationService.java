@@ -18,7 +18,7 @@ public class AuthorizationService {
 
     private Integer maxAmount;
     
-    public AuthorizationService(BankAuthorRepository repository, @Value("${smartbank.bankauthor.validation.maxAmount:4000}") Integer maxAmount) {
+    public AuthorizationService(BankAuthorRepository repository, @Value("${smartbank.bankauthor.validation.maxAmount:40000}") Integer maxAmount) {
         this.repository = repository;
         this.maxAmount = maxAmount;
     }
