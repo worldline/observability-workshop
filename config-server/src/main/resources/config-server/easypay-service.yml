@@ -1,0 +1,23 @@
+spring:
+  config:
+    activate:
+      on-profile: default
+eureka:
+  instance:
+    instance-id: ${spring.application.name}:${random.uuid}
+
+---
+spring:
+  config:
+    activate:
+      on-profile: default
+  datasource:
+    url: jdbc:postgresql://localhost:5432/easypay
+    username: easypay
+    password: easypay
+    driverClassName: org.postgresql.Driver
+  sql:
+    init:
+      schema-locations: classpath*:db/postgresql/schema.sql
+      data-locations: classpath*:db/postgresql/data.sql
+      mode: ALWAYS

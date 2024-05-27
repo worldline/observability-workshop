@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: api-gateway
+  config:
+    import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}
+  cloud:
+    gateway:
+      routes:
+        - id: smartbank-gateway
+          uri: lb://SMARTBANK-GATEWAY
+          predicates:
+          - Path=/api/smartbank/**
+          filters:
+          - StripPrefix=2
+        - id: easypay-service
+          uri: lb://EASYPAY-SERVICE
+          predicates:
+          - Path=/api/easypay/**
+          filters:
+          - StripPrefix=2
+        - id: fraudetect-service
+          uri: lb://FRAUDETECT-SERVICE
+          predicates:
+          - Path=/api/fraudetect/**
+#    refresh:
+#      enabled: false # AOT / Native Image does not support Spring Cloud Refresh Scope
