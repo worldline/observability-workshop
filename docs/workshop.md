@@ -84,7 +84,7 @@ In addition, the microservices are started with an agent to broadcast the traces
 | [Docker](https://docs.docker.com/)                                                                                                                                                                                                                                                      | novice |
 | [Grafana stack](https://grafana.com/)                                                                                                                                                                                                                                                   | novice |
 | [Prometheus](https://prometheus.io/)                                                                                                                                                                                                                                                    | novice |
-| [kafka](https://kafka.apache.org/)                                                                                                                                                                                                                                                      | novice |
+| [Kafka](https://kafka.apache.org/)                                                                                                                                                                                                                                                      | novice |
 
 ### Tools
 #### If you want to execute this workshop locally
@@ -100,6 +100,8 @@ Here are commands to validate your environment:
 **Java**
 
 ```jshelllanguage
+$ java -version
+
 openjdk version "21.0.3" 2024-04-16 LTS
 OpenJDK Runtime Environment Temurin-21.0.3+9 (build 21.0.3+9-LTS)
 OpenJDK 64-Bit Server VM Temurin-21.0.3+9 (build 21.0.3+9-LTS, mixed mode, sharing)
@@ -129,7 +131,7 @@ OS:           Linux 5.15.146.1-microsoft-standard-WSL2 amd64
 **Docker Compose**
 
 ``` bash
-docker compose version
+$ docker compose version
     
 Docker Compose version v2.24.7
 ```
@@ -156,19 +158,17 @@ We will assume you will use GitPod for this workshop :)
 
 The "infrastructure stack" is composed of the following components:
 * One [PostgreSQL](https://www.postgresql.org/) instance per micro service
- *One [Kafka broker](https://kafka.apache.org/)
+* One [Kafka broker](https://kafka.apache.org/)
 
 To run it, execute the following command
 
 ``` bash
-docker compose up -d
+$ docker compose up -d
 ```
-
 To check if all the services are up, you can run this command:
 
-
 ``` bash
-docker compose ps
+$ docker compose ps
 ```
 
 Negative
