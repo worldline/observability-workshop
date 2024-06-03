@@ -4,7 +4,6 @@ on:
   push:
     branches: ["main"]
   workflow_dispatch:
-
 jobs:
   publish-codelab:
     runs-on: ubuntu-latest
@@ -33,7 +32,7 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
         # Upload entire repository
-          path: './public'
+          path: './public/observability-workshop'
       - name: Deploy to GitHub Pages
         if: github.ref == 'refs/heads/main' # Authorize the deployment for the main branch only
         id: deployment
