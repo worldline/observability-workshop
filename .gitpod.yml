@@ -3,4 +3,4 @@ image:
 vscode:
   extensions:
     - "redhat.java"
-    - "vscjava.vscode-gradle"
+    - "vscjava.vscode-gradle@3.13.5"
