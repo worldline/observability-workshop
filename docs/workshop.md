@@ -143,7 +143,7 @@ You can use [Gitpod](https://gitpod.io).
 You must create an account first.
 You then can open this project in either your local VS Code or directly in your browser:
 
-[![Open in Gitpod](img/open-in-gitpod.svg)](https://github.com/worldline/observability-workshop/observability-workshop.git)
+[![Open in Gitpod](img/open-in-gitpod.svg)](https://github.com/worldline/observability-workshop.git)
 
 ## Environment Setup
 Duration: 0:05:00
@@ -152,7 +152,7 @@ Duration: 0:05:00
 
 We will assume you will use GitPod for this workshop :) 
 
-[![Open in Gitpod](img/open-in-gitpod.svg)](https://github.com/worldline/observability-workshop/observability-workshop.git)
+[![Open in Gitpod](img/open-in-gitpod.svg)](https://github.com/worldline/observability-workshop.git)
 
 ### Start the infrastructure
 
