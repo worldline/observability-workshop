@@ -412,13 +412,9 @@ For this error, you can log the error with the following content:
 * The attributes of the ``PaymentProcessingContext `` 
 * The error message
 
-### What about the other errors?
-
-You can also add contextual information for all the other potentials errors thrown by this method.
-
 ### Check your code
 
-You can restart your easy pay service by typing ``CTRL+C`` in your console prompt, and run the following command:  
+You can restart your easy pay service by typing ``CTRL+C`` in your console prompt, and run the following command:
 
 > aside negative
 >
@@ -452,7 +448,7 @@ java.lang.NullPointerException: Cannot invoke "java.lang.Boolean.booleanValue()"
     [...]
 ```
 
-First, add an appropriate log in the ``easypay-service/src/main/java/com/worldline/easypay/payment/control/PosValidator.java`` class.
+First, add a _smart_ log entry in the ``easypay-service/src/main/java/com/worldline/easypay/payment/control/PosValidator.java`` class.
 
 In the ``isActive()`` method, catch the exception and trace the error:
 > aside negative
