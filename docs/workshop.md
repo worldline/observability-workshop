@@ -159,67 +159,60 @@ We will assume you will use GitPod for this workshop :)
 The "infrastructure stack" is composed of the following components:
 * One [PostgreSQL](https://www.postgresql.org/) instance per micro service
 * One [Kafka broker](https://kafka.apache.org/)
+* ONe [Service Discovery](https://spring.io/guides/gs/service-registration-and-discovery) microservice to enable load balancing & loose coupling.
+* One [Configuration server](https://docs.spring.io/spring-cloud-config/) is also used to centralise the configuration of our microservices.
 
-To run it, execute the following command
+> aside positive
+>
+> The two last software are written and available in our GitHub Repository. 
+> Normally, you should not have to restart them during the workshop
+
+To run the whole, execute the following command
 
 ``` bash
-$ docker compose up -d
+$ docker compose up -d --build --remove-orphans
 ```
 To check if all the services are up, you can run this command:
 
 ``` bash
-$ docker compose ps
+$ docker compose ps -a
 ```
-
-Negative
-: TODO ajouter retour commande
 
 > aside negative
 > 
 > TODO ajouter retour commande
 
-
-### Start the Service discovery & configuration server
-
-Our microservices use a [Service Discovery](https://spring.io/guides/gs/service-registration-and-discovery) microservice to enable load balancing & loose coupling.
-
-A [Configuration server](https://docs.spring.io/spring-cloud-config/) is also used to centralise the configuration of our microservices.
-
-_Normally_ you don't have to bother yourself with these programs. 
-You just have to start them once with the following command: 
-
-```bash
-
-```
-> aside negative
->
-> TODO ajouter retour commande
         
 ### Start the rest of our microservices
         
-You can now start the application with the following commands
+You can now start the application with the following commands.
+For each you must start a new terminal in VSCode.
 
 #### The REST Easy Pay Service
 Run the following command:
 
 ```bash
+$ ./gradlew :easypay-service:bootRun -x test
 ```
 
 #### The Merchant BO
 Run the following command:
 
 ```bash
+$ ./gradlew :merchant-backoffice:bootRun -x test
 ```    
 #### The Fraud System
 Run the following command:
 
 ```bash
+$ ./gradlew :frauddetect-service:bootRun -x test
 ```    
 
 #### The Smart Bank Gateway
 Run the following command:
 
 ```bash
+$ ./gradlew :smartbank-gateway:bootRun -x test
 ```    
 
 #### The API Gateway
@@ -227,20 +220,118 @@ Run the following command:
 Run the following command:
 
 ```bash
+$ ./gradlew :api-gateway:bootRun -x test
 ```
 #### Validation
+
+Open the Eureka website started during the infrastructure setup
+
+If you run this workshop on your desktop, you can go to this URL.
+If you run it on GitPod, you can go the corresponding URL (e.g., TODO) instead.
+
+You can now reach our platform to initiate a payment:
+
+```bash
+$ http POST :8080/api/easypay/payments posId=POS-01 cardNumber=5555567898780008 expiryDate=789456123 amount:=25000
+```
+
+You should get the following content:
+
+```bash
+HTTP/1.1 201 Created
+Content-Type: application/json
+Date: Wed, 05 Jun 2024 13:42:12 GMT
+Location: http://172.19.25.95:44523/payments/3cd8df14-8c39-460b-a429-dc113d003aed
+transfer-encoding: chunked
+
+{
+    "amount": 25000,
+    "authorId": "5d364f1a-569c-4c1d-9735-619947ccbea6",
+    "authorized": true,
+    "bankCalled": true,
+    "cardNumber": "5555567898780008",
+    "cardType": "MASTERCARD",
+    "expiryDate": "789456123",
+    "paymentId": "3cd8df14-8c39-460b-a429-dc113d003aed",
+    "posId": "POS-01",
+    "processingMode": "STANDARD",
+    "responseCode": "ACCEPTED",
+    "responseTime": 414
+}
+```
 
 ## Logs 
 Duration: 0:30:00
 
-### One error among others
+### Some functional issues
 One of our customers raised an issue: 
 
 > When I reach your API, I usually either an ``AMOUNT_EXCEEDED`` or ``INVALID_CARD_NUMBER`` error.
 
-The first thing to do is checking the logs.
+Normally the first thing to do is checking the logs. 
+Before that, we will reproduce these issues.
 
-Go to the log folder and search for search an error:
+You can check the API as following:
+
+For the ``AMOUNT_EXCEEDED`` error:
+
+```bash
+$ http POST :8080/api/easypay/payments posId=POS-01 cardNumber=5555567898780008 expiryDate=789456123 amount:=51000
+
+HTTP/1.1 201 Created
+Content-Type: application/json
+Date: Wed, 05 Jun 2024 13:45:40 GMT
+Location: http://172.19.25.95:44523/payments/5459b20a-ac91-458f-9578-019c05483bb3
+transfer-encoding: chunked
+
+{
+    "amount": 51000,
+    "authorId": "6ace318f-b669-4e4a-b366-3f09048becb7",
+    "authorized": false,
+    "bankCalled": true,
+    "cardNumber": "5555567898780008",
+    "cardType": "MASTERCARD",
+    "expiryDate": "789456123",
+    "paymentId": "5459b20a-ac91-458f-9578-019c05483bb3",
+    "posId": "POS-01",
+    "processingMode": "STANDARD",
+    "responseCode": "AUTHORIZATION_DENIED",
+    "responseTime": 25
+}
+```
+
+And for the ``INVALID_CARD_NUMBER`` error:
+
+```bash
+$  http POST :8080/api/easypay/payments posId=POS-01 cardNumber=5555567898780007 expiryDate=789456123 amount:=51000
+
+HTTP/1.1 201 Created
+Content-Type: application/json
+Date: Wed, 05 Jun 2024 13:46:09 GMT
+Location: http://172.19.25.95:44523/payments/2dbf3823-fb11-4c63-a540-ab43ac663e68
+transfer-encoding: chunked
+
+{
+    "amount": 51000,
+    "authorId": null,
+    "authorized": false,
+    "bankCalled": false,
+    "cardNumber": "5555567898780007",
+    "cardType": null,
+    "expiryDate": "789456123",
+    "paymentId": "2dbf3823-fb11-4c63-a540-ab43ac663e68",
+    "posId": "POS-01",
+    "processingMode": "STANDARD",
+    "responseCode": "INVALID_CARD_NUMBER",
+    "responseTime": 5
+}
+
+```
+
+Go then to the log folder (TODO) , look around the log files and look into these issues.
+
+You should get these log entries:
+
 
 > aside negative
 >
@@ -276,7 +367,6 @@ The log level is a fundamental concept in logging, no matter which logging frame
 * ``INFO``: used to record events that indicate that program is functioning normally.
 * ``WARN``: used to record potential issues in your application. They may not be critical but should be investigated.
 * ``ERROR``: records unexpected errors that occur during the operation of your application. In most cases, the error should be addressed as soon as possible to prevent further problems or outages.
-
 
 
 #### ``AMOUNT_EXCEEDED`` issue
@@ -338,10 +428,29 @@ Now you can run the same commands ran earlier and check the logs.
 
 ### A technical issue
 
-> aside negative
->
-> TODO Commande pour le message d'erreur + message d'erreur
-> 
+Another issue was raised for the POS (Point of Sell) ``POS-02``. 
+When you reach the API using this command:
+
+```bash
+http POST :8080/api/easypay/payments posId=POS-02 cardNumber=5555567898780008 expiryDate=789456123 amount:=25000
+```
+
+You get the following log message:
+
+```bash
+2024-06-05T15:45:35.215+02:00 ERROR 135386 --- [easypay-service] [o-auto-1-exec-7] o.a.c.c.C.[.[.[/].[dispatcherServlet]    : Servlet.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed: java.lang.NullPointerException: Cannot invoke "java.lang.Boolean.booleanValue()" because "java.util.List.get(int).active" is null] with root cause
+
+java.lang.NullPointerException: Cannot invoke "java.lang.Boolean.booleanValue()" because "java.util.List.get(int).active" is null
+        at com.worldline.easypay.payment.control.PosValidator.isActive(PosValidator.java:34) ~[main/:na]
+        at com.worldline.easypay.payment.control.PaymentService.process(PaymentService.java:46) ~[main/:na]
+        at com.worldline.easypay.payment.control.PaymentService.accept(PaymentService.java:108) ~[main/:na]
+        at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+        at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+        at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:354) ~[spring-aop-6.1.6.jar:6.1.6]
+        at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:196) ~[spring-aop-6.1.6.jar:6.1.6]
+        at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163) ~[spring-aop-6.1.6.jar:6.1.6]
+    [...]
+```
 
 First, add an appropriate log in the ``easypay-service/src/main/java/com/worldline/easypay/payment/control/PosValidator.java`` class.
 
@@ -368,7 +477,7 @@ INSERT INTO pos_ref(id, pos_id, location, active) VALUES (2, 'POS-02', 'Blois Fr
 ### Logs Correlation  
 > aside positive
 >
-> You are probably wondering how to smartly debug in production when you have plenty of logs for several users and by the way different transations?
+> You are probably wondering how to smartly debug in production when you have plenty of logs for several users and by the way different transactions?
 >
 > One approach would be to correlate all of your logs using a correlation Id.
 > If an incoming request has no correlation id header, the API creates it. If there is one, it uses it instead.
@@ -376,7 +485,6 @@ INSERT INTO pos_ref(id, pos_id, location, active) VALUES (2, 'POS-02', 'Blois Fr
 > aside negative
 >
 > TODO mettre la manipulation pour le correlation ID et un exemple d'utilisation
-
 
 ### Let's dive into our logs on Grafana!
 
