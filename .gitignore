@@ -71,3 +71,6 @@ logs/*.log
 logs/*.json
 logs/*.logfmt
 logs/*.gz
+
+
+LOG_FILE_IS_UNDEFINED
