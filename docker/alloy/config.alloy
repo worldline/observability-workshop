@@ -1,0 +1,118 @@
+logging {
+	level  = "info"
+	format = "logfmt"
+}
+
+////////////////////
+// LOGS
+////////////////////
+
+// CLASSIC LOGS FILES
+local.file_match "logs" {
+	path_targets = [{"__path__" = "/logs/*.log", "exporter" = "LOGFILE"}]
+}
+
+loki.source.file "logfiles" {
+	targets    = local.file_match.logs.targets
+	forward_to = [loki.write.endpoint.receiver]
+}
+
+// JSON LOG FILES
+local.file_match "jsonlogs" {
+	path_targets = [{"__path__" = "/logs/*.json", "exporter" = "JSONFILE"}]
+}
+
+loki.source.file "jsonlogfiles" {
+	targets    = local.file_match.jsonlogs.targets
+	forward_to = [loki.process.jsonlogs.receiver]
+}
+
+loki.process "jsonlogs" {
+	forward_to = [loki.write.endpoint.receiver]
+
+	//stage.luhn { }
+
+	stage.json {
+		expressions = {
+			// timestamp   = "timestamp",
+			application = "context.properties.applicationName",
+			instance    = "context.properties.instance",
+		}
+	}
+
+	stage.labels {
+		values = {
+			application = "application",
+			instance    = "instance",
+		}
+	}
+
+	/*stage.timestamp {
+		source = "timestamp"
+		format = "RFC3339"
+		fallback_formats = ["UnixMs",]
+	}*/
+}
+
+// EXPORTER (LOKI)
+loki.write "endpoint" {
+	endpoint {
+		url = "http://loki:3100/loki/api/v1/push"
+	}
+}
+
+/////////////////////////
+// AGENT OTEL & TRACES
+/////////////////////////
+
+// RECEIVER (OTLP)
+otelcol.receiver.otlp "default" {
+	grpc {
+		endpoint = "0.0.0.0:4317"
+	}
+
+	http {
+		endpoint = "0.0.0.0:4318"
+	}
+
+	output {
+		metrics = [otelcol.processor.batch.default.input]
+		logs    = [otelcol.processor.batch.default.input]
+		traces  = [otelcol.processor.batch.default.input]
+	}
+}
+
+otelcol.processor.batch "default" {
+	output {
+		metrics = [otelcol.exporter.prometheus.default.input]
+		logs    = [otelcol.exporter.loki.default.input]
+		traces  = [otelcol.exporter.otlp.tempo.input]
+	}
+}
+
+// TRACES EXPORTER (OTLP)
+otelcol.exporter.otlp "tempo" {
+	client {
+		endpoint = "tempo:4317"
+
+		tls {
+			insecure = true
+		}
+	}
+}
+
+// METRICS EXPORTER (PROMETHEUS)
+otelcol.exporter.prometheus "default" {
+	forward_to = [prometheus.remote_write.default.receiver]
+}
+
+prometheus.remote_write "default" {
+	endpoint {
+		url = "http://prometheus:9090/api/v1/write"
+	}
+}
+
+// LOGS EXPORTER (LOKI)
+otelcol.exporter.loki "default" {
+	forward_to = [loki.write.endpoint.receiver]
+}

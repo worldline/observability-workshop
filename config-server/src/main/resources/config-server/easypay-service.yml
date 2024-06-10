@@ -2,15 +2,7 @@ spring:
   config:
     activate:
       on-profile: default
-eureka:
-  instance:
-    instance-id: ${spring.application.name}:${random.uuid}
 
----
-spring:
-  config:
-    activate:
-      on-profile: default
   datasource:
     url: jdbc:postgresql://localhost:5432/easypay
     username: easypay
@@ -21,3 +13,15 @@ spring:
       schema-locations: classpath*:db/postgresql/schema.sql
       data-locations: classpath*:db/postgresql/data.sql
       mode: ALWAYS
+
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+  
+  datasource:
+    url: jdbc:postgresql://postgres-easypay:5432/easypay
+
+server:
+  port: 8080

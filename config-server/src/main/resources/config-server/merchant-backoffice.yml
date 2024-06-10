@@ -2,15 +2,7 @@ spring:
   config:
     activate:
       on-profile: default
-eureka:
-  instance:
-    instance-id: ${spring.application.name}:${random.uuid}
 
----
-spring:
-  config:
-    activate:
-      on-profile: default
   datasource:
     url: jdbc:postgresql://localhost:5435/merchantbo
     username: merchantbo
@@ -21,3 +13,26 @@ spring:
       schema-locations: optional:classpath*:db/postgresql/schema.sql
       data-locations: optional:classpath*:db/postgresql/data.sql
       mode: ALWAYS
+
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+  datasource:
+    url: jdbc:postgresql://postgres-merchantbo:5432/merchantbo
+
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers:
+            - kafka
+          defaultBrokerPort: 9092
+  
+  kafka:
+    bootstrap-servers: kafka:9092
+    
+server:
+  port: 8080

@@ -1,0 +1,65 @@
+global:
+  scrape_interval: 5s
+  scrape_timeout: 2s
+  evaluation_interval: 5s
+
+# scrape metrics from the prometheus server itself
+scrape_configs:
+  - job_name: prometheus
+    scrape_interval: 5s
+    scrape_timeout: 5s
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - localhost:9090
+  
+  - job_name: prometheus-config-server
+    scrape_interval: 5s
+    scrape_timeout: 5s
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - config-server:8889
+  
+  - job_name: prometheus-eureka-server
+    scrape_interval: 5s
+    scrape_timeout: 5s
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - discovery-server:8761
+
+  # Discover targets from Eureka and scrape metrics from them (Whitebox monitoring)
+  - job_name: eureka-discovery
+    scrape_interval: 5s
+    scrape_timeout: 5s
+    eureka_sd_configs:
+      - server: http://discovery-server:8761/eureka
+        refresh_interval: 5s
+    relabel_configs:
+      - source_labels: [__meta_eureka_app_name]
+        target_label: application
+      - source_labels: [__meta_eureka_app_instance_metadata_metrics_path]
+        target_label: __metrics_path__
+      - source_labels: [__address__]
+        target_label: instance
+  # Discover targets from Eureka and probe the health endpoints via the Blackbox Exporter (Blackbox monitoring)
+  # - job_name: blackbox-via-service-discovery
+  #   params:
+  #     module:
+  #       - http_2xx
+  #   scrape_interval: 15s
+  #   scrape_timeout: 15s
+  #   metrics_path: /probe
+  #   eureka_sd_configs:
+  #     - server: http://prometheus-eureka-server:8761/eureka
+  #       refresh_interval: 30s
+  #   relabel_configs:
+  #     - source_labels: [__meta_eureka_app_name]
+  #       target_label: application
+  #     - source_labels: [__meta_eureka_app_instance_healthcheck_url]
+  #       target_label: __param_target
+  #     - source_labels: [__address__]
+  #       target_label: instance
+  #     - target_label: __address__
+  #       replacement: blackbox-exporter:9115

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml" />
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
+
+    <springProperty scope="context" name="applicationName" source="spring.application.name"
+        defaultValue="" />
+    <springProperty scope="context" name="instance" source="spring.application.instance"
+        defaultValue="" />
+
+    <!--<springProfile name="logfmt-logging">
+        <property name="CONSOLE_LOG_PATTERN"
+            value="time=%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} level=%p pid=${PID:- } thread=%t application=${applicationName} instance=${instance} logger=%logger msg=&quot;%m%wEx&quot;%n" />
+        <property
+            name="FILE_LOG_PATTERN"
+            value="time=%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} level=%p pid=${PID:- } thread=%t application=${applicationName} instance=${instance} logger=%logger msg=&quot;%m&quot; err=&quot;%exc&quot;%n" />
+        <property
+            name="LOG_FILE"
+            value="${LOG_FILE}.logfmt"
+        />
+    </springProfile>-->
+
+    <springProfile name="json-logging">
+        <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+                <level>${FILE_LOG_THRESHOLD}</level>
+            </filter>
+            <encoder class="ch.qos.logback.classic.encoder.JsonEncoder"/>
+            <file>${LOG_FILE}.json</file>
+            <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+                <fileNamePattern>
+                    ${LOGBACK_ROLLINGPOLICY_FILE_NAME_PATTERN:-${LOG_FILE}.%d{yyyy-MM-dd}.%i.gz}</fileNamePattern>
+                <cleanHistoryOnStart>${LOGBACK_ROLLINGPOLICY_CLEAN_HISTORY_ON_START:-false}</cleanHistoryOnStart>
+                <maxFileSize>${LOGBACK_ROLLINGPOLICY_MAX_FILE_SIZE:-10MB}</maxFileSize>
+                <totalSizeCap>${LOGBACK_ROLLINGPOLICY_TOTAL_SIZE_CAP:-0}</totalSizeCap>
+                <maxHistory>${LOGBACK_ROLLINGPOLICY_MAX_HISTORY:-7}</maxHistory>
+            </rollingPolicy>
+        </appender>
+    </springProfile>
+
+    <springProfile name="!json-logging">
+        <include resource="org/springframework/boot/logging/logback/file-appender.xml" />
+    </springProfile>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="FILE" />
+    </root>
+</configuration>

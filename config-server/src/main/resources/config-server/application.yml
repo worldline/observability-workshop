@@ -1,0 +1,63 @@
+server:
+  port: 0
+  shutdown: graceful
+  tomcat:
+    accesslog:
+      enabled: true
+
+spring:
+  cloud:
+    allow-override: true
+    override-none: true
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+
+eureka:
+  client:
+    registerFetchIntervalSeconds: 5
+  instance:
+    instance-id: ${spring.application.instance}
+    metadataMap:
+      source: actuator
+      metrics:
+        path: /actuator/prometheus
+
+management:
+  security:
+    enabled: false
+  endpoint:
+    web:
+      exposure:
+        include: "*"
+
+logging:
+  level:
+    org.springframework: INFO
+
+  file:
+    name: ${LOGS_DIRECTORY:../logs}/${spring.application.instance:${spring.application.name:spring}}.log
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: docker
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://discovery-server:8761/eureka
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: correlation
+      
+logging:
+  pattern:
+    correlation: "[trace_id=%mdc{trace_id},span_id=%mdc{span_id},trace_flags=%mdc{trace_flags}]"

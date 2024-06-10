@@ -2,7 +2,6 @@ plugins {
 	java
 	id("org.springframework.boot") version "3.2.5"
 	id("io.spring.dependency-management") version "1.1.4"
-//	id("org.graalvm.buildtools.native") version "0.9.28"
 }
 
 group = "com.worldline.easypay"
@@ -20,7 +19,6 @@ extra["springCloudVersion"] = "2023.0.1"
 extra["springDocVersion"] = "2.5.0"
 
 dependencies {
-	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -36,6 +34,20 @@ dependencies {
 	implementation("org.springframework.kafka:spring-kafka")
 
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:${property("springDocVersion")}")
+
+	// Expose metrics with Micrometer using a Prometheus registry
+	implementation("org.springframework.boot:spring-boot-starter-actuator")
+	implementation("io.micrometer:micrometer-registry-prometheus")
+
+	// Add opentelemetry exemplars support
+	implementation(platform("io.opentelemetry:opentelemetry-bom:1.38.0"))
+	implementation("io.opentelemetry:opentelemetry-api")
+	implementation("io.prometheus:prometheus-metrics-tracer-otel-agent:1.3.1")
+
+	// Logging
+	implementation("ch.qos.logback.contrib:logback-json-classic:0.1.5")
+	implementation("ch.qos.logback.contrib:logback-jackson:0.1.5")
+
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 	runtimeOnly("com.h2database:h2")
 	runtimeOnly("org.postgresql:postgresql")

@@ -65,3 +65,9 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Project ###
+logs/*.log
+logs/*.json
+logs/*.logfmt
+logs/*.gz
