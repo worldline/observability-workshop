@@ -1,6 +1,7 @@
 spring:
   application:
     name: api-gateway
+    instance: ${spring.application.name}:${random.uuid}
   config:
     import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}
   cloud:

@@ -25,8 +25,22 @@ dependencies {
 	implementation("org.springframework.cloud:spring-cloud-stream")
 	implementation("org.springframework.cloud:spring-cloud-stream-binder-kafka")
 	implementation("org.springframework.kafka:spring-kafka")
+
+	// Expose metrics with Micrometer using a Prometheus registry
+	implementation("org.springframework.boot:spring-boot-starter-actuator")
+	implementation("io.micrometer:micrometer-registry-prometheus")
+
+	// Add opentelemetry exemplars support
+	implementation(platform("io.opentelemetry:opentelemetry-bom:1.38.0"))
+	implementation("io.opentelemetry:opentelemetry-api")
+	implementation("io.prometheus:prometheus-metrics-tracer-otel-agent:1.3.1")
+
+	// Logging
+	implementation("ch.qos.logback.contrib:logback-json-classic:0.1.5")
+	implementation("ch.qos.logback.contrib:logback-jackson:0.1.5")
+
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
-	// developmentOnly("org.springframework.boot:spring-boot-docker-compose")
+
 	runtimeOnly("org.postgresql:postgresql")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.springframework.cloud:spring-cloud-stream-test-binder")

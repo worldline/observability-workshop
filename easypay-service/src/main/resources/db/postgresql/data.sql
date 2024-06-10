@@ -1,5 +1,5 @@
 INSERT INTO pos_ref(id, pos_id, location, active) VALUES (1, 'POS-01', 'Vallauris France', true) ON CONFLICT DO NOTHING;
-INSERT INTO pos_ref(id, pos_id, location, active) VALUES (2, 'POS-02', 'Blois France', true) ON CONFLICT DO NOTHING;
+INSERT INTO pos_ref(id, pos_id, location, active) VALUES (2, 'POS-02', 'Blois France', NULL) ON CONFLICT DO NOTHING;
 INSERT INTO pos_ref(id, pos_id, location, active) VALUES (3, 'POS-03', 'Paris France', false) ON CONFLICT DO NOTHING;
 INSERT INTO pos_ref(id, pos_id, location, active) VALUES (4, 'POS-04', 'San Francisco US', true) ON CONFLICT DO NOTHING;
 

@@ -1,2 +1,18 @@
+spring:
+  config:
+    activate:
+      on-profile: default
+      
 server:
   port: 8080
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: docker
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://discovery-server:8761/eureka
