@@ -1,4 +1,4 @@
-package com.worldline.easypay.fraudetect_service;
+package com.worldline.easypay.fraudetect;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
