@@ -162,12 +162,7 @@ The "infrastructure stack" is composed of the following components:
 * ONe [Service Discovery](https://spring.io/guides/gs/service-registration-and-discovery) microservice to enable load balancing & loose coupling.
 * One [Configuration server](https://docs.spring.io/spring-cloud-config/) is also used to centralise the configuration of our microservices.
 
-> aside positive
->
-> The two last software are written and available in our GitHub Repository. 
-> Normally, you should not have to restart them during the workshop
-
-To run the whole, execute the following command
+To run it, execute the following command
 
 ``` bash
 $ docker compose up -d --build --remove-orphans
@@ -177,11 +172,9 @@ To check if all the services are up, you can run this command:
 ``` bash
 $ docker compose ps -a
 ```
-
 > aside negative
-> 
+>
 > TODO ajouter retour commande
-
         
 ### Start the rest of our microservices
         
@@ -328,16 +321,11 @@ transfer-encoding: chunked
 
 ```
 
-Go then to the log folder (TODO) , look around the log files and look into these issues.
+Go then to the log folder (``easypay-service/logs/``) , look around the log files and look into these issues.
 
-You should get these log entries:
+You should get these log entries in JSON format. Open one of these files and check out the logs.
 
-
-> aside negative
->
-> TODO CHEMIN et message à chercher, exemple de logs, commande HTTPIE
-
-> aside negative
+> aside positive
 >
 > As you can see, the logs are not helpful for getting more information such as the business or user context.
 > 
@@ -412,6 +400,23 @@ For this error, you can log the error with the following content:
 * The attributes of the ``PaymentProcessingContext `` 
 * The error message
 
+
+You can also add more logs:
+In the ``CarValidator.checkLunKey()`` method, you can add a warn message when the key is not valid. 
+For instance:
+
+```java
+log.warn("checkLunKey KO: {}",cardNumber);
+```
+In the ``CarValidator.checkExpiryDate()`` method, you can add a warn message when a ``DateTimeParseException`` is thrown.
+For instance:
+
+```java
+log.warn("checkExpiryDate KO: bad format {}",expiryDate);
+```
+
+You can go further and add as many log you think it would help in production.
+
 ### Check your code
 
 You can restart your easy pay service by typing ``CTRL+C`` in your console prompt, and run the following command:
@@ -420,7 +425,7 @@ You can restart your easy pay service by typing ``CTRL+C`` in your console promp
 >
 > TODO mettre la commande + le résultat dans les logs
 
-Now you can run the same commands ran earlier and check the logs.
+Now you can run the same commands ran earlier and check again the logs.
 
 ### A technical issue
 
@@ -431,7 +436,22 @@ When you reach the API using this command:
 http POST :8080/api/easypay/payments posId=POS-02 cardNumber=5555567898780008 expiryDate=789456123 amount:=25000
 ```
 
-You get the following log message:
+With the following output:
+
+````bash
+
+HTTP/1.1 500
+[...]
+
+{
+  "error":"Internal Server Error",
+  "path": "/payments",
+  "status": 500,
+  [...]
+}
+````
+
+You then get the following log message:
 
 ```bash
 2024-06-05T15:45:35.215+02:00 ERROR 135386 --- [easypay-service] [o-auto-1-exec-7] o.a.c.c.C.[.[.[/].[dispatcherServlet]    : Servlet.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed: java.lang.NullPointerException: Cannot invoke "java.lang.Boolean.booleanValue()" because "java.util.List.get(int).active" is null] with root cause
@@ -448,7 +468,7 @@ java.lang.NullPointerException: Cannot invoke "java.lang.Boolean.booleanValue()"
     [...]
 ```
 
-First, add a _smart_ log entry in the ``easypay-service/src/main/java/com/worldline/easypay/payment/control/PosValidator.java`` class.
+To find the root cause, add first a _smart_ log entry in the ``easypay-service/src/main/java/com/worldline/easypay/payment/control/PosValidator.java`` class.
 
 In the ``isActive()`` method, catch the exception and trace the error:
 > aside negative
@@ -470,6 +490,49 @@ to
 INSERT INTO pos_ref(id, pos_id, location, active) VALUES (2, 'POS-02', 'Blois France', true) ON CONFLICT DO NOTHING;
 ```
 
+### Using Mapped Diagnostic Context (MDC) to get more insights
+> aside positive
+>
+>  Mapped Diagnostic Context (MDC) will help us add more context on every log output. For more information, refer to this web page: https://logback.qos.ch/manual/mdc.html 
+
+
+Go to the ``PaymentResource`` class and modify the method ``processPayment()`` to instantiate the [MDC](https://logback.qos.ch/manual/mdc.html):
+
+
+```java
+public ResponseEntity<PaymentResponse> processPayment(PaymentRequest paymentRequest)
+
+MDC.put("context",paymentRequest);
+[...]
+MDC.clear();
+return httpResponse;
+
+```
+
+Go to the MDC spring profile configuration file (``easypay-service/src/main/resources/application-mdc.properties``) and check the configuration got the ``context`` field.
+
+Restart the application activating the ``mdc`` profile and see how the logs look like now.
+
+```bash
+./gradlew :easypay-service:bootRun -x test  --args='--spring.profiles.active=default,mdc'
+```
+
+> aside negative
+>
+> TODO Mettre comment vérifier que le bon profil a été démarré
+
+### Adding more content in our logs
+
+To have more logs, we will run several HTTP requests using [K6](https://k6.io/):
+
+Run the following command:
+
+```bash
+$ k6 run -u 5 -d 5s k6/01-payment-only.js
+```
+
+Check then the logs to pinpoint some exceptions
+
 ### Logs Correlation  
 > aside positive
 >
@@ -484,19 +547,183 @@ INSERT INTO pos_ref(id, pos_id, location, active) VALUES (2, 'POS-02', 'Blois Fr
 
 ### Let's dive into our logs on Grafana!
 
-Logs are stored in the logs folder.
+Logs are stored in the logs folder (``easypay-service/logs``).
 
-We use then [Promtail to broadcast them to Loki](https://grafana.com/grafana/dashboards/14055-loki-stack-monitoring-promtail-loki/).
+We use then [Promtail to broadcast them to Loki](https://grafana.com/grafana/dashboards/14055-loki-stack-monitoring-promtail-loki/) through [Grafana Alloy (OTEL Collector)](https://grafana.com/docs/alloy/latest/).
 
-Open a browser page to Grafana.
-Open the dashboard, try to search with a correlation ID
+Check out the Logging configuration in the ``docker/alloy/config.alloy`` file:
 
 > aside negative
 >
-> Documenter
+> TODO mettre à jour
+
+```json
+////////////////////
+// LOGS
+////////////////////
+
+// CLASSIC LOGS FILES
+local.file_match "logs" {
+	path_targets = [{"__path__" = "/logs/*.log", "exporter" = "LOGFILE"}]
+}
+
+loki.source.file "logfiles" {
+	targets    = local.file_match.logs.targets
+	forward_to = [loki.write.endpoint.receiver]
+}
+
+// JSON LOG FILES (1)
+local.file_match "jsonlogs" {
+	path_targets = [{"__path__" = "/logs/*.json", "exporter" = "JSONFILE"}]
+}
+// (2)
+loki.source.file "jsonlogfiles" {
+	targets    = local.file_match.jsonlogs.targets
+	forward_to = [loki.process.jsonlogs.receiver]
+}
+// (3)
+loki.process "jsonlogs" {
+	forward_to = [loki.write.endpoint.receiver]
+
+	//stage.luhn { }
+    // (4)
+	stage.json {
+		expressions = {
+			// timestamp   = "timestamp",
+			application = "context.properties.applicationName",
+			instance    = "context.properties.instance",
+		}
+	}
+// (5)
+	stage.labels {
+		values = {
+			application = "application",
+			instance    = "instance",
+		}
+	}
+
+	/*stage.timestamp {
+		source = "timestamp"
+		format = "RFC3339"
+		fallback_formats = ["UnixMs",]
+	}*/
+}
+    // (6)
+// EXPORTER (LOKI)
+loki.write "endpoint" {
+	endpoint {
+		url = "http://loki:3100/loki/api/v1/push"
+	}
+}
+```
+As you can see, the JSON files are automatically grabbed and broadcast to Loki.
+Here is a short summary of the following steps:
+
+1. Configuration of the input files
+2. Configuration of the broadcasting within Alloy
+3. Process definition
+4. Applying some contextual information suck like the application name
+5. Follow up the previous action and applying labels
+6. Output definition
+
+Open a browser page to Grafana.
+
+Check out first the page ``http://localhost:12345/graph``
+Select the ``loki.source.jsonlogfiles`` component.
+
+Check all the targets.
+
+Now open the explore dashboard : ``http://localhost:12345/explore``.
+
+Select the Loki datasource.
+
+In the label filter, select the application as ``easypay-service`` and click on ``Run Query``.
+
+
+Add then a JSON parser operation , click on ``Run query`` again and check out the logs.
+
+Additionally, you can add these expressions in the JSON parser operation box:
+
+* Expression: ``message="message"``
+* Level: ``level="level"``
+
+Check out the logs again, view it now as a table.
+
+You can also view traces for the other services (e.g., ``api-gateway``) 
+
+Finally, you can search logs absed on the correlation ID
+
+> aside negative
+>
+> TODO MEttre la procédure
+
 
 ## Metrics
 Duration: 0:30:00
+
+Check out the ``easypay-service`` metrics definitions first:
+
+```bash
+http :8080/actuator/metrics
+```
+
+Explore the output
+
+Now get the prometheus metrics using this command:
+
+```bash
+http :8080/actuator/metrics
+```
+
+You can also have an overview of all the prometheus endpoints metrics on the Prometheus dashboad . 
+
+Go to ``http://localhost:9090`` and explore the different endpoints in ``eureka-discovery``.
+
+Go then to Grafana and start again a ``explore`` dashboard.
+
+Select the ``Prometheus`` datasource.
+You can for instance run this query: ``system_load_average_1m{application="api-gateway"}``
+
+Click on ``Run Query`` button.
+
+Now let's add more content using K6.
+
+Run the following command: 
+
+```bash
+$ k6 run -u 5 -d 2m k6/02-payment-smartbank.js
+```
+
+Go back to the Grafana dashboard, click on ``Dashboards`` and select ``JVM Micrometer``.
+
+Explore the dashboard, especially the Garbage collector and CPU statistics.
+
+Look around the JDBC dashboard then and see what happens on the database connection pool.
+
+
+> aside negative
+>
+> TODO Détailler
+
+Now, let's go back to the Loki explore dashboard and see what happens:
+
+Create a query with the following parameters:
+
+* Label filters: ``application`` = ``smartbank-gateway``
+* line contains/Json: ``expression``= ``level=level``
+* label filter expression: ``label`` = ``level ; ``operator`` = ``!=`` ; ``value`` = ``INFO`` 
+
+Click on ``Run query`` and check out the logs.
+
+Normally you would get a ``java.lang.OutOfMemoryError`` due to a saturated Java heap space.
+
+
+To get additional insights, you can go back to the JVM dashboard and select the ``smartbank-gateway`` application.
+
+Normally you will see the used JVM Heap reaching the maximum allowed.
+
+
+
 
 ## Traces
 Duration: 0:20:00
