@@ -1,0 +1,27 @@
+spring:
+  config:
+    activate:
+      on-profile: default
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/easypay
+    username: easypay
+    password: easypay
+    driverClassName: org.postgresql.Driver
+  sql:
+    init:
+      schema-locations: classpath*:db/postgresql/schema.sql
+      data-locations: classpath*:db/postgresql/data.sql
+      mode: ALWAYS
+
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+  
+  datasource:
+    url: jdbc:postgresql://postgres-easypay:5432/easypay
+
+server:
+  port: 8080

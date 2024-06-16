@@ -327,7 +327,7 @@ You should get these log entries in JSON format. Open one of these files and che
 
 > aside positive
 >
-> As you can see, the logs are not helpful for getting more information such as the business or user context.
+> As you can see, the logs are not helpful for getting more information such as the business or user context.~~~~
 > 
 > If you want to dig into this particular topic, you can check out [this article](https://blog.worldline.tech/2020/01/22/back-to-basics-logging.html).
 

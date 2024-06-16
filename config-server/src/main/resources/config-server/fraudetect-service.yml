@@ -1,0 +1,34 @@
+spring:
+  config:
+    activate:
+      on-profile: default
+
+  datasource:
+    url: jdbc:postgresql://localhost:5434/fraudetect
+    username: fraudetect
+    password: fraudetect
+    driverClassName: org.postgresql.Driver
+  sql:
+    init:
+      schema-locations: optional:classpath*:db/postgresql/schema.sql
+      data-locations: optional:classpath*:db/postgresql/data.sql
+      mode: ALWAYS
+
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+  datasource:
+    url: jdbc:postgresql://postgres-fraudetect:5432/fraudetect
+
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers:
+            - kafka
+          defaultBrokerPort: 9092
+server:
+  port: 8080
