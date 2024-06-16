@@ -19,7 +19,6 @@ extra["springCloudVersion"] = "2023.0.2"
 
 dependencies {
 	implementation("org.springframework.cloud:spring-cloud-config-server")
-	implementation("org.springframework.boot:spring-boot-starter-actuator")
 
 	// Expose metrics with Micrometer using a Prometheus registry
 	implementation("org.springframework.boot:spring-boot-starter-actuator")

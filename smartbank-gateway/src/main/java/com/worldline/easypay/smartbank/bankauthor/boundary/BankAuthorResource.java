@@ -17,6 +17,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.worldline.easypay.smartbank.bankauthor.control.AuthorizationService;
 import com.worldline.easypay.smartbank.bankauthor.control.BankAuthorBoundaryControl;
+import com.worldline.easypay.smartbank.cache.CacheRepository;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -24,17 +25,19 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
-
 @RestController
 @RequestMapping("/authors")
 public class BankAuthorResource {
 
     BankAuthorBoundaryControl bankAuthors;
     AuthorizationService authorizationService;
+    CacheRepository cacheRepository;
 
-    public BankAuthorResource(BankAuthorBoundaryControl boundaryControl, AuthorizationService validationService) {
+    public BankAuthorResource(BankAuthorBoundaryControl boundaryControl, AuthorizationService validationService,
+            CacheRepository cacheRepository) {
         this.bankAuthors = boundaryControl;
         this.authorizationService = validationService;
+        this.cacheRepository = cacheRepository;
     }
 
     @GetMapping("/count")
@@ -43,7 +46,6 @@ public class BankAuthorResource {
         return ResponseEntity.ok().body(new BankAuthorCountResponse(this.bankAuthors.count()));
     }
 
-
     @GetMapping
     @Operation(summary = "Get all payment authorizations", description = "Get all payment authorizations")
     @ApiResponse(responseCode = "200", description = "List of payment authorizations found")
@@ -51,18 +53,23 @@ public class BankAuthorResource {
         return ResponseEntity.ok().body(this.bankAuthors.findAll());
     }
 
-
     @GetMapping(value = "/{id}")
     @Operation(summary = "Get a payment authorization", description = "Get a payment authorization by its ID")
     @ApiResponse(responseCode = "200", description = "Payment authorization found")
     public ResponseEntity<BankAuthorResponse> findById(
             @Parameter(description = "The ID of the payment authorization to retrieve") @PathVariable("id") String id) {
         try {
+            var author = (BankAuthorResponse) cacheRepository.get(id);
+            if (author != null) {
+                return ResponseEntity.ok().body(author);
+            }
+
             var authorizationId = UUID.fromString(id);
             Optional<BankAuthorResponse> response = this.bankAuthors.findById(authorizationId);
             if (response.isEmpty()) {
                 return ResponseEntity.notFound().build();
             }
+            cacheRepository.put(id, response.get());
             return ResponseEntity.ok().body(response.get());
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
@@ -74,9 +81,7 @@ public class BankAuthorResource {
     @ApiResponse(responseCode = "201", description = "Payment authorization request processed successfully")
     @Transactional
     ResponseEntity<BankAuthorResponse> authorize(@Valid @NotNull @RequestBody BankAuthorRequest request) {
-        var authorized = this.authorizationService.authorize(request);
-        var response = new BankAuthorResponse(UUID.randomUUID(), request.merchantId(), request.cardNumber(),
-                request.expiryDate(), request.amount(), authorized);
+        var response = this.authorizationService.authorize(request);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
                 .buildAndExpand(response.authorId()).toUri();
         return ResponseEntity.created(location).body(response);

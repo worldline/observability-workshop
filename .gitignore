@@ -71,3 +71,6 @@ logs/*.log
 logs/*.json
 logs/*.logfmt
 logs/*.gz
+
+### Custom user certificates ###
+docker/ca-trust/*

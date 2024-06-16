@@ -200,9 +200,11 @@ services:
       - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    volumes:
+      - ./docker/grafana/datasources:/etc/grafana/provisioning/dashboards
     entrypoint:
       - sh
-      - -euc
+      - -xeuc
       - |
         mkdir -p /etc/grafana/provisioning/datasources
         cat <<EOF > /etc/grafana/provisioning/datasources/ds.yaml
@@ -214,9 +216,16 @@ services:
           orgId: 1
           url: http://loki:3100
           basicAuth: false
-          isDefault: false
+          isDefault: true
           version: 1
-          editable: false
+          editable: true
+          jsonData:
+            derivedFields:
+              - datasourceUid: tempo
+                matcherRegex: 'trace_id'
+                matcherType: 'label'
+                name: TraceID
+                urlDisplayLabel: 'View Trace'
         - name: Prometheus
           type: prometheus
           uid: prometheus
@@ -226,24 +235,37 @@ services:
           basicAuth: false
           isDefault: false
           version: 1
-          editable: false
+          editable: true
           jsonData:
             httpMethod: GET
+            exemplarTraceIdDestinations:
+              - datasourceUid: tempo
+                name: TraceID
         - name: Tempo
           type: tempo
           access: proxy
           orgId: 1
           url: http://tempo:3200
           basicAuth: false
-          isDefault: true
+          isDefault: false
           version: 1
-          editable: false
+          editable: true
           apiVersion: 1
           uid: tempo
           jsonData:
             httpMethod: GET
             serviceMap:
               datasourceUid: prometheus
+            tracesToLogsV2:
+              datasourceUid: loki
+              filterBySpanID: false
+              filterByTraceID: true
+              tags:
+              - application
+            tracesToMetrics:
+              datasourceUid: prometheus
+              tags:
+              - application
         EOF
         /run.sh
     image: grafana/grafana:latest

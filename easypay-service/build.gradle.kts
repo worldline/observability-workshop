@@ -2,6 +2,7 @@ plugins {
 	java
 	id("org.springframework.boot") version "3.2.5"
 	id("io.spring.dependency-management") version "1.1.4"
+	id("org.graalvm.buildtools.native") version "0.10.2"
 }
 
 group = "com.worldline.easypay"
@@ -26,7 +27,6 @@ dependencies {
 	implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
 	implementation("org.springframework.cloud:spring-cloud-starter-loadbalancer")
 	implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
-	// implementation("io.github.danielliu1123:httpexchange-spring-boot-starter:3.2.5")
 	implementation("org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j")
 	
 	implementation("org.springframework.cloud:spring-cloud-stream")
