@@ -722,11 +722,34 @@ To get additional insights, you can go back to the JVM dashboard and select the 
 
 Normally you will see the used JVM Heap reaching the maximum allowed.
 
-
-
-
 ## Traces
 Duration: 0:20:00
+
+Stop the easypay service
+
+Open the ``easypay.sh`` script file. You will then see the ``-javaagent`` parameter. 
+During this workshop, we will use a OpenTelemetry agent for broadcasting traces through Alloy to Tempo.  
+
+Check the environment variables used:
+
+* ``OTEL_SERVICE_NAME``
+* ``OTEL_EXPORT_OTLP_ENDPOINT``
+* ``OTEL_EXPORT_OTLP_PROTOCOL``
+* ``OTEL_EXPORT_ATTRIBUTES``
+
+Now open a new explore Grafana dashboard.
+
+Select the Tempo datasource.
+
+Look around the node graph, pinpoint what are the different nodes and corresponding response times.
+
+Create a query, select service name as ``easypay-service``.
+
+Click on ``Run query`` and Drill down a Trace ID to get the full stack of the corresponding transaction. 
+
+Explore the corresponding SQL queries and their response times.
+
+Finally, check the traces from different services (e.g., ``api-gateway``).
 
 ## Correlate Traces, Logs
 Duration: 0:15:00
