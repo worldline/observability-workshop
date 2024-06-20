@@ -152,15 +152,16 @@ Duration: 0:05:00
 
 We will assume you will use GitPod for this workshop :) 
 
-[![Open in Gitpod](img/open-in-gitpod.svg)](https://gitpod.io/#github.com/alexandre-touret/observability-workshop.git)
+[![Open in Gitpod](img/open-in-gitpod.svg)](https://gitpod.io/#github.com/worldline/observability-workshop.git)
 
 ### Start the infrastructure
 
 The "infrastructure stack" is composed of the following components:
 * One [PostgreSQL](https://www.postgresql.org/) instance per micro service
 * One [Kafka broker](https://kafka.apache.org/)
-* ONe [Service Discovery](https://spring.io/guides/gs/service-registration-and-discovery) microservice to enable load balancing & loose coupling.
+* One [Service Discovery](https://spring.io/guides/gs/service-registration-and-discovery) microservice to enable load balancing & loose coupling.
 * One [Configuration server](https://docs.spring.io/spring-cloud-config/) is also used to centralise the configuration of our microservices.
+* The following microservices: API Gateway, Merchant BO, Fraud Detect, Smart Bank Gateway
 
 To run it, execute the following command
 
@@ -172,9 +173,7 @@ To check if all the services are up, you can run this command:
 ``` bash
 $ docker compose ps -a
 ```
-> aside negative
->
-> TODO ajouter retour commande
+And check the status of every service.
         
 ### Start the rest of our microservices
         
@@ -188,39 +187,12 @@ Run the following command:
 $ ./gradlew :easypay-service:bootRun -x test
 ```
 
-#### The Merchant BO
-Run the following command:
-
-```bash
-$ ./gradlew :merchant-backoffice:bootRun -x test
-```    
-#### The Fraud System
-Run the following command:
-
-```bash
-$ ./gradlew :frauddetect-service:bootRun -x test
-```    
-
-#### The Smart Bank Gateway
-Run the following command:
-
-```bash
-$ ./gradlew :smartbank-gateway:bootRun -x test
-```    
-
-#### The API Gateway
-
-Run the following command:
-
-```bash
-$ ./gradlew :api-gateway:bootRun -x test
-```
 #### Validation
 
 Open the Eureka website started during the infrastructure setup
 
-If you run this workshop on your desktop, you can go to this URL.
-If you run it on GitPod, you can go the corresponding URL (e.g., TODO) instead.
+If you run this workshop on your desktop, you can go to this URL: http://localhost:8761.
+If you run it on GitPod, you can go to the corresponding URL (e.g., https://8761-worldline-observability-w98vrd59k5h.ws-eu114.gitpod.io) instead.
 
 You can now reach our platform to initiate a payment:
 
@@ -327,7 +299,7 @@ You should get these log entries in JSON format. Open one of these files and che
 
 > aside positive
 >
-> As you can see, the logs are not helpful for getting more information such as the business or user context.~~~~
+> As you can see, the logs are not helpful for getting more information such as the business or user context.
 > 
 > If you want to dig into this particular topic, you can check out [this article](https://blog.worldline.tech/2020/01/22/back-to-basics-logging.html).
 
@@ -421,9 +393,9 @@ You can go further and add as many log you think it would help in production.
 
 You can restart your easy pay service by typing ``CTRL+C`` in your console prompt, and run the following command:
 
-> aside negative
->
-> TODO mettre la commande + le résultat dans les logs
+```bash
+$ ./gradlew :easypay-service:bootRun -x test
+```
 
 Now you can run the same commands ran earlier and check again the logs.
 
@@ -725,10 +697,25 @@ Normally you will see the used JVM Heap reaching the maximum allowed.
 ## Traces
 Duration: 0:20:00
 
-Stop the easypay service
+Stop the easypay service.
 
-Open the ``easypay.sh`` script file. You will then see the ``-javaagent`` parameter. 
-During this workshop, we will use a OpenTelemetry agent for broadcasting traces through Alloy to Tempo.  
+Open the ``easypay.sh`` script file. You will then how is configured the JVM startup with  the ``-javaagent`` parameter.
+
+```shell
+#!/usr/bin/env bash
+
+export OTEL_SERVICE_NAME=easypay-service
+export OTEL_EXPORTER_OTLP_ENDPOINT="http://localhost:4317"
+export OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+export OTEL_RESOURCE_ATTRIBUTES="source=agent"
+
+export SERVER_PORT=8081
+export LOGS_DIRECTORY="$(pwd)/logs"
+
+java -Xms512m -Xmx512m -javaagent:$(pwd)/instrumentation/grafana-opentelemetry-java.jar -jar "$(pwd)/easypay-service/build/libs/easypay-service-0.0.1-SNAPSHOT.jar" "$@"
+```
+
+During this workshop, we will use an OpenTelemetry agent for broadcasting traces through Alloy to Tempo.  
 
 Check the environment variables used:
 
