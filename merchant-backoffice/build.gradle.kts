@@ -50,6 +50,9 @@ dependencies {
 	testImplementation("org.springframework.graphql:spring-graphql-test")
 	testImplementation("org.springframework.kafka:spring-kafka-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+	// Testcontainers PostgreSQL
+	testImplementation("org.testcontainers:postgresql")
 }
 
 dependencyManagement {

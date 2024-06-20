@@ -2,7 +2,6 @@ plugins {
 	java
 	id("org.springframework.boot") version "3.2.5"
 	id("io.spring.dependency-management") version "1.1.4"
-	id("org.graalvm.buildtools.native") version "0.10.2"
 }
 
 group = "com.worldline.easypay"
@@ -52,6 +51,9 @@ dependencies {
 	runtimeOnly("com.h2database:h2")
 	runtimeOnly("org.postgresql:postgresql")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
+
+	// Testcontainers PostgreSQL
+	testImplementation("org.testcontainers:postgresql")
 }
 
 dependencyManagement {
