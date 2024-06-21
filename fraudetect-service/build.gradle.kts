@@ -1,6 +1,6 @@
 plugins {
 	java
-	id("org.springframework.boot") version "3.3.0"
+	id("org.springframework.boot") version "3.3.1"
 	id("io.spring.dependency-management") version "1.1.5"
 }
 
@@ -15,7 +15,7 @@ repositories {
 	mavenCentral()
 }
 
-extra["springCloudVersion"] = "2023.0.1"
+extra["springCloudVersion"] = "2023.0.2"
 
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -51,6 +51,7 @@ dependencies {
 
 	// Testcontainers PostgreSQL
 	testImplementation("org.testcontainers:postgresql")
+	testImplementation("org.testcontainers:kafka")
 }
 
 dependencyManagement {

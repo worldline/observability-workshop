@@ -1,8 +1,7 @@
 plugins {
 	java
-	id("org.springframework.boot") version "3.2.5"
-	id("io.spring.dependency-management") version "1.1.4"
-//	id("org.graalvm.buildtools.native") version "0.9.28"
+	id("org.springframework.boot") version "3.3.1"
+	id("io.spring.dependency-management") version "1.1.5"
 }
 
 group = "com.worldline.easypay"
@@ -16,7 +15,7 @@ repositories {
 	mavenCentral()
 }
 
-extra["springCloudVersion"] = "2023.0.1"
+extra["springCloudVersion"] = "2023.0.2"
 extra["springDocVersion"] = "2.5.0"
 
 dependencies {
