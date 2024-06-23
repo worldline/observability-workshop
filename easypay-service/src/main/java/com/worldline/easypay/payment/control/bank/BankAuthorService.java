@@ -4,7 +4,6 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -24,12 +23,10 @@ public class BankAuthorService {
     @Value("${payment.max.amount.fallback:20000}")
     Long maxAmountFallback;
 
-
-    @Autowired
     private BankAuthorClient client;
 
-    public BankAuthorService(/*BankAuthorClient client*/) {
-        //this.client = client;
+    public BankAuthorService(BankAuthorClient client) {
+        this.client = client;
     }
 
     private BankAuthorRequest initRequest(PaymentProcessingContext context) {
@@ -56,7 +53,7 @@ public class BankAuthorService {
     }
 
     public boolean acceptByDelegation(PaymentProcessingContext context, Throwable throwable) {
-        log.debug("Accept by delegation. Error was: {}", throwable.getMessage());        
+        log.info("Accept by delegation. Error was: {}", throwable.getMessage());        
         context.bankCalled = false;
         context.processingMode = ProcessingMode.FALLBACK;
         return context.amount < maxAmountFallback;

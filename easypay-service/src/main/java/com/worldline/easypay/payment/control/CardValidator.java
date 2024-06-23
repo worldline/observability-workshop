@@ -34,8 +34,9 @@ public class CardValidator {
             YearMonth expiration = YearMonth.parse(expiryDate, DATE_TIME_FORMATTER);
             YearMonth today = YearMonth.now();
             boolean rc = expiration.equals(today) || expiration.isAfter(today);
-            if (!rc)
+            if (!rc) {
                 log.warn("checkExpiryDate NOK: outdated: {}", expiryDate);
+            }
             return rc;
         } catch (DateTimeParseException e) {
             log.warn("checkExpiryDate NOK: bad format: {}", expiryDate);
@@ -77,8 +78,6 @@ public class CardValidator {
         probe.blackListed = true;
         long count = cardRepository.count(Example.of(probe));
 
-        // long count = em.createNamedQuery("CardRef.isBlackListed",
-        // Long.class).setParameter("cardNumber", cardNumber).getSingleResult();
         if (count != 0) {
             log.warn("cardNumber {} is black listed", cardNumber);
             return true;
@@ -89,13 +88,14 @@ public class CardValidator {
 
     public boolean checkCardNumber(String cardNumber) {
 
-        // Check format
-        String card = cardNumber.replaceAll("[^0-9]+", ""); // remove all non-numerics
+        //* Check format
+        String card = cardNumber.replaceAll("[^0-9]+", ""); //* remove all non-numerics
         if ((card == null) || (card.length() < 13) || (card.length() > 19)) {
+            log.warn("Invalid card format");
             return false;
         }
 
-        // Check Luhn key
+        //* Check Luhn key
         return checkLuhnKey(card);
     }
 

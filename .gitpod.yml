@@ -1,6 +1,15 @@
 image:
   file: .gitpod.Dockerfile
+
 vscode:
   extensions:
     - "redhat.java"
     - "vscjava.vscode-gradle@3.13.5"
+
+tasks:
+  # Download the Grafana OpenTelemetry Java agent and saves it in the instrumentation directory
+  - name: Download Grafana OpenTelemetry Java agent
+    before: mkdir -p instrumentation
+    command: curl -L https://github.com/grafana/grafana-opentelemetry-java/releases/download/v2.4.0-beta.1/grafana-opentelemetry-java.jar -o instrumentation/grafana-opentelemetry-java.jar
+  - name: Build and start all the infrastructure
+    command: docker compose up -d --build

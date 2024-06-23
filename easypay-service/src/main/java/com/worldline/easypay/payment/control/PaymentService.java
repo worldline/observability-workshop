@@ -20,7 +20,7 @@ import jakarta.transaction.Transactional;
 @Service
 public class PaymentService {
 
-    // add 1
+    //* Instantiate Logger
     private static final Logger log = LoggerFactory.getLogger(PaymentService.class);
 
     private CardValidator cardValidator;
@@ -49,6 +49,7 @@ public class PaymentService {
         }
 
         if (!cardValidator.checkCardNumber(context.cardNumber)) {
+            log.warn("Card validation KO: {}", context.cardNumber);
             context.responseCode = PaymentResponseCode.INVALID_CARD_NUMBER;
             return;
         }
@@ -67,9 +68,9 @@ public class PaymentService {
 
         if (context.amount > authorThreshold) {
             if (!bankAuthorService.authorize(context)) {
-                // Authorization refused: locally (AMOUNT_EXCEEDED) or remotely by the Bank
-                // (AUTHORIZATION_DENIED)?
-                // log.info("JJS => refused authorization, context=" + context);
+                //* Authorization refused: locally (AMOUNT_EXCEEDED) or remotely by the Bank
+                //* (AUTHORIZATION_DENIED)?
+                log.info("JJS => refused authorization, context=" + context);
                 context.responseCode = context.processingMode.equals(ProcessingMode.STANDARD)
                         ? PaymentResponseCode.AUTHORIZATION_DENIED
                         : PaymentResponseCode.AMOUNT_EXCEEDED;
@@ -103,7 +104,6 @@ public class PaymentService {
     }
 
     @Transactional(Transactional.TxType.REQUIRED)
-    // @TrackedPayment
     public void accept(PaymentProcessingContext paymentContext) {
         process(paymentContext);
         store(paymentContext);
