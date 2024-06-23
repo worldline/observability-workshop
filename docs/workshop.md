@@ -759,6 +759,3 @@ Finally, check the traces from different services (e.g., ``api-gateway``).
 
 ## Correlate Traces, Logs
 Duration: 0:15:00
-
-## Performance testing: ALL IN!!
-Duration: 0:15:00
