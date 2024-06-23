@@ -22,7 +22,7 @@ During this workshop we will use the Grafana stack and Prometheus:
 * [Tempo](https://grafana.com/oss/tempo/): for storing traces
 * [Prometheus](https://prometheus.io/): for gathering and storing metrics.
 
-We will also cover the OpenTelemetry Collector which gathers & broadcast then the data coming from our microservices
+We will also cover the OpenTelemetry Collector which gathers & broadcasts then the data coming from our microservices
 
 ## Workshop overview
 Duration: 0:02:00
@@ -38,7 +38,7 @@ Centralises all API calls.
 Payment microservices which accepts (or not) payments.
 
 This is how it validates every payment:
-1. Check the POS number
+1. Check the POS (Point of Sell) number
 2. Check the credit card number
 3. Check the credit card type
 4. Check the payment threshold, it calls the Smart Bank Gateway for authorization
@@ -49,10 +49,9 @@ If the payment is validated it stores it and broadcasts it to all the other micr
 
 After fetching a message from the Kafka topic, this service search in its database if the payment's card number is registered for fraud.
 
-In this case, only a WARN log is thrown.
+In this case, only a ``WARN`` log is thrown.
 
 #### Merchant Back Office Service
-
 For this lab, it only simulates the subscription of messages.
 
 #### Smart Bank Gateway
@@ -75,16 +74,16 @@ In addition, the microservices are started with an agent to broadcast the traces
 ## Prerequisites
 ### Skills
 
-| Skill                                                                                                                                                                                                                                                                                   | Level        | 
-|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------|
-| [REST API](https://google.aip.dev/general)                                                                                                                                                                                                                                              | proficient   |
-| [Java](https://www.oracle.com/java/)                                                                                                                                                                                                                                                    | novice       |   
-| [Gradle](https://gradle.org/)                                                                                                                                                                                                                                                           | novice       |
+| Skill                                                                                                                                                                                                                                                                                   | Level      | 
+|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------|
+| [REST API](https://google.aip.dev/general)                                                                                                                                                                                                                                              | proficient |
+| [Java](https://www.oracle.com/java/)                                                                                                                                                                                                                                                    | proficient |   
+| [Gradle](https://gradle.org/)                                                                                                                                                                                                                                                           | novice     |
 | [Spring Framework](https://spring.io/projects/spring-framework), [Boot](https://spring.io/projects/spring-boot), [Cloud Config](https://docs.spring.io/spring-cloud-config/docs/current/reference/html/#_quick_start), [Cloud Gateway](https://spring.io/projects/spring-cloud-gateway) | proficient |
-| [Docker](https://docs.docker.com/)                                                                                                                                                                                                                                                      | novice       |
-| [Grafana stack](https://grafana.com/)                                                                                                                                                                                                                                                   | novice       |
-| [Prometheus](https://prometheus.io/)                                                                                                                                                                                                                                                    | novice       |
-| [Kafka](https://kafka.apache.org/)                                                                                                                                                                                                                                                      | novice       |
+| [Docker](https://docs.docker.com/)                                                                                                                                                                                                                                                      | novice     |
+| [Grafana stack](https://grafana.com/)                                                                                                                                                                                                                                                   | novice     |
+| [Prometheus](https://prometheus.io/)                                                                                                                                                                                                                                                    | novice     |
+| [Kafka](https://kafka.apache.org/)                                                                                                                                                                                                                                                      | novice     |
 
 ### Tools
 #### If you want to execute this workshop locally
@@ -143,7 +142,7 @@ You can use [Gitpod](https://gitpod.io).
 You must create an account first.
 You then can open this project in either your local VS Code or directly in your browser:
 
-[![Open in Gitpod](img/open-in-gitpod.svg)](https://github.com/worldline/observability-workshop/observability-workshop.git)
+[![Open in Gitpod](img/open-in-gitpod.svg)](https://gitpod.io/#github.com/worldline/observability-workshop.git)
 
 ## Environment Setup
 Duration: 0:05:00
