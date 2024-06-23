@@ -114,9 +114,9 @@ If you use the wrapper, you won't have troubles. Otherwise...:
 ```jshelllanguage
 $ gradle -version
 
-    ------------------------------------------------------------
+------------------------------------------------------------
 Gradle 8.7
-        ------------------------------------------------------------
+------------------------------------------------------------
 
 Build time:   2024-03-22 15:52:46 UTC
 Revision:     650af14d7653aa949fce5e886e685efc9cf97c10
@@ -355,7 +355,7 @@ Modify the exception trace to provide contextual information such as the authorI
 Go to the ``easypay-service/src/main/java/com/worldline/easypay/payment/control/CardValidator.java`` class and modify the following block code in the process method in the same way:
 
 ```java
-   private void process(PaymentProcessingContext context) {
+private void process(PaymentProcessingContext context) {
 [...]
 
  if (!cardValidator.checkCardNumber(context.cardNumber)) {
@@ -443,12 +443,33 @@ java.lang.NullPointerException: Cannot invoke "java.lang.Boolean.booleanValue()"
 To find the root cause, add first a _smart_ log entry in the ``easypay-service/src/main/java/com/worldline/easypay/payment/control/PosValidator.java`` class.
 
 In the ``isActive()`` method, catch the exception and trace the error:
-> aside negative
->
-> TODO Commande pour le message d'erreur + message d'erreur
->
 
-You can also prevent this issue by simply fixing the SQL import file
+```java
+public boolean isActive(String posId) {
+    PosRef probe = new PosRef();
+    probe.posId = posId;
+    try {
+        List<PosRef> posList = posRefRepository.findAll(Example.of(probe));
+
+        if (posList.isEmpty()) {
+            log.warn("checkPosStatus NOK, unknown posId {}", posId);
+            return false;
+        }
+
+        boolean result = posList.get(0).active;
+
+        if (!result) {
+            log.warn("checkPosStatus NOK, inactive posId {}", posId);
+        }
+        return result;
+    } catch (NullPointerException e) {
+        log.warn("Invalid value for this POS: {}", posId);
+        throw e;
+    }
+}
+```
+        
+You can also prevent this issue by simply fixing the SQL import file.
 
 In the file ``easypay-service/src/main/resources/db/postgresql/data.sql``, Modify the implied line for ``POS-02`` from:
 
@@ -489,9 +510,13 @@ Restart the application activating the ``mdc`` profile and see how the logs look
 ./gradlew :easypay-service:bootRun -x test  --args='--spring.profiles.active=default,mdc'
 ```
 
-> aside negative
+> aside positive
 >
-> TODO Mettre comment vérifier que le bon profil a été démarré
+> You can verify the MDC profile is applied by checking the presence of this log message:
+> ```shell
+The following 2 profiles are active: "default", "mdc"
+```
+> 
 
 ### Adding more content in our logs
 
@@ -524,10 +549,6 @@ Logs are stored in the logs folder (``easypay-service/logs``).
 We use then [Promtail to broadcast them to Loki](https://grafana.com/grafana/dashboards/14055-loki-stack-monitoring-promtail-loki/) through [Grafana Alloy (OTEL Collector)](https://grafana.com/docs/alloy/latest/).
 
 Check out the Logging configuration in the ``docker/alloy/config.alloy`` file:
-
-> aside negative
->
-> TODO mettre à jour
 
 ```json
 ////////////////////
@@ -623,7 +644,7 @@ Check out the logs again, view it now as a table.
 
 You can also view traces for the other services (e.g., ``api-gateway``) 
 
-Finally, you can search logs absed on the correlation ID
+Finally, you can search logs based on the correlation ID
 
 > aside negative
 >
@@ -644,7 +665,7 @@ Explore the output
 Now get the prometheus metrics using this command:
 
 ```bash
-http :8080/actuator/metrics
+http :8080/actuator/prometheus
 ```
 
 You can also have an overview of all the prometheus endpoints metrics on the Prometheus dashboad . 
@@ -671,7 +692,6 @@ Go back to the Grafana dashboard, click on ``Dashboards`` and select ``JVM Micro
 Explore the dashboard, especially the Garbage collector and CPU statistics.
 
 Look around the JDBC dashboard then and see what happens on the database connection pool.
-
 
 > aside negative
 >
