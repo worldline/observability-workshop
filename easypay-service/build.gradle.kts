@@ -1,7 +1,7 @@
 plugins {
 	java
-	id("org.springframework.boot") version "3.2.5"
-	id("io.spring.dependency-management") version "1.1.4"
+	id("org.springframework.boot") version "3.3.1"
+	id("io.spring.dependency-management") version "1.1.5"
 }
 
 group = "com.worldline.easypay"
@@ -15,7 +15,7 @@ repositories {
 	mavenCentral()
 }
 
-extra["springCloudVersion"] = "2023.0.1"
+extra["springCloudVersion"] = "2023.0.2"
 extra["springDocVersion"] = "2.5.0"
 
 dependencies {
@@ -26,7 +26,6 @@ dependencies {
 	implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
 	implementation("org.springframework.cloud:spring-cloud-starter-loadbalancer")
 	implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
-	// implementation("io.github.danielliu1123:httpexchange-spring-boot-starter:3.2.5")
 	implementation("org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j")
 	
 	implementation("org.springframework.cloud:spring-cloud-stream")
@@ -52,6 +51,9 @@ dependencies {
 	runtimeOnly("com.h2database:h2")
 	runtimeOnly("org.postgresql:postgresql")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
+
+	// Testcontainers PostgreSQL
+	testImplementation("org.testcontainers:postgresql")
 }
 
 dependencyManagement {

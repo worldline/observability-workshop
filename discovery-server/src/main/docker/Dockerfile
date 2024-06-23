@@ -1,4 +1,9 @@
 FROM eclipse-temurin:21-jdk-alpine as build
+
+# INSTALL CA Certificates (useful for companies with SSL inspection)
+ADD --chmod=644 docker/ca-trust/* /certificates/
+RUN export USE_SYSTEM_CA_CERTS=1 && /__cacert_entrypoint.sh
+
 WORKDIR /workspace/app
 
 ENV SERVICE=discovery-server
@@ -13,6 +18,10 @@ RUN --mount=type=cache,target=/root/.gradle ./gradlew :${SERVICE}:clean :${SERVI
 RUN mkdir -p ${SERVICE}/build/dependency && (cd ${SERVICE}/build/dependency && jar -xf ../libs/*-SNAPSHOT.jar)
 
 FROM eclipse-temurin:21-jre-alpine
+
+# INSTALL CA Certificates (useful for companies with SSL inspection)
+ADD --chmod=644 docker/ca-trust/* /certificates/
+RUN export USE_SYSTEM_CA_CERTS=1 && /__cacert_entrypoint.sh
 
 ENV SERVICE=discovery-server
 ENV LOGS_DIRECTORY=/logs/

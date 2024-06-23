@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.worldline.easypay.smartbank.bankauthor.boundary.BankAuthorRequest;
+import com.worldline.easypay.smartbank.bankauthor.boundary.BankAuthorResponse;
 import com.worldline.easypay.smartbank.bankauthor.entity.BankAuthor;
 import com.worldline.easypay.smartbank.bankauthor.entity.BankAuthorRepository;
 
@@ -24,7 +25,7 @@ public class AuthorizationService {
     }
 
     @Transactional(Transactional.TxType.MANDATORY)
-    public boolean authorize(BankAuthorRequest bankAuthorRequest) {
+    public BankAuthorResponse authorize(BankAuthorRequest bankAuthorRequest) {
         var authorized = bankAuthorRequest.amount() <= maxAmount;
 
         // Record the bank author
@@ -38,6 +39,17 @@ public class AuthorizationService {
 
         this.repository.save(author);
 
-        return authorized;
+        return toResponse(author);
+    }
+
+    public BankAuthorResponse toResponse(BankAuthor bankAuthor) {
+        return new BankAuthorResponse(
+            bankAuthor.id, 
+            bankAuthor.merchantId, 
+            bankAuthor.cardNumber,
+            bankAuthor.expiryDate,
+            bankAuthor.amount,  
+            bankAuthor.authorized
+        );
     }
 }
