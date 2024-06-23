@@ -188,7 +188,7 @@ $ ./gradlew :easypay-service:bootRun -x test
 
 #### Validation
 
-Open the Eureka website started during the infrastructure setup
+Open the [Eureka](https://cloud.spring.io/spring-cloud-netflix/) website started during the infrastructure setup
 
 If you run this workshop on your desktop, you can go to this URL: http://localhost:8761.
 If you run it on GitPod, you can go to the corresponding URL (e.g., https://8761-worldline-observability-w98vrd59k5h.ws-eu114.gitpod.io) instead.
