@@ -1,11 +1,5 @@
 FROM eclipse-temurin:21-jdk-alpine as build
 
-ENV USE_SYSTEM_CA_CERTS=1
-
-# INSTALL CA Certificates (useful for companies with SSL inspection)
-ADD --chmod=644 docker/ca-trust/* /certificates/
-RUN export USE_SYSTEM_CA_CERTS=1 && /__cacert_entrypoint.sh
-
 WORKDIR /workspace/app
 
 ENV SERVICE=api-gateway
@@ -16,14 +10,10 @@ COPY gradle gradle
 COPY gradlew .
 COPY settings.gradle.kts .
 
-RUN --mount=type=cache,target=/root/.gradle /__cacert_entrypoint.sh ./gradlew :${SERVICE}:clean :${SERVICE}:build -x test
+RUN --mount=type=cache,target=/root/.gradle ./gradlew :${SERVICE}:clean :${SERVICE}:build -x test --info
 RUN mkdir -p ${SERVICE}/build/dependency && (cd ${SERVICE}/build/dependency && jar -xf ../libs/*-SNAPSHOT.jar)
 
 FROM eclipse-temurin:21-jre-alpine
-
-# INSTALL CA Certificates (useful for companies with SSL inspection)
-ADD --chmod=644 docker/ca-trust/* /certificates/
-RUN export USE_SYSTEM_CA_CERTS=1 && /__cacert_entrypoint.sh
 
 ENV SERVICE=api-gateway
 ENV LOGS_DIRECTORY=/logs/
