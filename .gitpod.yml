@@ -3,13 +3,16 @@ image:
 
 vscode:
   extensions:
-    - "redhat.java"
-    - "vscjava.vscode-gradle@3.13.5"
+    - "vscjava.vscode-java-pack"
+    - "vscjava.vscode-gradle"
 
 tasks:
   - name: Download Grafana OpenTelemetry Java agent
-    command: sh scripts/download-agent.sh
+    command: bash scripts/download-agent.sh && gp sync-done agent
   - name: Execute a first gradle task
-    command: ./gradlew tasks
+    command: ./gradlew tasks && gp sync-done gradle
   - name: Build and start all the infrastructure
-    command: docker compose up -d --build
+    init: gp sync-await agent && gp sync-await gradle
+    env:
+      COMPOSE_PARALLEL_LIMIT: 1
+    command: docker compose -f compose.yml -f compose.gitpod.yml up -d --build

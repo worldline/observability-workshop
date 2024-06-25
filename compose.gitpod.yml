@@ -1,0 +1,30 @@
+services:
+  config-server:
+    build:
+      args:
+        UID: 33333
+        GID: 33333
+
+  discovery-server:
+    build:
+      args:
+        UID: 33333
+        GID: 33333
+
+  api-gateway:
+    build:
+      args:
+        UID: 33333
+        GID: 33333
+
+  fraudetect:
+    build:
+      args:
+        UID: 33333
+        GID: 33333
+
+  merchantbo:
+    build:
+      args:
+        UID: 33333
+        GID: 33333
