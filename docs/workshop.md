@@ -512,9 +512,7 @@ Restart the application activating the ``mdc`` profile and see how the logs look
 > aside positive
 >
 > You can verify the MDC profile is applied by checking the presence of this log message:
-> ```shell
-The following 2 profiles are active: "default", "mdc"
-```
+> ``The following 2 profiles are active: "default", "mdc"``
 > 
 
 ### Adding more content in our logs
@@ -527,8 +525,64 @@ Run the following command:
 $ k6 run -u 5 -d 5s k6/01-payment-only.js
 ```
 
-Check then the logs to pinpoint some exceptions
+Check then the logs to pinpoint some exceptions.
 
+### Personal Identifiable Information (PII) 
+For compliance and preventing personal data loss, we will obfuscate the card number in the logs:
+
+In the Alloy configuration file (``docker/alloy/config.alloy``), add the [luhn stage](https://grafana.com/docs/alloy/latest/reference/components/loki.process/#stageluhn-block) into the ``jsonlogs`` loki process stage
+
+``
+stage.luhn {
+replacement= "**DELETED**"
+}
+``
+
+We will then have the following configuration for processing the JSON logs:
+
+```
+loki.process "jsonlogs" {
+	forward_to = [loki.write.endpoint.receiver]
+
+	stage.luhn {
+    	    replacement= "**DELETED**"
+    	}
+
+	stage.json {
+		expressions = {
+			// timestamp   = "timestamp",
+			application = "context.properties.applicationName",
+			instance    = "context.properties.instance",
+			trace_id    = "mdc.trace_id",
+		}
+	}
+
+	stage.labels {
+		values = {
+			application = "application",
+			instance    = "instance",
+			trace_id    = "trace_id",
+		}
+	}
+
+	/*stage.timestamp {
+		source = "timestamp"
+		format = "RFC3339"
+		fallback_formats = ["UnixMs",]
+	}*/
+
+
+}
+
+```
+
+
+Restart then Alloy: 
+
+```bash
+$ docker compose down collector
+$ docker compose up -d collector
+```
 ### Logs Correlation  
 > aside positive
 >
@@ -551,13 +605,8 @@ Check out the Logging configuration in the ``docker/alloy/config.alloy`` file:
 
 ```json
 ////////////////////
-// LOGS
+// (1) LOGS
 ////////////////////
-
-// CLASSIC LOGS FILES
-local.file_match "logs" {
-	path_targets = [{"__path__" = "/logs/*.log", "exporter" = "LOGFILE"}]
-}
 
 loki.source.file "logfiles" {
 	targets    = local.file_match.logs.targets
@@ -756,6 +805,51 @@ Click on ``Run query`` and Drill down a Trace ID to get the full stack of the co
 Explore the corresponding SQL queries and their response times.
 
 Finally, check the traces from different services (e.g., ``api-gateway``).
+
+### Sampling
+
+To avoid storing useless data into Tempo, we can sample the data in two ways:
+* [Head Sampling](https://opentelemetry.io/docs/concepts/sampling/#head-sampling)
+* [Tail Sampling](https://opentelemetry.io/docs/concepts/sampling/#head-sampling)
+
+In this workshop, we will implement the latter.
+
+In the alloy configuration file (``docker/alloy/config.alloy``), put this configuration just after the ``SAMPLING`` comment:
+```
+// SAMPLING
+//
+otelcol.processor.tail_sampling "actuator" {
+policy {
+name = "filter_http_url"
+type = "string_attribute"
+string_attribute {
+key = "http.url"
+values = ["/actuator/health", "/actuator/prometheus"]
+enabled_regex_matching = true
+invert_match = true
+}
+}
+
+	policy {
+		name = "filter_url_path"
+		type = "string_attribute"
+		string_attribute {
+			key = "url.path"
+			values = ["/actuator/health", "/actuator/prometheus"]
+			enabled_regex_matching = true
+			invert_match = true
+		}
+	}
+```
+
+This configuration will filter the [SPANs](https://opentelemetry.io/docs/concepts/signals/traces/#spans) created from ``/actuator`` API calls.
+
+Restart then Alloy.
+
+```bash
+$ docker compose down collector
+$ docker compose up -d collector
+```
 
 ## Correlate Traces, Logs
 Duration: 0:15:00
