@@ -18,21 +18,24 @@ repositories {
 extra["springCloudVersion"] = "2023.0.2"
 
 dependencies {
-	implementation("org.springframework.cloud:spring-cloud-starter-config")
+	// Spring Cloud Eureka Server for service discovery
 	implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-server")
+
+	// Spring Cloud Config client
+	implementation("org.springframework.cloud:spring-cloud-starter-config")
+
+	// Logging JSON support
+	implementation("ch.qos.logback.contrib:logback-json-classic:0.1.5")
+	implementation("ch.qos.logback.contrib:logback-jackson:0.1.5")
 
 	// Expose metrics with Micrometer using a Prometheus registry
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("io.micrometer:micrometer-registry-prometheus")
 
-	// Add opentelemetry exemplars support
+	// Add opentelemetry exemplars support (metrics)
 	implementation(platform("io.opentelemetry:opentelemetry-bom:1.38.0"))
 	implementation("io.opentelemetry:opentelemetry-api")
 	implementation("io.prometheus:prometheus-metrics-tracer-otel-agent:1.3.1")
-
-	// Logging
-	implementation("ch.qos.logback.contrib:logback-json-classic:0.1.5")
-	implementation("ch.qos.logback.contrib:logback-jackson:0.1.5")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
