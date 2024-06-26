@@ -38,18 +38,19 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("io.micrometer:micrometer-registry-prometheus")
 
+	// Logging JSON support
+	implementation("ch.qos.logback.contrib:logback-json-classic:0.1.5")
+	implementation("ch.qos.logback.contrib:logback-jackson:0.1.5")
+
 	// Add opentelemetry exemplars support
 	implementation(platform("io.opentelemetry:opentelemetry-bom:1.38.0"))
 	implementation("io.opentelemetry:opentelemetry-api")
 	implementation("io.prometheus:prometheus-metrics-tracer-otel-agent:1.3.1")
 
-	// Logging
-	implementation("ch.qos.logback.contrib:logback-json-classic:0.1.5")
-	implementation("ch.qos.logback.contrib:logback-jackson:0.1.5")
-
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
-	runtimeOnly("com.h2database:h2")
+
 	runtimeOnly("org.postgresql:postgresql")
+
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 
 	// Testcontainers PostgreSQL

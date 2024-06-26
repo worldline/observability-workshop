@@ -80,6 +80,35 @@ services:
       timeout: 4s
       retries: 10
       start_period: 5s
+  
+  smartbank-gateway:
+    image: smartbank-gateway:latest
+    build:
+      context: .
+      dockerfile: ./smartbank-gateway/src/main/docker/Dockerfile
+      args:
+        - UID=1000
+        - GID=1000
+    environment:
+      CONFIG_SERVER_URL: http://config-server:8888
+      SPRING_PROFILES_ACTIVE: default,docker
+      OTEL_SERVICE_NAME: smartbank-gateway
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://collector:4317
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+      OTEL_RESOURCE_ATTRIBUTES: "source=agent"
+    volumes:
+      - ./logs:/logs
+    depends_on:
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+    healthcheck:
+      test: curl --fail http://localhost:8080/actuator/health
+      interval: 5s
+      timeout: 4s
+      retries: 10
+      start_period: 5s
 
   fraudetect:
     image: fraudetect-service:latest
