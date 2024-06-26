@@ -250,6 +250,8 @@ services:
     image: grafana/loki:latest
     ports:
       - 3100:3100
+    volumes:
+      - ./docker/loki/local-config.yaml:/etc/loki/local-config.yaml
     command:
       - -config.file=/etc/loki/local-config.yaml
   
