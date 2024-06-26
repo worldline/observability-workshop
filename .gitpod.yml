@@ -15,4 +15,4 @@ tasks:
     init: gp sync-await agent && gp sync-await gradle
     env:
       COMPOSE_PARALLEL_LIMIT: 1
-    command: docker compose -f compose.yml -f compose.gitpod.yml up -d --build
+    command: docker compose up -d --build

@@ -18,40 +18,52 @@ repositories {
 extra["springCloudVersion"] = "2023.0.2"
 
 dependencies {
-	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-	implementation("org.springframework.boot:spring-boot-starter-graphql")
+	// Spring Boot Web
 	implementation("org.springframework.boot:spring-boot-starter-web")
+
+	// ORM database access: JPA & Postgres
+	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+	runtimeOnly("org.postgresql:postgresql")
+
+	// Spring Boot GraphQL support (to be implemented)
+	implementation("org.springframework.boot:spring-boot-starter-graphql")
+
+	// Spring Cloud Streams (Kafka)
 	implementation("org.apache.kafka:kafka-streams")
-	implementation("org.springframework.cloud:spring-cloud-starter-config")
-	implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
 	implementation("org.springframework.cloud:spring-cloud-stream")
 	implementation("org.springframework.cloud:spring-cloud-stream-binder-kafka")
 	implementation("org.springframework.cloud:spring-cloud-stream-binder-kafka-streams")
 	implementation("org.springframework.kafka:spring-kafka")
 
+	// Spring Cloud Config client
+	implementation("org.springframework.cloud:spring-cloud-starter-config")
+	
+	// Spring Cloud service discovery client
+	implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
+
 	// Expose metrics with Micrometer using a Prometheus registry
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("io.micrometer:micrometer-registry-prometheus")
 
-	// Add opentelemetry exemplars support
+	// Logging JSON support
+	implementation("ch.qos.logback.contrib:logback-json-classic:0.1.5")
+	implementation("ch.qos.logback.contrib:logback-jackson:0.1.5")
+
+	// Add opentelemetry exemplars support (metrics)
 	implementation(platform("io.opentelemetry:opentelemetry-bom:1.38.0"))
 	implementation("io.opentelemetry:opentelemetry-api")
 	implementation("io.prometheus:prometheus-metrics-tracer-otel-agent:1.3.1")
 
-	// Logging
-	implementation("ch.qos.logback.contrib:logback-json-classic:0.1.5")
-	implementation("ch.qos.logback.contrib:logback-jackson:0.1.5")
-
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
-	runtimeOnly("org.postgresql:postgresql")
+
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.springframework:spring-webflux")
 	testImplementation("org.springframework.cloud:spring-cloud-stream-test-binder")
 	testImplementation("org.springframework.graphql:spring-graphql-test")
 	testImplementation("org.springframework.kafka:spring-kafka-test")
+
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
-	// Testcontainers PostgreSQL
 	testImplementation("org.testcontainers:postgresql")
 }
 

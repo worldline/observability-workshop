@@ -23,5 +23,17 @@ spring:
   datasource:
     url: jdbc:postgresql://postgres-easypay:5432/easypay
 
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers:
+            - kafka
+          defaultBrokerPort: 9092
+
+eureka:
+  instance:
+    preferIpAddress: false
+
 server:
   port: 8080

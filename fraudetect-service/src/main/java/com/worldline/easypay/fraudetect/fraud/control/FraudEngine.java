@@ -17,7 +17,7 @@ import jakarta.transaction.Transactional;
 @Service
 public class FraudEngine {
 
-    private static final Logger log = LoggerFactory.getLogger(FraudEngine.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FraudEngine.class);
 
     FraudRepository fraudRepository;
     Long countThreshold;
@@ -58,7 +58,7 @@ public class FraudEngine {
 
         fraudRepository.save(record);
 
-        log.warn("FraudEngine => {}", record);
+        LOG.info("FraudEngine processed record: {}", record);
     }
 
 }

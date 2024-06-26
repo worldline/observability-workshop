@@ -29,7 +29,7 @@ public class CardRefResource {
     @GetMapping
     @Operation(description = "List all cards declared as reference data in the system", summary = "List all cards")
     public ResponseEntity<List<CardRefResponse>> findAll() {
-        LOG.info("Get all cards");
+        LOG.info("Request: get all cards");
         return ResponseEntity.ok(cardService.listAll());
     }
 
