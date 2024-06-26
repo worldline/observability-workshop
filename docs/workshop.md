@@ -527,7 +527,7 @@ $ k6 run -u 5 -d 5s k6/01-payment-only.js
 
 Check then the logs to pinpoint some exceptions.
 
-### Personal Identifiable Information (PII) 
+### Personal Identifiable Information (PII)  bfuscation
 For compliance and preventing personal data loss, we will obfuscate the card number in the logs:
 
 In the Alloy configuration file (``docker/alloy/config.alloy``), add the [luhn stage](https://grafana.com/docs/alloy/latest/reference/components/loki.process/#stageluhn-block) into the ``jsonlogs`` loki process stage
@@ -564,13 +564,6 @@ loki.process "jsonlogs" {
 			trace_id    = "trace_id",
 		}
 	}
-
-	/*stage.timestamp {
-		source = "timestamp"
-		format = "RFC3339"
-		fallback_formats = ["UnixMs",]
-	}*/
-
 
 }
 
