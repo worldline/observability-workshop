@@ -75,6 +75,4 @@ logs/*.gz
 ### Custom user certificates ###
 docker/ca-trust/*
 
-
 LOG_FILE_IS_UNDEFINED*
-
