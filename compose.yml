@@ -1,9 +1,14 @@
 services:
   config-server:
     image: config-server:latest
+    hostname: config-server
+    container_name: config-server
     build:
       context: .
       dockerfile: ./config-server/src/main/docker/Dockerfile
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
     environment:
       SPRING_PROFILES_ACTIVE: default,native,docker,json-logging
       OTEL_JAVAAGENT_ENABLED: false
@@ -24,9 +29,14 @@ services:
 
   discovery-server:
     image: discovery-server:latest
+    hostname: discovery-server
+    container_name: discovery-server
     build:
       context: .
       dockerfile: ./discovery-server/src/main/docker/Dockerfile
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
     ports:
       - 8761:8761
     environment:
@@ -50,12 +60,14 @@ services:
     
   api-gateway:
     image: api-gateway:latest
+    hostname: api-gateway
+    container_name: api-gateway
     build:
       context: .
       dockerfile: ./api-gateway/src/main/docker/Dockerfile
       args:
-        - UID=1000
-        - GID=1000
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
     ports:
       - 8080:8080
     environment:
@@ -81,14 +93,49 @@ services:
       retries: 10
       start_period: 5s
   
+  easypay-service:
+    image: easypay-service:latest
+    hostname: easypay-service
+    container_name: easypay-service
+    build:
+      context: .
+      dockerfile: ./easypay-service/src/main/docker/Dockerfile
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    environment:
+      CONFIG_SERVER_URL: http://config-server:8888
+      SPRING_PROFILES_ACTIVE: default,docker
+      OTEL_SERVICE_NAME: easypay-service
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://collector:4317
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+      OTEL_RESOURCE_ATTRIBUTES: "source=agent"
+    volumes:
+      - ./logs:/logs
+    depends_on:
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      postgres-easypay:
+        condition: service_healthy
+    healthcheck:
+      test: curl --fail http://localhost:8080/actuator/health
+      interval: 5s
+      timeout: 4s
+      retries: 10
+      start_period: 5s
+  
   smartbank-gateway:
     image: smartbank-gateway:latest
+    hostname: smartbank-gateway
+    container_name: smartbank-gateway
     build:
       context: .
       dockerfile: ./smartbank-gateway/src/main/docker/Dockerfile
       args:
-        - UID=1000
-        - GID=1000
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
     environment:
       CONFIG_SERVER_URL: http://config-server:8888
       SPRING_PROFILES_ACTIVE: default,docker
@@ -103,6 +150,8 @@ services:
         condition: service_healthy
       discovery-server:
         condition: service_healthy
+      postgres-smartbank:
+        condition: service_healthy
     healthcheck:
       test: curl --fail http://localhost:8080/actuator/health
       interval: 5s
@@ -110,14 +159,16 @@ services:
       retries: 10
       start_period: 5s
 
-  fraudetect:
+  fraudetect-service:
     image: fraudetect-service:latest
+    hostname: fraudetect
+    container_name: fraudetect
     build:
       context: .
       dockerfile: ./fraudetect-service/src/main/docker/Dockerfile
       args:
-        - UID=1000
-        - GID=1000
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
     environment:
       CONFIG_SERVER_URL: http://config-server:8888
       #SPRING_PROFILES_ACTIVE: default,docker
@@ -146,14 +197,16 @@ services:
       retries: 5
       start_period: 3s
   
-  merchantbo:
+  merchant-backoffice:
     image: merchant-backoffice:latest
+    hostname: merchant-backoffice
+    container_name: merchant-backoffice
     build:
       context: .
       dockerfile: ./merchant-backoffice/src/main/docker/Dockerfile
       args:
-        - UID=1000
-        - GID=1000
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
     environment:
       CONFIG_SERVER_URL: http://config-server:8888
       SPRING_PROFILES_ACTIVE: default,docker,json-logging
@@ -309,6 +362,11 @@ services:
       POSTGRES_DB: easypay
       POSTGRES_USER: easypay
       POSTGRES_PASSWORD: easypay
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U easypay"]
+      interval: 5s
+      timeout: 1s
+      retries: 5
   
   postgres-smartbank:
     image: postgres:16
@@ -318,6 +376,11 @@ services:
       POSTGRES_DB: smartbank
       POSTGRES_USER: smartbank
       POSTGRES_PASSWORD: smartbank
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U smartbank"]
+      interval: 5s
+      timeout: 1s
+      retries: 5
   
   postgres-fraudetect:
     image: postgres:16

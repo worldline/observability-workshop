@@ -18,10 +18,20 @@ repositories {
 extra["springCloudVersion"] = "2023.0.2"
 
 dependencies {
-	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+	// Spring Boot Web
 	implementation("org.springframework.boot:spring-boot-starter-web")
+
+	// ORM for database access: JPA & Postgres
+	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+	runtimeOnly("org.postgresql:postgresql")
+
+	// Spring Cloud Config client
 	implementation("org.springframework.cloud:spring-cloud-starter-config")
+
+	// Spring Cloud service discovery client
 	implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
+
+	// Spring Cloud Stream (kafka)
 	implementation("org.springframework.cloud:spring-cloud-stream")
 	implementation("org.springframework.cloud:spring-cloud-stream-binder-kafka")
 	implementation("org.springframework.kafka:spring-kafka")
@@ -30,26 +40,21 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("io.micrometer:micrometer-registry-prometheus")
 
-	// Add opentelemetry exemplars support
+	// Logging JSON support
+	implementation("ch.qos.logback.contrib:logback-json-classic:0.1.5")
+	implementation("ch.qos.logback.contrib:logback-jackson:0.1.5")
+
+	// Add opentelemetry exemplars support (metrics)
 	implementation(platform("io.opentelemetry:opentelemetry-bom:1.38.0"))
 	implementation("io.opentelemetry:opentelemetry-api")
 	implementation("io.prometheus:prometheus-metrics-tracer-otel-agent:1.3.1")
 
-	// Logging
-	implementation("ch.qos.logback.contrib:logback-json-classic:0.1.5")
-	implementation("ch.qos.logback.contrib:logback-jackson:0.1.5")
-
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 
-	runtimeOnly("org.postgresql:postgresql")
-
+	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.springframework.cloud:spring-cloud-stream-test-binder")
 	testImplementation("org.springframework.kafka:spring-kafka-test")
-
-	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-
-	// Testcontainers PostgreSQL
 	testImplementation("org.testcontainers:postgresql")
 	testImplementation("org.testcontainers:kafka")
 }

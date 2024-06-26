@@ -19,36 +19,43 @@ extra["springCloudVersion"] = "2023.0.2"
 extra["springDocVersion"] = "2.5.0"
 
 dependencies {
+	// Spring Boot Web
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
+
+	// ORM database access: JPA & Postgres
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+	runtimeOnly("org.postgresql:postgresql")
+
+	// Spring Cloud Config client
 	implementation("org.springframework.cloud:spring-cloud-starter-config")
+
+	// Spring Cloud service discovery client
 	implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
 
 	// Expose metrics with Micrometer using a Prometheus registry
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("io.micrometer:micrometer-registry-prometheus")
 
-	// Add opentelemetry exemplars support
-	implementation(platform("io.opentelemetry:opentelemetry-bom:1.38.0"))
-	implementation("io.opentelemetry:opentelemetry-api")
-	implementation("io.prometheus:prometheus-metrics-tracer-otel-agent:1.3.1")
-
 	// Logging
 	implementation("ch.qos.logback.contrib:logback-json-classic:0.1.5")
 	implementation("ch.qos.logback.contrib:logback-jackson:0.1.5")
+
+	// Add opentelemetry exemplars support (metrics)
+	implementation(platform("io.opentelemetry:opentelemetry-bom:1.38.0"))
+	implementation("io.opentelemetry:opentelemetry-api")
+	implementation("io.prometheus:prometheus-metrics-tracer-otel-agent:1.3.1")
 
 	// Add caching support
 	implementation("org.springframework.boot:spring-boot-starter-cache")
 	implementation("com.hazelcast:hazelcast-all:4.2.8")
 
+	// OpenAPI
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:${property("springDocVersion")}")
-	developmentOnly("org.springframework.boot:spring-boot-devtools")
-	runtimeOnly("com.h2database:h2")
-	runtimeOnly("org.postgresql:postgresql")
-	testImplementation("org.springframework.boot:spring-boot-starter-test")
 
-	// Testcontainers PostgreSQL
+	developmentOnly("org.springframework.boot:spring-boot-devtools")
+
+	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.testcontainers:postgresql")
 }
 

@@ -13,7 +13,7 @@ import com.worldline.easypay.posref.entity.PosRefRepository;
 @Controller
 public class PosValidator {
 
-    private static final Logger log = LoggerFactory.getLogger(PosValidator.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PosValidator.class);
 
     private PosRefRepository posRefRepository;
 
@@ -27,14 +27,14 @@ public class PosValidator {
         List<PosRef> posList = posRefRepository.findAll(Example.of(probe));
      
         if (posList.isEmpty()) {
-            log.warn( "checkPosStatus NOK, unknown posId {}", posId);
+            LOG.warn( "Check POS does not pass: unknown posId {}", posId);
             return false;
         }
 
         boolean result = posList.get(0).active;
 
         if (!result) {
-            log.warn( "checkPosStatus NOK, inactive posId {}", posId);
+            LOG.warn( "Check POS does not pass: inactive posId {}", posId);
         }
 
         return result;

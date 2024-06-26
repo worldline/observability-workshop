@@ -15,7 +15,7 @@ import io.github.resilience4j.retry.annotation.Retry;
 @Service
 public class BankAuthorService {
 
-    private static final Logger log = LoggerFactory.getLogger(BankAuthorService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(BankAuthorService.class);
 
     @Value("${payment.author.merchantId:RivieraDev Swag Store}")
     String merchantId;
@@ -39,7 +39,7 @@ public class BankAuthorService {
 
     @Retry(name = "BankAuthorService", fallbackMethod = "acceptByDelegation")
     public boolean authorize(PaymentProcessingContext context) {
-        log.info("Authorize payment for {}", context);
+        LOG.info("Request payment authorization to bank, with context: {}", context);
         try {
             var response = client.authorize(initRequest(context));
             context.bankCalled = true;
@@ -47,13 +47,13 @@ public class BankAuthorService {
             context.authorized = response.authorized();
             return context.authorized;
         } catch (Exception e) {
-            log.warn("Should retry or fallback: {}", e.getMessage());
+            LOG.warn("Exception while requesting bank, operation will be retried or fallback: {}", e.getMessage());
             throw e;
         }
     }
 
     public boolean acceptByDelegation(PaymentProcessingContext context, Throwable throwable) {
-        log.info("Accept by delegation. Error was: {}", throwable.getMessage());        
+        LOG.warn("Accept by delegation. Error was: {}", throwable.getMessage());        
         context.bankCalled = false;
         context.processingMode = ProcessingMode.FALLBACK;
         return context.amount < maxAmountFallback;

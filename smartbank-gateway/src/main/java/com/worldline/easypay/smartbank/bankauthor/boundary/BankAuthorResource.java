@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,6 +31,8 @@ import jakarta.validation.constraints.NotNull;
 @RequestMapping("/authors")
 public class BankAuthorResource {
 
+    private static final Logger LOG = LoggerFactory.getLogger(BankAuthorResource.class);
+
     BankAuthorBoundaryControl bankAuthors;
     AuthorizationService authorizationService;
     CacheRepository cacheRepository;
@@ -43,6 +47,7 @@ public class BankAuthorResource {
     @GetMapping("/count")
     @Operation(summary = "")
     public ResponseEntity<BankAuthorCountResponse> count() {
+        LOG.info("Request: get the number of authorization processed");
         return ResponseEntity.ok().body(new BankAuthorCountResponse(this.bankAuthors.count()));
     }
 
@@ -50,6 +55,7 @@ public class BankAuthorResource {
     @Operation(summary = "Get all payment authorizations", description = "Get all payment authorizations")
     @ApiResponse(responseCode = "200", description = "List of payment authorizations found")
     public ResponseEntity<List<BankAuthorResponse>> findAll() {
+        LOG.info("Request: get all processed authorizations");
         return ResponseEntity.ok().body(this.bankAuthors.findAll());
     }
 
@@ -58,17 +64,21 @@ public class BankAuthorResource {
     @ApiResponse(responseCode = "200", description = "Payment authorization found")
     public ResponseEntity<BankAuthorResponse> findById(
             @Parameter(description = "The ID of the payment authorization to retrieve") @PathVariable("id") String id) {
+        LOG.info("Request: get authorization by id: {}", id);
         try {
             var author = (BankAuthorResponse) cacheRepository.get(id);
             if (author != null) {
+                LOG.debug("Cache hit");
                 return ResponseEntity.ok().body(author);
             }
 
             var authorizationId = UUID.fromString(id);
             Optional<BankAuthorResponse> response = this.bankAuthors.findById(authorizationId);
             if (response.isEmpty()) {
+                LOG.info("Authorization not found");
                 return ResponseEntity.notFound().build();
             }
+            LOG.debug("Add authorization to cache");
             cacheRepository.put(id, response.get());
             return ResponseEntity.ok().body(response.get());
         } catch (IllegalArgumentException e) {
@@ -81,6 +91,8 @@ public class BankAuthorResource {
     @ApiResponse(responseCode = "201", description = "Payment authorization request processed successfully")
     @Transactional
     ResponseEntity<BankAuthorResponse> authorize(@Valid @NotNull @RequestBody BankAuthorRequest request) {
+        LOG.info("Request: process authorization: {}", request);
+
         var response = this.authorizationService.authorize(request);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
                 .buildAndExpand(response.authorId()).toUri();

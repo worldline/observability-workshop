@@ -22,3 +22,12 @@ spring:
       schema-locations: optional:classpath*:db/postgresql/schema.sql
       data-locations: optional:classpath*:db/postgresql/data.sql
       mode: ALWAYS
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: docker
+  datasource:
+    url: jdbc:postgresql://postgres-smartbank:5432/smartbank
