@@ -708,9 +708,49 @@ Now get the prometheus metrics using this command:
 http :8080/actuator/prometheus
 ```
 
-You can also have an overview of all the prometheus endpoints metrics on the Prometheus dashboad . 
+You can also have an overview of all the prometheus endpoints metrics on the Prometheus dashboard. 
 
 Go to ``http://localhost:9090`` and explore the different endpoints in ``eureka-discovery``.
+
+
+### How are scraped the metrics?
+
+Check out the Prometheus (``docker/prometheus/prometheus.yml``) configuration file.
+All the scraper's definitions are configured here.
+
+For instance, here is the configuration of the configuration server:
+
+```yaml
+  - job_name: prometheus-config-server
+    scrape_interval: 5s
+    scrape_timeout: 5s
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - config-server:8890
+```
+
+You can see it uses under the hood the endpoint we looked into earlier.
+
+Prometheus reaches first Eureka to for discovering what are the servers to scrap.
+It then scrapes all the plugged instances in the same way:
+
+```yaml
+  # Discover targets from Eureka and scrape metrics from them (Whitebox monitoring)
+  - job_name: eureka-discovery
+    scrape_interval: 5s
+    scrape_timeout: 5s
+    eureka_sd_configs:
+      - server: http://discovery-server:8761/eureka (1)
+        refresh_interval: 5s
+    relabel_configs: (2)
+      - source_labels: [__meta_eureka_app_instance_metadata_metrics_path]
+        target_label: __metrics_path__
+```
+1. We plugged Prometheus to Eureka to explore all the metrics of the underlying systems
+2. To pinpoint what is the service and its metric, and set up the final metric which will be stored into Prometheus, we sat up this matching.
+
+### Let's explore the metrics
 
 Go then to Grafana and start again a ``explore`` dashboard.
 
