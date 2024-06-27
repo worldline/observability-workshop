@@ -19,40 +19,51 @@ extra["springCloudVersion"] = "2023.0.2"
 extra["springDocVersion"] = "2.5.0"
 
 dependencies {
+	// Spring Boot Web
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
+
+	// ORM for database access: JPA & Postgres
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+	runtimeOnly("org.postgresql:postgresql")
+
+	// Spring Cloud Config client
 	implementation("org.springframework.cloud:spring-cloud-starter-config")
+
+	// Spring Cloud service discovery client
 	implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
-	implementation("org.springframework.cloud:spring-cloud-starter-loadbalancer")
+
+	// Spring Cloud REST Client
 	implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
+
+	// Spring Cloud Resilience
+	implementation("org.springframework.cloud:spring-cloud-starter-loadbalancer")
 	implementation("org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j")
 	
+	// Spring Cloud Stream (Kafka)
 	implementation("org.springframework.cloud:spring-cloud-stream")
 	implementation("org.springframework.cloud:spring-cloud-stream-binder-kafka")
 	implementation("org.springframework.kafka:spring-kafka")
 
+	// OpenAPI
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:${property("springDocVersion")}")
 
 	// Expose metrics with Micrometer using a Prometheus registry
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("io.micrometer:micrometer-registry-prometheus")
 
+	// Logging JSON support
+	implementation("ch.qos.logback.contrib:logback-json-classic:0.1.5")
+	implementation("ch.qos.logback.contrib:logback-jackson:0.1.5")
+
 	// Add opentelemetry exemplars support
 	implementation(platform("io.opentelemetry:opentelemetry-bom:1.38.0"))
 	implementation("io.opentelemetry:opentelemetry-api")
 	implementation("io.prometheus:prometheus-metrics-tracer-otel-agent:1.3.1")
 
-	// Logging
-	implementation("ch.qos.logback.contrib:logback-json-classic:0.1.5")
-	implementation("ch.qos.logback.contrib:logback-jackson:0.1.5")
-
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
-	runtimeOnly("com.h2database:h2")
-	runtimeOnly("org.postgresql:postgresql")
-	testImplementation("org.springframework.boot:spring-boot-starter-test")
 
-	// Testcontainers PostgreSQL
+	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.testcontainers:postgresql")
 }
 

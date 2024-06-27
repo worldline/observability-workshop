@@ -17,7 +17,7 @@ import com.worldline.easypay.cardref.entity.CardRefRepository;
 @Component
 public class CardValidator {
 
-    private static final Logger log = LoggerFactory.getLogger(CardValidator.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CardValidator.class);
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("MM/yy")
             .withZone(ZoneId.of("UTC"));
@@ -35,11 +35,11 @@ public class CardValidator {
             YearMonth today = YearMonth.now();
             boolean rc = expiration.equals(today) || expiration.isAfter(today);
             if (!rc) {
-                log.warn("checkExpiryDate NOK: outdated: {}", expiryDate);
+                // LOG.warn("Check card expiry date does not pass: outdated: {}", expiryDate);
             }
             return rc;
         } catch (DateTimeParseException e) {
-            log.warn("checkExpiryDate NOK: bad format: {}", expiryDate);
+            // LOG.warn("Check card expiry date does not pass: bad format: {}", expiryDate);
             return false;
         }
 
@@ -64,7 +64,7 @@ public class CardValidator {
         }
 
         if (sum % 10 != 0) {
-            log.warn("checkLuhnKey NOK {}", cardNumber);
+            // LOG.warn("Check card number Luhn key does not pass: {}", cardNumber);
             return false;
         }
 
@@ -79,7 +79,7 @@ public class CardValidator {
         long count = cardRepository.count(Example.of(probe));
 
         if (count != 0) {
-            log.warn("cardNumber {} is black listed", cardNumber);
+            // LOG.warn("Check card number validity does not pass: cardNumber {} is black listed", cardNumber);
             return true;
         }
 
@@ -88,10 +88,10 @@ public class CardValidator {
 
     public boolean checkCardNumber(String cardNumber) {
 
-        //* Check format
+        // Check card format
         String card = cardNumber.replaceAll("[^0-9]+", ""); //* remove all non-numerics
         if ((card == null) || (card.length() < 13) || (card.length() > 19)) {
-            log.warn("Invalid card format");
+            // LOG.warn("Check card number format: invalid card format");
             return false;
         }
 

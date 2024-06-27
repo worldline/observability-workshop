@@ -2,6 +2,8 @@ package com.worldline.easypay.fraudetect.fraud.boundary;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,6 +16,8 @@ import com.worldline.easypay.fraudetect.fraud.entity.FraudRepository;
 @RequestMapping("/fraud")
 public class FraudResource {
 
+    private static final Logger LOG = LoggerFactory.getLogger(FraudResource.class);
+
     FraudRepository fraudRepository;
 
     public FraudResource(FraudRepository fraudRepository) {
@@ -21,16 +25,14 @@ public class FraudResource {
     }
 
     @GetMapping
-    // @Operation(description = "List all fraud records processed by the system",
-    // summary="List fraud records")
     public ResponseEntity<List<Fraud>> findAll() {
+        LOG.info("Request: get all fraud records");
         return ResponseEntity.ok().body(fraudRepository.findAll());
     }
 
     @GetMapping("/count")
-    // @Operation(description = "Count all fraud records processed by the system",
-    // summary="Count fraud records")
     public ResponseEntity<Long> count() {
+        LOG.info("Request: get number of fraud records processed by the system");
         return ResponseEntity.ok().body(fraudRepository.count());
     }
 
