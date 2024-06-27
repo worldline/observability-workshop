@@ -11,7 +11,7 @@ feedback link:
 ## Introduction
 
 This workshop aims to introduce how to make a Java application fully observable with:
-* Proper logs with insightful information
+* Logs with insightful information
 * Metrics with [Prometheus](https://prometheus.io/)
 * [Distributed Tracing](https://blog.touret.info/2023/09/05/distributed-tracing-opentelemetry-camel-artemis/)
 
@@ -173,18 +173,6 @@ To check if all the services are up, you can run this command:
 $ docker compose ps -a
 ```
 And check the status of every service.
-        
-### Start the rest of our microservices
-        
-You can now start the application with the following commands.
-For each you must start a new terminal in VSCode.
-
-#### The REST Easy Pay Service
-Run the following command:
-
-```bash
-$ ./gradlew :easypay-service:bootRun -x test
-```
 
 #### Validation
 
@@ -773,10 +761,6 @@ Explore the dashboard, especially the Garbage collector and CPU statistics.
 
 Look around the JDBC dashboard then and see what happens on the database connection pool.
 
-> aside negative
->
-> TODO Détailler
-
 Now, let's go back to the Loki explore dashboard and see what happens:
 
 Create a query with the following parameters:
@@ -884,3 +868,55 @@ $ docker compose restart collector
 
 ## Correlate Traces, Logs
 Duration: 0:15:00
+
+
+Let's go back to the Grafana explore dashboard. 
+Select the ``Loki`` datasource
+As a label filter, select ``easypay-service``
+Run a query and select a log entry.
+
+Now check you have a ``mdc`` JSON element which includes both [``trace_id``](https://www.w3.org/TR/trace-context/#trace-id) and [``span_id``](https://www.w3.org/TR/trace-context/#parent-id).
+They will help us correlate our different requests logs and traces.
+
+> aside positive
+>
+> These notions are part of the [W3C Trace Context Specification](https://www.w3.org/TR/trace-context/).
+
+Now, go below in the Fields section. 
+You should see a ``Links`` sub-section with a ``View Trace`` button.
+
+Click on it.
+You will see the corresponding trace of this log.
+
+Now you can correlate logs and metrics!
+If you have any exceptions in your error logs, you can now check out where it happens and see the big picture of the transaction (as a customer point of view).
+
+### How was it done?
+
+When you enable the MDC on your logs, you always have filled the ``trace_id``.
+
+Then to enable the link, we added the following configuration into the Alloy configuration file:
+
+```yaml
+stage.json { (1)
+		expressions = {
+			// timestamp   = "timestamp",
+			application = "context.properties.applicationName",
+			instance    = "context.properties.instance",
+			trace_id    = "mdc.trace_id",
+		}
+	}
+
+	stage.labels { (2)
+		values = {
+			application = "application",
+			instance    = "instance",
+			trace_id    = "trace_id",
+		}
+	}
+```
+
+1. The first step extracts from the JSON file the ``trace_id`` field.
+2. The label is then created to be eventually used on a Grafana dashboard.
+3. _Et voila!_
+
