@@ -682,31 +682,43 @@ Finally, you can search logs based on the correlation ID
 ## Metrics
 Duration: 0:30:00
 
-Check out the ``easypay-service`` metrics definitions first:
+Let’s take control of our application’s metrics!
+
+> aside positive
+>
+> EasyPay is already configured to expose metrics to Prometheus format with 
+> [Spring Boot Actuator](https://docs.spring.io/spring-boot/reference/actuator/metrics.html)
+> and [Micrometer](https://micrometer.io/).
+
+### Metrics exposed by the application
+
+Check out the ``easypay-service`` metrics definitions exposed by Spring Boot Actuator first:
 
 ```bash
 http :8080/actuator/metrics
 ```
 
-Explore the output
+Explore the output.
 
-Now get the prometheus metrics using this command:
+Now get the Prometheus metrics using this command:
 
 ```bash
 http :8080/actuator/prometheus
 ```
 
-You can also have an overview of all the prometheus endpoints metrics on the Prometheus dashboard. 
+This is an endpoint exposed by Actuator to let the Prometheus server get your application metrics.
 
-Go to ``http://localhost:9090`` and explore the different endpoints in ``eureka-discovery``.
-
-
-### How are scraped the metrics?
+### How are metrics scraped?
 
 Check out the Prometheus (``docker/prometheus/prometheus.yml``) configuration file.
 All the scraper's definitions are configured here.
 
-For instance, here is the configuration of the configuration server:
+> aside positive
+>
+> Prometheus was already configured to scrape metrics for this workshop.
+> Let's explore its configuration!
+
+For instance, here is the configuration of the `config-server`:
 
 ```yaml
   - job_name: prometheus-config-server
@@ -718,13 +730,14 @@ For instance, here is the configuration of the configuration server:
           - config-server:8890
 ```
 
-You can see it uses under the hood the endpoint we looked into earlier.
+You can see it uses the endpoint we looked into earlier under the hood.
+But it is a static configuration: we should tell Prometheus where to look for metrics...
 
-Prometheus reaches first Eureka to for discovering what are the servers to scrap.
-It then scrapes all the plugged instances in the same way:
+Hopefully, Prometheus is also able to use our `discovery-server` (Eureka service discovery)
+for discovering what are the plugged instances to scrape in the same way:
 
 ```yaml
-  # Discover targets from Eureka and scrape metrics from them (Whitebox monitoring)
+  # Discover targets from Eureka and scrape metrics from them
   - job_name: eureka-discovery
     scrape_interval: 5s
     scrape_timeout: 5s
@@ -735,8 +748,14 @@ It then scrapes all the plugged instances in the same way:
       - source_labels: [__meta_eureka_app_instance_metadata_metrics_path]
         target_label: __metrics_path__
 ```
-1. We plugged Prometheus to Eureka to explore all the metrics of the underlying systems
-2. To pinpoint what is the service and its metric, and set up the final metric which will be stored into Prometheus, we sat up this matching.
+1. We plugged Prometheus to our Eureka `discovery-server` to explore all the metrics of the underlying systems
+2. Configuration allows additional operations, such as relabelling the final metric before storing it into Prometehus
+
+You can have an overview of all the scraped applications on the Prometheus dashboard:
+
+* Go to ``http://localhost:9090`` if you started the stack locally, or use the link provided by GitPod in the `PORTS` view for port `9090`,
+* Click on `Status` > `Targets`,
+* Explore the different services discovered in the ``eureka-discovery`` section.
 
 ### Let's explore the metrics
 
