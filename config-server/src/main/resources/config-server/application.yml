@@ -37,19 +37,27 @@ management:
       application: ${spring.application.name}
       instance: ${spring.application.instance}
       namespace: local
-      metrics:
     distribution:
       percentiles-histogram:
         http:
           server:
             requests: true
+      percentiles:
+        http:
+          server:
+            requests:
+              - 0.5
+              - 0.9
+              - 0.95
+              - 0.99
+              - 0.999
 
 logging:
   level:
     org.springframework: INFO
 
   file:
-    name: ${LOGS_DIRECTORY:../logs}/${spring.application.instance:${spring.application.name:spring}}.log
+    name: ${LOGS_DIRECTORY:../logs}/${spring.application.name:spring}.log
 
 ---
 

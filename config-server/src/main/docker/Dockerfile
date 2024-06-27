@@ -21,6 +21,8 @@ ENV LOGS_DIRECTORY=/logs/
 ARG UID=1000
 ARG GID=1000
 
+RUN apk add --no-cache curl
+
 RUN addgroup --system --gid ${GID} javauser && adduser -S -s /usr/sbin/nologin --uid ${UID} -G javauser javauser
 
 ARG DEPENDENCY=/workspace/app/${SERVICE}/build/dependency
@@ -29,8 +31,6 @@ COPY --from=build ${DEPENDENCY}/META-INF /app/META-INF
 COPY --from=build ${DEPENDENCY}/BOOT-INF/classes /app
 
 RUN chown -R javauser:javauser /app
-
-RUN apk add --no-cache curl
 
 USER javauser
 
