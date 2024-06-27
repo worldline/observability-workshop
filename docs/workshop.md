@@ -573,8 +573,7 @@ loki.process "jsonlogs" {
 Restart then Alloy: 
 
 ```bash
-$ docker compose down collector
-$ docker compose up -d collector
+$ docker restart collector
 ```
 ### Logs Correlation  
 > aside positive
@@ -840,8 +839,7 @@ This configuration will filter the [SPANs](https://opentelemetry.io/docs/concept
 Restart then Alloy.
 
 ```bash
-$ docker compose down collector
-$ docker compose up -d collector
+$ docker compose restart collector
 ```
 
 ## Correlate Traces, Logs
