@@ -781,7 +781,7 @@ That should give you the following yaml:
           - easypay-service:8080
 ```
 
-Now you can restart Prometheus to take into account this new configuration:
+Restart the Prometheus server to take into account this new configuration:
 
 ```bash
 docker compose restart prometheus
@@ -792,17 +792,21 @@ Now explore again the targets (`Status` > ``Targets``) on the Prometheus dashboa
 > aside positive
 >
 > You should find the new target for easypay with the `UP` state under the ``prometheus-easypay-service`` job group!  
-> It is time now to explore these metrics.
+> It is now time to explore these metrics.
 
 ### Let's explore the metrics
 
 > aside positive
 >
-> For this workshop, we have already configured Grafana to reach  
+> For this workshop, we have already configured in Grafana the Prometheus datasource.  
+> You can have a look at its configuration in Grafana (``port 3000``) in the `Connections` > `Data sources` section.  
+> It is pretty straightforward as we have only setup the Prometheus server URL.
 
-Go then to Grafana and start again a ``explore`` dashboard.
+Go then to Grafana and start again a ``Explore`` dashboard.
 
-Select the ``Prometheus`` datasource.
+Select the ``Prometheus`` datasource instead of the ``Loki`` one.
+
+The Metric field lists all the metrics available in Prometheus. 
 You can for instance run this query: ``system_load_average_1m{application="api-gateway"}``
 
 Click on ``Run Query`` button.
