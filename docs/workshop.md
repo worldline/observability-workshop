@@ -162,7 +162,17 @@ The "infrastructure stack" is composed of the following components:
 * One [Configuration server](https://docs.spring.io/spring-cloud-config/) is also used to centralise the configuration of our microservices.
 * The following microservices: API Gateway, Merchant BO, Fraud Detect, Smart Bank Gateway
 
-To run it, execute the following command
+If you run your application on GitPod, the following step is automatically started at the startup.
+
+Otherwise, to run it on your desktop, execute the following commands
+
+``` bash
+$ bash scripts/download-agent.sh
+```
+
+``` bash
+$ ./gradlew tasks
+```
 
 ``` bash
 $ docker compose up -d --build --remove-orphans
@@ -176,7 +186,7 @@ And check the status of every service.
 
 #### Validation
 
-Open the [Eureka](https://cloud.spring.io/spring-cloud-netflix/) website started during the infrastructure setup
+Open the [Eureka](https://cloud.spring.io/spring-cloud-netflix/) website started during the infrastructure setup.
 
 If you run this workshop on your desktop, you can go to this URL: http://localhost:8761.
 If you run it on GitPod, you can go to the corresponding URL (e.g., https://8761-worldline-observability-w98vrd59k5h.ws-eu114.gitpod.io) instead.
