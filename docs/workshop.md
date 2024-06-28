@@ -755,9 +755,50 @@ You can have an overview of all the scraped applications on the Prometheus dashb
 
 * Go to ``http://localhost:9090`` if you started the stack locally, or use the link provided by GitPod in the `PORTS` view for port `9090`,
 * Click on `Status` > `Targets`,
-* Explore the different services discovered in the ``eureka-discovery`` section.
+* Explore the different services discovered in the ``eureka-discovery`` section:
+  * You should not see the `easypay-service`...
+  * ... but rest assured, we will fix that!.
+
+### Add scrape configuration for our easypay service
+
+Modify the `docker/prometheus/prometheus.yml` file to add a new configuration to scrape the easypay service.
+You can use the `prometheus-config-server` configuration as a model:
+
+* job name: ``prometheus-easypay-service``
+* scrape interval and timeout: ``5s``
+* metrics path: ``/actuator/prometheus``
+* target: ``easypay-service:8080``
+
+That should give you the following yaml:
+
+```yaml
+  - job_name: prometheus-easypay-service
+    scrape_interval: 5s
+    scrape_timeout: 5s
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - easypay-service:8080
+```
+
+Now you can restart Prometheus to take into account this new configuration:
+
+```bash
+docker compose restart prometheus
+```
+
+Now explore again the targets (`Status` > ``Targets``) on the Prometheus dashboard (``port 9090``). 
+
+> aside positive
+>
+> You should find the new target for easypay with the `UP` state under the ``prometheus-easypay-service`` job group!  
+> It is time now to explore these metrics.
 
 ### Let's explore the metrics
+
+> aside positive
+>
+> For this workshop, we have already configured Grafana to reach  
 
 Go then to Grafana and start again a ``explore`` dashboard.
 
