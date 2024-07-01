@@ -743,7 +743,7 @@ For instance, here is the configuration of the `config-server`:
 You can see it uses the endpoint we looked into earlier under the hood.
 But it is a static configuration: we should tell Prometheus where to look for metrics...
 
-Hopefully, Prometheus is also able to use our `discovery-server` (Eureka service discovery)
+Hopefully, Prometheus is also able to use our ``discovery-server`` (Eureka service discovery)
 for discovering what are the plugged instances to scrape in the same way:
 
 ```yaml
@@ -764,22 +764,22 @@ for discovering what are the plugged instances to scrape in the same way:
 You can have an overview of all the scraped applications on the Prometheus dashboard:
 
 * Go to ``http://localhost:9090`` if you started the stack locally, or use the link provided by GitPod in the `PORTS` view for port `9090`,
-* Click on `Status` > `Targets`,
+* Click on ``Status`` > ``Targets``,
 * Explore the different services discovered in the ``eureka-discovery`` section:
-  * You should not see the `easypay-service`...
-  * ... but rest assured, we will fix that!.
+  * You should not see the ``easypay-service``...
+  * ... but rest assured, we will fix that!
 
 ### Add scrape configuration for our easypay service
 
-Modify the `docker/prometheus/prometheus.yml` file to add a new configuration to scrape the easypay service.
-You can use the `prometheus-config-server` configuration as a model:
+Modify the ``docker/prometheus/prometheus.yml`` file to add a new configuration to scrape the easypay service.
+You can use the ``prometheus-config-server`` configuration as a model:
 
 * Job name: ``prometheus-easypay-service``
 * Scrape interval and timeout: ``5s``
 * Metrics path: ``/actuator/prometheus``
 * Target: ``easypay-service:8080``
 
-That should give you the following yaml:
+That should give you the following yaml configuration:
 
 ```yaml
   - job_name: prometheus-easypay-service
@@ -797,11 +797,11 @@ Restart the Prometheus server to take into account this new configuration:
 docker compose restart prometheus
 ```
 
-Now explore again the targets (`Status` > ``Targets``) on the Prometheus dashboard (``port 9090``). 
+Now explore again the targets (``Status`` > ``Targets``) on the Prometheus dashboard (``port 9090``). 
 
 > aside positive
 >
-> You should find the new target for easypay with the `UP` state under the ``prometheus-easypay-service`` job group!  
+> You should find the new target for easypay with the ``UP`` state under the ``prometheus-easypay-service`` job group!  
 > It is now time to explore these metrics.
 
 ### Let's explore the metrics
@@ -809,7 +809,7 @@ Now explore again the targets (`Status` > ``Targets``) on the Prometheus dashboa
 > aside positive
 >
 > For this workshop, we have already configured in Grafana the Prometheus datasource.  
-> You can have a look at its configuration in Grafana (``port 3000``) in the `Connections` > `Data sources` section.  
+> You can have a look at its configuration in Grafana (``port 3000``) in the ``Connections`` > ``Data sources`` section.  
 > It is pretty straightforward as we have only setup the Prometheus server URL.
 
 * Go to Grafana and start again an ``Explore`` dashboard.
@@ -845,19 +845,19 @@ We will choose the second solution right now and import the following dashboards
 
 To import these dashboards:
 * Go to Grafana (``port 3000``), and select the ``Dashboards`` section on the left,
-* Then click on `New` (top right), and click on `Import`,
-* In the `Find and import…` field, just paste the ID of the dashboard and click on `Load`,
-* In the ``Select a Prometheus data source``, select `Prometheus` and click on `Import`,
+* Then click on ``New`` (top right), and click on ``Import``,
+* In the ``Find and import…`` field, just paste the ID of the dashboard and click on ``Load``,
+* In the ``Select a Prometheus data source``, select ``Prometheus`` and click on ``Import``,
 * You should be redirected to the newly imported dashboard.
 
 > aside positive
 >
-> Imported dashboards are available directly from the `Dashboards` section of Grafana.
+> Imported dashboards are available directly from the ``Dashboards`` section of Grafana.
 
-Explore the `JVM Micrometer` dashboard: it works almost out of box.  
+Explore the ``JVM Micrometer`` dashboard: it works almost out of box.  
 It contains lot of useful information about JVMs running our services.
 
-The `application` filter (top of the dashboard) let you select the service you want to explore metrics.
+The ``application`` filter (top of the dashboard) let you select the service you want to explore metrics.
 
 ### Incident!
 
@@ -871,13 +871,13 @@ $ k6 run -u 5 -d 2m k6/02-payment-smartbank.js
 
 Go back to the Grafana dashboard, click on ``Dashboards`` and select ``JVM Micrometer``.
 
-Explore the dashboard for the `easypay-service`, especially the Garbage collector and CPU statistics.
+Explore the dashboard for the ``easypay-service``, especially the Garbage collector and CPU statistics.
 
-Look around the other `Spring Boot JDBC & HikariCP` dashboard then and see what happens on the database connection pool for `easypay-service`.
+Look around the other ``Spring Boot JDBC & HikariCP`` dashboard then and see what happens on the database connection pool for ``easypay-service``.
 
 We were talking about an incident, isn’t it? Let's go back to the Explore view of Grafana, select Loki as a data source and see what happens!
 
-Create a query with the following parameters to get error logs of the `smartbank-gateway` service:
+Create a query with the following parameters to get error logs of the ``smartbank-gateway`` service:
 
 * Label filters: ``application`` = ``smartbank-gateway``
 * line contains/Json: ``expression``= ``level="level"``
@@ -894,7 +894,7 @@ Normally you will see the used JVM Heap reaching the maximum allowed.
 > aside positive
 >
 > Grafana and Prometheus allows you to generate alerts based on metrics, using [Grafana Alertmanager](https://grafana.com/docs/grafana/latest/alerting/set-up/configure-alertmanager/).  
-> For instance if CPU usage is greater than 80%, free memory is less than 1GB, used heap is greater than 80%, etc.
+> For instance, if CPU usage is greater than 80%, free memory is less than 1GB, used heap is greater than 80%, etc.
 
 ### Business metrics
 
@@ -913,15 +913,15 @@ We want to add new metrics to the easypay service to measure they payment proces
 So we target a metric of **Timer** type.
 
 In order to achieve this goal, we will measure the time spent in the two methods `process` and `store` of the `com.worldline.easypay.payment.control.PaymentService` class of the `easypay-service` module.  
-This class is the central component responsible of processing payments: it provides the `accept` public method, which delegates its responsability to two private ones:
-* `process`: which does all the processing of the payment: validation, calling third parties…
-* `store`: to save the processing result in database.
+This class is the central component responsible for processing payments: it provides the ``accept`` public method, which delegates its responsibility to two private ones:
+* ``process``: which does all the processing of the payment: validation, calling third parties…
+* ``store``: to save the processing result in database.
 
 We also want to count the number of payment requests processed by our system. We will use a metric of **Counter** type.
 
 > aside negative
 >
-> Micrometer provides the `@Timed` annotation to simplify the creation of such metric. Unfortunately, it does not work with Spring Boot…  
+> Micrometer provides the ``@Timed`` annotation to simplify the creation of such metric. Unfortunately, it does not work with Spring Boot…  
 > So let’s do it "manually".
 
 You can take a look at the [Micrometer’s documentation about Timers](https://docs.micrometer.io/micrometer/reference/concepts/timers.html).
@@ -930,10 +930,10 @@ You can take a look at the [Micrometer’s documentation about Timers](https://d
 
 We need to declare two timers in our code:
 
-* `processTimer` to record the `rivieradev.payment.process` metric: it represents the payment processing time and record the time spent in the `process` method,
-* `storeTimer` to record the `rivieradev.payment.store` metric: it represents the time required to store a payment in database by recording the time spent in the `store` method.
+* ``processTimer`` to record the ``rivieradev.payment.process`` metric: it represents the payment processing time and record the time spent in the `process` method,
+* ``storeTimer`` to record the ``rivieradev.payment.store`` metric: it represents the time required to store a payment in database by recording the time spent in the `store` method.
 
-Let’s modify the `com.worldline.easypay.payment.control.PaymentService` class to declare them:
+Let’s modify the ``com.worldline.easypay.payment.control.PaymentService`` class to declare them:
 
 ```java
 // ...
@@ -962,12 +962,12 @@ public class PaymentService {
     }
 ```
 1. Declare the two timers,
-2. Injects the `MeterRegistry` provided by Spring Boot Actuator in the class constructor, as it is required to initialize the timers,
+2. Injects the ``MeterRegistry`` provided by Spring Boot Actuator in the class constructor, as it is required to initialize the timers,
 3. Intitialize the two timers by giving them a name (4), a description (5) and adding them to the meter registry.
 
 #### 2. Record time spent in the methods
 
-The `Timer` API [allows to record blocks of code](https://docs.micrometer.io/micrometer/reference/concepts/timers.html#_recording_blocks_of_code). It’s going to be our way:
+The ``Timer`` API [allows to record blocks of code](https://docs.micrometer.io/micrometer/reference/concepts/timers.html#_recording_blocks_of_code). It’s going to be our way:
 
 ```java
 timer.record(() -> {
@@ -997,7 +997,7 @@ We can simply wrap our original code in a Java `Runnable` functional interface:
         });
     }
 ```
-1. Modify the `process` method to wrap all its content into a `Runnable` consumed by the `record` method of our `processTimer` timer,
+1. Modify the ``process`` method to wrap all its content into a ``Runnable`` consumed by the `record` method of our ``processTimer`` timer,
 2. Do the same for the `store` method.
 
 #### 3. Add counter
@@ -1026,7 +1026,7 @@ public class PaymentService {
 1. Declares the counter,
 2. Initializes the counter.
 
-The method `accept` of the `PaymentService` class is invoked for each payment request, it is a good candidate to increment our counter:
+The method ``accept`` of the ``PaymentService`` class is invoked for each payment request, it is a good candidate to increment our counter:
 
 ```java
     @Transactional(Transactional.TxType.REQUIRED)
@@ -1053,7 +1053,7 @@ Redeploy easypay:
 docker compose up -d easypay-service
 ```
 
-Once easypay is started (you can check logs with the `docker compose logs -f easypay-service` command and wait for an output like `Started EasypayServiceApplication in 32.271 seconds`):
+Once easypay is started (you can check logs with the ``docker compose logs -f easypay-service`` command and wait for an output like ``Started EasypayServiceApplication in 32.271 seconds``):
 
 * Execute some queries: 
 
@@ -1061,7 +1061,7 @@ Once easypay is started (you can check logs with the `docker compose logs -f eas
 http POST :8080/api/easypay/payments posId=POS-01 cardNumber=5555567898780008 expiryDate=789456123 amount:=40000
 ```
 
-* Go into the container and query the `actuator/prometheus` endpoint to look at our new metrics:
+* Go into the container and query the ``actuator/prometheus`` endpoint to look at our new metrics:
 
 ```bash
 docker compose exec -it easypay-service sh
@@ -1091,17 +1091,17 @@ rivieradev_payment_requests_total{application="easypay-service",...} 4.0
 ```
 
 When using a `Timer` you get three metrics by default, suffixed by:
-* `_count`: the number of hits,
-* `_sum`: the sum of time spent in the method,
-* `_max`: the maximum time spent in the method.
+* ``_count``: the number of hits,
+* ``_sum``: the sum of time spent in the method,
+* ``_max``: the maximum time spent in the method.
 
 Especially we can get the average time spent in the method by dividing the sum by the count.
 
-Finally, our `Counter` is the last metric suffixed with `_total`.
+Finally, our ``Counter`` is the last metric suffixed with ``_total``.
 
 #### 5. Add histograms and percentiles
 
-As we are talking about latencies, you may be also interested by histograms to get the distribution of the events per buckets or percentiles values (the famous 0.99, 0.999…). Fortunately, `Timers` allow to compute [Histograms and Percentiles](https://docs.micrometer.io/micrometer/reference/concepts/histogram-quantiles.html)!
+As we are talking about latencies, you may be also interested in histograms to get the distribution of the events per buckets or percentiles values (the famous 0.99, 0.999…). Fortunately, ``Timers`` allow to compute [Histograms and Percentiles](https://docs.micrometer.io/micrometer/reference/concepts/histogram-quantiles.html)!
 
 Modify the two timers as follows:
 
@@ -1129,7 +1129,7 @@ public class PaymentService {
                 .register(meterRegistry);
     }
 ```
-1. Configures the `Timer` to publish a histogram allowing to compute aggregable percentiles server-side,
+1. Configures the ``Timer`` to publish a histogram allowing to compute aggregable percentiles server-side,
 2. Exposes percentiles value computed from the application: **these value are not aggregable!**
 
 Repeat the previous step `3. Redeploy easypay`.
@@ -1150,24 +1150,24 @@ rivieradev_payment_process_seconds_sum{application="easypay-service",instance="e
 rivieradev_payment_process_seconds_max{application="easypay-service",instance="easypay-service:a44149cd-937a-4e96-abc2-0770343e49bc",namespace="local"} 0.0
 ```
 
-Each `bucket` contains the number of event which lasts less than the value defined in the `le` tag.
+Each ` bucket ` contains the number of event which lasts less than the value defined in the ``le`` tag.
 
 #### 6. Visualization
 
-Go back to Grafana (`port 3000`), and go into the `Dashboards` section.
+Go back to Grafana (`port 3000`), and go into the ``Dashboards`` section.
 
-We will import the dashboard defined in the `docker/grafana/dashboards/easypay-monitoring.json` file:
-* Click on `New` (top right), and select `Import`,
-* In the `Import via dashboard JSON model` field, paste the content of the easypay-monitoring.json file and click on `Load`,
+We will import the dashboard defined in the ``docker/grafana/dashboards/easypay-monitoring.json`` file:
+* Click on ``New`` (top right), and select ``Import``,
+* In the ``Import via dashboard JSON model`` field, paste the content of the ``easypay-monitoring.json``  file and click on ``Load``,
 * Select Prometheus as a data source.
 
-You should be redirected to the `Easypay Monitoring` dashboard.
+You should be redirected to the ``Easypay Monitoring`` dashboard.
 
 It provides some dashboards we have created from the new metrics you exposed in your application:
 
 * `Payment request count total (rated)`: represents the number of hit per second in our application computed from our counter,
-* `Payment Duration distribution`: represents the various percentiles of our application computed from the `rivieradev_payment_process` timer and its histogram,
-* `Requests process performance` and `Requests store performance`: are a visualization of the buckets of the two timers we created previously.
+* ``Payment Duration distribution``: represents the various percentiles of our application computed from the ``rivieradev_payment_process`` timer and its histogram,
+* ``Requests process performance`` and ``Requests store performance``: are a visualization of the buckets of the two timers we created previously.
 
 You can generate some load to view your dashboards evolving live:
 
