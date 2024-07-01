@@ -54,6 +54,12 @@ loki.process "jsonlogs" {
 		format = "RFC3339"
 		fallback_formats = ["UnixMs",]
 	}*/
+
+  /*stage.luhn {
+    		min_length  = 13
+    		replacement = "**MASKED**"
+    	}
+    	*/
 }
 
 // EXPORTER (LOKI)
