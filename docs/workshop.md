@@ -548,6 +548,11 @@ $ docker compose down
 $ docker compose up -d --build --remove-orphans
 ```
 
+
+> aside positive
+>
+> During this workshop, we will only obfuscate the card numbers in Loki. It will therefore be stored as is in the log files but obfuscated in Loki and by this way in the data exposed on Grafana.
+
 ### Logs Correlation  
 > aside positive
 >
@@ -797,6 +802,7 @@ The ``Metric`` field lists all the metrics available in Prometheus server: take 
   * To split the memory usage per service, you can click on the ``By label`` button and select the label named ``application`` (do not forget to click on ``Run query`` afterthat).
 
 * You can also filter metrics to be displayed using ``Label filters``: try to create a filter to display only the metric related to the application named easypay-service.
+* Check the card numbers are now obfuscated with the ``**MASKED**`` content. 
 
 > aside positive
 >
