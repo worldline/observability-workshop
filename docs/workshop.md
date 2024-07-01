@@ -492,27 +492,30 @@ Go to the ``PaymentResource`` class and modify the method ``processPayment()`` t
 ```java
 public ResponseEntity<PaymentResponse> processPayment(PaymentRequest paymentRequest)
 
-MDC.put("context",paymentRequest);
+MDC.put("CardNumber",paymentRequest.cardNumber());
+MDC.put("POS",paymentRequest.posId());
+
 [...]
 MDC.clear();
 return httpResponse;
 
 ```
 
-Go to the MDC spring profile configuration file (``easypay-service/src/main/resources/application-mdc.properties``) and check the configuration got the ``context`` field.
+Go to the MDC spring profile configuration file (``easypay-service/src/main/resources/application-mdc.properties``) and check the configuration got both the ``CardNumber`` & ``POS``fields.
 
-Restart the application activating the ``mdc`` profile and see how the logs look like now.
+Activate the ``mdc`` profile in the ``compose.yml`` file:
 
-```bash
-./gradlew :easypay-service:bootRun -x test  --args='--spring.profiles.active=default,mdc'
+```yaml
+  easypay-service:
+    image: easypay-service:latest
+    [...]
+      SPRING_PROFILES_ACTIVE: default,docker,mdc
 ```
 
 > aside positive
->
-> You can verify the MDC profile is applied by checking the presence of this log message:
-> ``The following 2 profiles are active: "default", "mdc"``
+> To apply these modifications, we must restart the ``easypay-service``. 
+> It will be done later.
 > 
-
 ### Adding more content in our logs
 
 To have more logs, we will run several HTTP requests using [K6](https://k6.io/):
@@ -525,54 +528,26 @@ $ k6 run -u 5 -d 5s k6/01-payment-only.js
 
 Check then the logs to pinpoint some exceptions.
 
-### Personal Identifiable Information (PII)  bfuscation
+### Personal Identifiable Information (PII) obfuscation
 For compliance and preventing personal data loss, we will obfuscate the card number in the logs:
 
-In the Alloy configuration file (``docker/alloy/config.alloy``), add the [luhn stage](https://grafana.com/docs/alloy/latest/reference/components/loki.process/#stageluhn-block) into the ``jsonlogs`` loki process stage
-
-``
-stage.luhn {
-replacement= "**DELETED**"
-}
-``
-
-We will then have the following configuration for processing the JSON logs:
+In the Alloy configuration file (``docker/alloy/config.alloy``), uncomment the [luhn stage](https://grafana.com/docs/alloy/latest/reference/components/loki.process/#stageluhn-block).
 
 ```
-loki.process "jsonlogs" {
-	forward_to = [loki.write.endpoint.receiver]
-
-	stage.luhn {
-    	    replacement= "**DELETED**"
-    	}
-
-	stage.json {
-		expressions = {
-			// timestamp   = "timestamp",
-			application = "context.properties.applicationName",
-			instance    = "context.properties.instance",
-			trace_id    = "mdc.trace_id",
-		}
-	}
-
-	stage.labels {
-		values = {
-			application = "application",
-			instance    = "instance",
-			trace_id    = "trace_id",
-		}
-	}
-
+/*stage.luhn {
+min_length  = 13
+replacement = "**MASKED**"
 }
+*/
+``` 
 
-```
-
-
-Restart then Alloy: 
+Rebuild/Restart then the whole platform: 
 
 ```bash
-$ docker restart collector
+$ docker compose down
+$ docker compose up -d --build --remove-orphans
 ```
+
 ### Logs Correlation  
 > aside positive
 >
@@ -580,10 +555,6 @@ $ docker restart collector
 >
 > One approach would be to correlate all of your logs using a correlation Id.
 > If an incoming request has no correlation id header, the API creates it. If there is one, it uses it instead.
-
-> aside negative
->
-> TODO mettre la manipulation pour le correlation ID et un exemple d'utilisation
 
 ### Let's dive into our logs on Grafana!
 

@@ -75,7 +75,8 @@ public class PaymentResource {
     @ApiResponse(responseCode = "201", description = "Payment processed", content = @Content(mediaType = "application/json"))
     public ResponseEntity<PaymentResponse> processPayment(
             @Parameter(description = "The payment to be processed", required = true) @Valid @NotNull @RequestBody PaymentRequest paymentRequest) {
-        // MDC.put("context", paymentRequest);
+//        MDC.put("CardNumber",paymentRequest.cardNumber());
+//        MDC.put("POS",paymentRequest.posId());
         // LOG.info("Processing new payment: {}", paymentRequest);
         PaymentProcessingContext paymentContext = new PaymentProcessingContext(paymentRequest);
 
