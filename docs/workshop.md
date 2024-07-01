@@ -743,8 +743,7 @@ For instance, here is the configuration of the `config-server`:
 You can see it uses the endpoint we looked into earlier under the hood.
 But it is a static configuration: we should tell Prometheus where to look for metrics...
 
-Hopefully, Prometheus is also able to use our ``discovery-server`` (Eureka service discovery)
-for discovering what are the plugged instances to scrape in the same way:
+Hopefully, Prometheus is also able to query our ``discovery-server`` (Eureka service discovery) for discovering what are all the plugged services of our application. It will then scrape them in the same way:
 
 ```yaml
   # Discover targets from Eureka and scrape metrics from them
@@ -921,7 +920,8 @@ We also want to count the number of payment requests processed by our system. We
 
 > aside negative
 >
-> Micrometer provides the ``@Timed`` annotation to simplify the creation of such metric. Unfortunately, it does not work with Spring Boot…  
+> Micrometer provides the ``@Timed`` annotation to simplify the creation of such metric.  
+> Unfortunately, [it does not work with Spring Boot](https://docs.micrometer.io/micrometer/reference/concepts/timers.html#_the_timed_annotation) outside ``Controller`` components, on arbitrary methods.  
 > So let’s do it "manually".
 
 You can take a look at the [Micrometer’s documentation about Timers](https://docs.micrometer.io/micrometer/reference/concepts/timers.html).
@@ -929,7 +929,6 @@ You can take a look at the [Micrometer’s documentation about Timers](https://d
 #### 1. Declare the timers
 
 We need to declare two timers in our code:
-
 * ``processTimer`` to record the ``rivieradev.payment.process`` metric: it represents the payment processing time and record the time spent in the `process` method,
 * ``storeTimer`` to record the ``rivieradev.payment.store`` metric: it represents the time required to store a payment in database by recording the time spent in the `store` method.
 
