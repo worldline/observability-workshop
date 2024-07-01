@@ -56,9 +56,10 @@ dependencies {
 	implementation("ch.qos.logback.contrib:logback-json-classic:0.1.5")
 	implementation("ch.qos.logback.contrib:logback-jackson:0.1.5")
 
-	// Add opentelemetry exemplars support
+	// Add opentelemetry support
 	implementation(platform("io.opentelemetry:opentelemetry-bom:1.38.0"))
 	implementation("io.opentelemetry:opentelemetry-api")
+	implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.5.0")
 	implementation("io.prometheus:prometheus-metrics-tracer-otel-agent:1.3.1")
 
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
