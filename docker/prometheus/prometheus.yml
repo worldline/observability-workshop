@@ -39,4 +39,6 @@ scrape_configs:
     relabel_configs:
       - source_labels: [__meta_eureka_app_instance_metadata_metrics_path]
         target_label: __metrics_path__
-
+      - source_labels: [__meta_eureka_app_name] # Ignore easypay-service, for workshop purpose
+        regex: EASYPAY-SERVICE
+        action: drop
