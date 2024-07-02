@@ -575,6 +575,7 @@ $ docker compose down
 $ docker compose up -d --build --remove-orphans
 ```
 
+
 > aside positive
 >
 > During this workshop, we will only obfuscate the card numbers in Loki. It will therefore be stored as is in the log files but obfuscated in Loki and by this way in the data exposed on Grafana.
@@ -1206,33 +1207,6 @@ The Grafana Alloy collector will be used once again, tasked with receiving trace
 Lastly, we will use Grafana to examine and interpret these traces, allowing us to better understand and optimize our application's performance.
 
 ### Enable distributed tracing
-Duration: 20 minutes
-
-In this section, we'll explore **distributed tracing**, the third pillar of application observability.
-
-Distributed tracing is an essential tool for monitoring and analyzing the performance of complex applications. It tracks the flow of requests across multiple services and components, helping to identify bottlenecks and improve efficiency — particularly useful for intricate systems like Easypay.
-
-With Spring Boot, there are a couple of approaches to incorporate distributed tracing into your application:
-* Utilize the [Spring Boot Actuator integration](https://docs.spring.io/spring-boot/docs/current/reference/html/actuator.html#actuator.tracing) with support from [Micrometer Tracing](https://docs.micrometer.io/docs/tracing),
-* Or adopt a broader [Java Agent approach](https://github.com/open-telemetry/opentelemetry-java-instrumentation) provided by the OpenTelemetry project, which automatically instruments our code when attached to our JVM.
-
-For this workshop, we'll use the Java Agent method and, with a focus on Grafana, we will employ their version of the [OpenTelemetry Java Agent](https://github.com/grafana/grafana-opentelemetry-java).
-
-The Grafana Alloy collector will be used once again, tasked with receiving traces and forwarding them to the Tempo backend.
-
-> aside positive
->
-> Utilizing collectors offers several advantages for managing telemetry data:
-> - Reduces the need for complicated application configurations: just send data to `localhost`,
-> - Centralizes configuration to a single point: the collector,
-> - Acts as a buffer to prevent resource overuse,
-> - Can transform data before ingestion,
-> - Supports data intake from various protocols and can relay them to any backend,
-> - ...
-
-Lastly, we will use Grafana to examine and interpret these traces, allowing us to better understand and optimize our application's performance.
-
-### Enable distributed tracing
 
 To capture the entire transaction across all services in a trace, it's essential to instrument all the services in our application.
 
@@ -1289,16 +1263,11 @@ otelcol.receiver.otlp "default" {
 		endpoint = "0.0.0.0:4317"
 	}
 
-To capture the entire transaction across all services in a trace, it's essential to instrument all the services in our application.
 	output {
 		traces  = [otelcol.processor.batch.default.input]
 	}
 }
 
-> aside positive
->
-> In this workshop, our primary focus will be on the `easypay` service.
-> For efficiency, we have already instrumented the other services beforehand.
 // BATCH PROCESSING FOR OPTIMIZATION (2)
 otelcol.processor.batch "default" {
 	output {
@@ -1306,158 +1275,7 @@ otelcol.processor.batch "default" {
 	}
 }
 
-#### Download Grafana Opentelemetry Java Agent
 // TRACE EXPORTING TO TEMPO (OTLP) (3)
-otelcol.exporter.otlp "tempo" {
-	client {
-		endpoint = "tempo:4317"
-
-If you're using *GitPod*, the Java Agent should already be available in the `instrumentation/grafana-opentelemetry-java.jar` directory.
-		tls {
-			insecure = true
-		}
-	}
-}
-```
-1. Setting up the [``otelcol.receiver.otlp``](https://grafana.com/docs/alloy/latest/reference/components/otelcol.receiver.otlp/) receiver to accept telemetry data over the OTEL protocol via GRPC, listening on port `4317`,
-2. Configuring the [processor](https://grafana.com/docs/alloy/latest/reference/components/otelcol.processor.batch/) to batch traces efficiently, reducing resource usage,
-3. Establishing the [``otelcol.exporter.otlp``](https://grafana.com/docs/alloy/latest/reference/components/otelcol.exporter.otlp/) exporter to send collected telemetry data to the Grafana Tempo service.
-
-🛠️ If you are participating in this workshop on your workstation, or if the file is missing, you can run the following script to download it:
-ℹ️ The Grafana OpenTelemetry Java Agent is pre-configured to transmit telemetry data directly to the collector. This setup is facilitated through environment variables specified in the `compose.yml` file:
-
-```yaml
-services:
-  # ...
-  easypay-service:
-    # ..
-    environment:
-      # ...
-      OTEL_SERVICE_NAME: easypay-service (1)
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://collector:4317 (2)
-      OTEL_EXPORTER_OTLP_PROTOCOL: grpc (3)
-    # ...
-```
-1. `OTEL_SERVICE_NAME` defines a service name which will be attached to traces to identify the instrumented service,
-2. `OTEL_EXPORTER_OTLP_ENDPOINT` environment variable configures where the telemetry data should be sent,
-3. `OTEL_EXPORTER_OTLP_PROTOCOL` sets the OTLP protocol used behind, here GRPC (can be HTTP).
-
-> aside positive
->
-> Find more information about how to configure the OpenTelemetry Java Agent in [its official documentation](https://opentelemetry.io/docs/languages/java/configuration/).
-
-#### Enable Java Agent
-
-📝 Since we are deploying the easypay-service using *Docker*, we need to modify the last lines of the `easypay-service/src/main/docker/Dockerfile`:
-
-```Dockerfile
-# ...
-USER javauser
-🛠️ To apply the new settings, restart Grafana Alloy with the following command:
-
-# Copy Java Agent into the container
-COPY instrumentation/grafana-opentelemetry-java.jar /app/grafana-opentelemetry-java.jar
-```bash
-docker compose restart collector
-```
-
-# Add the -javagent flag to setup the JVM to start with our Java Agent
-ENTRYPOINT ["java", "-javaagent:/app/grafana-opentelemetry-java.jar", "-cp","app:app/lib/*","com.worldline.easypay.EasypayServiceApplication"] # (2)
-```
-✅ After restarting, verify that Grafana Alloy is up and running with the updated configuration by accessing the Alloy dashboard on port ``12345``.
-
-The ENTRYPOINT instruction specifies the default command that will be executed when the container starts.
-🛠️ Redeploy the updated ``easypay-service``:
-
-🛠️ You can now build the updated easypay-service container image:
-```bash
-docker compose up -d easypay-service
-```
-
-```bash
-docker compose build easypay-service
-```
-✅ To ensure easypay-service has started up correctly, check its logs with:
-
-#### Configure Grafana Alloy
-```bash
-docker compose logs -f easypay-service
-```
-
-It's time to set up *Grafana Alloy* for handling telemetry data. We will configure it to accept traces through the OpenTelemetry GRPC protocol (OTLP) on port `4317`, and then forward them to *Grafana Tempo*, which listens on the host `tempo` on the same port `4317` (this setup specifically handles OTLP traces).
-#### Explore Traces with Grafana
-
-📝 Please add the following configuration to the `docker/alloy/config.alloy` file:
-> aside positive
->
-> For this workshop, we've already configured the Tempo datasource in Grafana.
-> You can take a look at its configuration in Grafana (available on port ``3000``) by navigating to the `Connections` > `Data sources` section.
-> Similar to Prometheus, the configuration is quite straightforward as we only need to set up the Tempo server URL.
-
-🛠️ Generate some load on the application to produce traces:
-
-```bash
-k6 run -u 1 -d 5m k6/01-payment-only.js
-```
-
-🛠️ Let’s explore your first traces in Grafana:
-* Go to Grafana and open an ``Explore`` dashboard,
-* Select the `Tempo` data source and click on ``Run query`` to refresh the view.
-
-> aside negative
->
-> You may need to wait one or two minutes to allow Tempo to ingest some traces…
-
-👀 Click on `Service Graph` and explore the `Node graph`: this view is extremely helpful for visualizing and understanding how our services communicate with each other.
-
-👀 Go back to `Search` and click on `Run query`. You should see a table named `Table - Traces`.
-By default, this view provides the most recent traces available in *Tempo*.  
-
-🛠️ Let's find an interesting trace using the query builder:
-* Look at all traces corresponding to a POST to `easypay-service` with a duration greater than 50 ms:
-  * Span Name: `POST easypay-service`
-  * Duration: `trace` `>` `50ms`
-  * You can review the generated query, which uses a syntax called TraceQL.
-* Click on `Run query`.
-* Sort the table by `Duration` (click on the column name) to find the slowest trace.
-* Drill down a `Trace ID`.
-
-
-You should see the full stack of the corresponding transaction.
-
-👀 Grafana should open a new view (you can enlarge it by clicking on the three vertical dots and selecting `Widen pane`):
-* Pinpoint the different nodes and their corresponding response times:
-  * Each line is a span and corresponds to the time spent in a method/event.
-* Examine the SQL queries and their response times.
-* Discover that distributed tracing can link transactions through:
-  * HTTP (`api-gateway` to `easypay-service` and `easypay-service` to `smartbank-gateway`).
-  * Kafka (`easypay-service` to `fraudetect-service` and `merchant-backoffice`).
-* Click on `Node graph` to get a graphical view of all the spans participating in the trace.
-
-🛠️ Continue your exploration in the `Search` pane:
-* For example, you can add the `Status` `=` `error` filter to see only traces that contain errors.
-```terraform
-// ...
-
-// RECEIVER SETUP (OTLP GRPC) (1)
-otelcol.receiver.otlp "default" {
-	grpc {
-		endpoint = "0.0.0.0:4317"
-	}
-
-	output {
-		traces  = [otelcol.processor.batch.default.input]
-	}
-}
-
-// BATCH PROCESSING FOR OPTIMIZATION (2)
-otelcol.processor.batch "default" {
-	output {
-		traces  = [otelcol.exporter.otlp.tempo.input]
-	}
-}
-
-// TRACE EXPORTING TO TEMPO (OTLP) (3)
 otelcol.exporter.otlp "tempo" {
 	client {
 		endpoint = "tempo:4317"
@@ -1577,7 +1395,6 @@ In this workshop, we will implement Tail Sampling.
 
 Modify the Alloy configuration file (``docker/alloy/config.alloy``) as follows:
 In the alloy configuration file (``docker/alloy/config.alloy``), uncomment this configuration just after the ``SAMPLING`` comment:
-Modify the Alloy configuration file (``docker/alloy/config.alloy``) as follows:
 ```
 // ...
 // RECEIVER (OTLP)
@@ -1592,22 +1409,7 @@ otelcol.receiver.otlp "default" {
 }
 
 // TAIL SAMPLING (2)
-// SAMPLING
-// ...
-// RECEIVER (OTLP)
-otelcol.receiver.otlp "default" {
-	grpc {
-		endpoint = "0.0.0.0:4317"
-	}
-
-	output {
-		traces  = [otelcol.processor.tail_sampling.actuator.input] // (1)
-	}
-}
-
-// TAIL SAMPLING (2)
 otelcol.processor.tail_sampling "actuator" {
-	
   // Filter on http.url attribute (3)
 	policy {
 		name = "filter_http_url"
