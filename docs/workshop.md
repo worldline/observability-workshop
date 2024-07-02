@@ -1536,56 +1536,202 @@ http POST :8080/api/easypay/payments posId=POS-01 cardNumber=5555567898780008 ex
 > It may take some time for `easypay-service` to be registered in the service discovery and be available from the API gateway.  
 > Similarly, your traces being ingested by Tempo might also take some time. Patience is key 😅
 
-## Correlate Traces, Logs
+## Correlation
 Duration: 0:15:00
 
-Let's go back to the Grafana explore dashboard. 
-Select the ``Loki`` datasource
-As a label filter, select ``easypay-service``
-Run a query and select a log entry.
+Grafana allows correlation between all our telemetry data:
 
-Now check you have a ``mdc`` JSON element which includes both [``trace_id``](https://www.w3.org/TR/trace-context/#trace-id) and [``span_id``](https://www.w3.org/TR/trace-context/#parent-id).
-They will help us correlate our different requests logs and traces.
+* Logs with Traces,
+* Metrics with Traces,
+* Traces with Metrics,
+* Traces with Logs,
+* …
+
+When discussing observability, correlation is essential. It enables you to diagnose the root cause of an issue quickly by using all the telemetry data involved.
+
+### Logs and traces
+
+🛠️ Let's go back to the Grafana `Explore` dashboard:
+* Select the ``Loki`` data source,
+* Add a label filter to select logs comming from ``easypay-service``,
+* Run a query and select a log entry corresponding to a payment query.
+
+👀 Now check to see if there is a ``mdc`` JSON element that includes both the [``trace_id``](https://www.w3.org/TR/trace-context/#trace-id) and [``span_id``](https://www.w3.org/TR/trace-context/#parent-id).
+These will help us correlate our different request logs and traces.
 
 > aside positive
 >
-> These notions are part of the [W3C Trace Context Specification](https://www.w3.org/TR/trace-context/).
+> These concepts are part of the [W3C Trace Context Specification](https://www.w3.org/TR/trace-context/).
 
-Now, go below in the Fields section. 
-You should see a ``Links`` sub-section with a ``View Trace`` button.
+#### Enable correlation
 
-Click on it.
-You will see the corresponding trace of this log.
+🛠️ In Grafana, go to `Connections` > `Data sources`:
+* Select the `Loki` data source,
+* Create a `Derived fields` configuration:
+  * `Name`: `TraceID`
+  * `Type`: `Regex in log line`
+  * `Regex`: `"trace_id":"(\w+)"`
+  * `Query`: `${__value.raw}`
+  * `URL Label`: `View Trace`
+  * Enable `Internal Link` and select `Tempo`.
 
-Now you can correlate logs and metrics!
-If you have any exceptions in your error logs, you can now check out where it happens and see the big picture of the transaction (as a customer point of view).
+✅ To validate the configuration, you can put an example log message in this view:
+* Click on `Show example log message`,
+* Paste a log line (non-formatted JSON), such as:
 
-### How was it done?
-
-When you enable the MDC on your logs, you always have filled the ``trace_id``.
-
-Then to enable the link, we added the following configuration into the Alloy configuration file:
-
-```yaml
-stage.json { (1)
-		expressions = {
-			// timestamp   = "timestamp",
-			application = "context.properties.applicationName",
-			instance    = "context.properties.instance",
-			trace_id    = "mdc.trace_id",
-		}
-	}
-
-	stage.labels { (2)
-		values = {
-			application = "application",
-			instance    = "instance",
-			trace_id    = "trace_id",
-		}
-	}
+```json
+{"sequenceNumber":0,"timestamp":1719910676210,"nanoseconds":210150314,"level":"INFO","threadName":"kafka-binder-health-1","loggerName":"org.apache.kafka.clients.NetworkClient","context":{"name":"default","birthdate":1719907122576,"properties":{"applicationName":"easypay-service","instance":"easypay-service:9a2ac3f0-c41e-4fcd-8688-123993f1d5db"}},"mdc": {"trace_id":"8b277041692baa8167de5c67977d6571","trace_flags":"01","span_id":"13ff9e44be450b8e"},"message":"[Consumer clientId=consumer-null-1, groupId=null] Node -1 disconnected.","throwable":null}
 ```
 
-1. The first step extracts from the JSON file the ``trace_id`` field.
-2. The label is then created to be eventually used on a Grafana dashboard.
-3. _Et voila!_
+It should display a table:
+* `Name`: `TraceID`
+* `Value`: the trace ID from the log message
+* `Url`: the same trace ID
 
+🛠️ Go back to the Grafana `Explore` dashboard and try to find the same kind of log message:
+* Expand the log,
+* At the bottom of the log entry, you should find the `Fields` and `Links` sections,
+* If the log contains a trace ID, you should see a button labeled `View Trace`,
+* Click on this button!
+
+👀 Grafana should open a pane with the corresponding trace from Tempo!
+
+Now you can correlate logs and traces!  
+If you encounter any exceptions in your error logs, you can now see where it happens and get the bigger picture of the transaction from the customer's point of view.
+
+#### How was it done?
+
+First of all, logs should contain the `trace_id` information.  
+Most frameworks handle this for you. Whenever a request generates a trace or span, the value is placed in the MDC (Mapped Diagnostic Context) and can be printed in the logs.
+
+On the other hand, Grafana has the ability to parse logs to extract certain values for the Loki data source. This is the purpose of `Derived fields`.
+
+When configuring the Loki data source, we provided Grafana with the regex to extract the trace ID from logs and linked it to the Tempo data source. Behind the scenes, Grafana creates the bridge between the two telemetry data sources. And that’s all 😎
+
+### Metrics and Traces (Exemplars)
+
+Exemplars are annotations used in metrics that link specific occurrences, like logs or traces, to data points within a metric time series. They provide direct insights into system behaviors at moments captured by the metric, aiding quick diagnostics by showing related trace data where anomalies occur. This feature is valuable for debugging, offering a clearer understanding of metrics in relation to system events.
+
+🛠️ Generate some load towards the `easypay-service`:
+
+```bash
+k6 run -u 1 -d 2m k6/01-payment-only.js
+```
+
+👀 Now, let's see how exemplars are exported by our service:
+* Access the `easypay-service` container::
+
+```bash
+docker compose exec -it easypay-service sh
+```
+
+* Query actuator for Prometheus metrics, but in the OpenMetrics format:
+
+```bash
+curl http://localhost:8080/actuator/metrics -H 'Accept: application/openmetrics-text' | grep 'trace_id'
+```
+
+You should obtain metrics with the following format:
+
+```
+http_server_requests_seconds_bucket{application="easypay-service",error="none",exception="none",instance="easypay-service:39a9ae31-f73a-4a63-abe5-33049b8272ca",method="GET",namespace="local",outcome="SUCCESS",status="200",uri="/actuator/prometheus",le="0.027962026"} 1121 # {span_id="d0cf53bcde7b60be",trace_id="969873d828346bb616dca9547f0d9fc9"} 0.023276118 1719913187.631
+```
+
+The interesting part starts after the `#` character, this is the so-called exemplar:
+
+```
+               SPAN ID                           TRACE ID                     VALUE      TIMESTAMP
+# {span_id="d0cf53bcde7b60be",trace_id="969873d828346bb616dca9547f0d9fc9"} 0.023276118 1719913187.631
+```
+
+That could be translated by:
+* `easypay-service` handled an HTTP request,
+* Which generated trace ID id `969873d828346bb616dca9547f0d9fc9`,
+* Request duration was `0.023276118` second,
+* At timestamp `1719913187.631`
+
+👀 Exemplars can be analyzed in Grafana:
+* Go to the Grafana `Explore` view,
+* Select the `Prometheus` data source,
+* Switch to the `Code` mode (button on the right),
+* Paste the following PromQL query:
+
+```
+http_server_requests_seconds_count{application="easypay-service", uri="/payments"}
+```
+
+* Unfold the `Options` section and enable `Exemplars`,
+* Click on `Run query`.
+
+👀 In addition to the line graph, you should see square dots at the bottom of the graph:
+* Hover over a dot,
+* It should display useful information for correlation, particularly a `trace_id`.
+
+#### Enable correlation
+
+🛠️ In Grafana, go to the `Connections` > `Data sources` section:
+* Select the `Prometheus` data source,
+* Click on `Exemplars`:
+  * Enable `Internal link` and select the Tempo data source,
+  * `URL Label`: `Go to Trace`,
+  * `Label name:`: `trace_id` (as displayed in the exemplar values),
+* Click on `Save & test`.
+
+🛠️ Go back to the Grafana `Explore` dashboard and try to find the same exemplar as before:
+* Hover over it,
+* You should see a new button `Go to Trace` next to the `trace_id` label,
+* Click on the button.
+
+👀 Grafana should open a new pane with the corresponding trace from Tempo!
+
+We have added a new correlation dimension to our system between metrics and traces!
+
+#### How was it done?
+
+> aside positive
+>
+> This section is informative if you are interested in setting up such an integration in your Spring Boot application.
+
+Regardless of the integration in Grafana and the setup in the Prometheus data source, we had to configure our application to make Micrometer expose exemplars with trace identifiers.
+
+Firstly, we added the following dependencies to our application (`easypay-service/build.gradle.kts`), especially the `io.prometheus:prometheus-metrics-tracer-otel-agent` which provides the necessary classes:
+
+```kotlin
+dependencies {
+  // ...
+  implementation(platform("io.opentelemetry:opentelemetry-bom:1.38.0"))
+  implementation("io.opentelemetry:opentelemetry-api")
+  implementation("io.prometheus:prometheus-metrics-tracer-otel-agent:1.3.1")
+}
+```
+
+Then, in our Spring Boot application, we added a new class, annotated with `@Configuration`, that provides an `OpenTelemetryAgentSpanContext` bean. This bean is able to retrieve the current trace ID from distributed tracing. Here is the implementation of `com.worldline.easypay.config.PrometheusRegistryConfiguration.java`:
+
+```java
+package com.worldline.easypay.config;
+
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import io.prometheus.metrics.tracer.otel_agent.OpenTelemetryAgentSpanContext;
+
+@Configuration // (1)
+public class PrometheusRegistryConfiguration {
+    
+    @Bean
+    @ConditionalOnClass(name="io.opentelemetry.javaagent.shaded.io.opentelemetry.api.trace.Span") // (2)
+    public OpenTelemetryAgentSpanContext exemplarConfigSupplier() {
+        return new OpenTelemetryAgentSpanContext(); // (3)
+    }
+}
+```
+1. Declare the class as a configuration provider for Spring,
+2. The bean injection is enabled only if the class is present (e.g., when the Java agent is attached). Otherwise, the application will not start due to missing classes,
+3. Inject the `OpenTelemetryAgentSpanContext`, which will be used by the Micrometer Prometheus registry to export exemplars based on the trace ID.
+
+> aside positive
+>
+> `OpenTelemetryAgentSpanContext` should be used when you are using an OpenTelemetry Java agent.
+> If you plan to use OpenTelemetry directly in your application, you can rely on the `OpenTelemetrySpanContext` supplier provided by the `io.prometheus:prometheus-metrics-tracer-otel` dependency.
+
+At this point, your application is ready to export exemplars with metrics once an OpenTelemetry Java agent is attached to the JVM!
