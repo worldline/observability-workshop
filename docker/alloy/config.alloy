@@ -90,6 +90,8 @@ otelcol.receiver.otlp "default" {
 	}
 }
 
+//SAMPLING
+/*
 otelcol.processor.tail_sampling "actuator" {
 	policy {
 		name = "filter_http_url"
@@ -117,6 +119,7 @@ otelcol.processor.tail_sampling "actuator" {
 		traces = [otelcol.processor.batch.default.input]
 	}
 }
+*/
 
 otelcol.processor.batch "default" {
 	output {

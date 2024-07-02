@@ -25,7 +25,6 @@ During this workshop we will use the Grafana stack and Prometheus:
 We will also cover the OpenTelemetry Collector which gathers & broadcasts then the data coming from our microservices
 
 ## Workshop overview
-Duration: 0:02:00
 
 ### Application High Level Design
 
@@ -43,7 +42,7 @@ This is how it validates every payment:
 3. Check the credit card type
 4. Check the payment threshold, it calls the Smart Bank Gateway for authorization
 
-If the payment is validated it stores it and broadcasts it to all the other microservices through Kafka.
+If the payment is validated, it stores it and broadcasts it to all the other microservices through Kafka.
 
 #### Fraud detection Service
 
@@ -67,7 +66,7 @@ As mentioned earlier, our observability stack is composed of :
 * [Loki](https://grafana.com/oss/loki/) for storing the logs
 * [Tempo](https://grafana.com/oss/tempo/) for storing the traces
 * [Grafana](https://grafana.com/) for the dashboards
-* The [OTEL collector](https://opentelemetry.io/docs/collector/) which gathers all the data to send it then to 
+*  [GRAFANA Alloy - OTEL collector](https://grafana.com/docs/alloy/latest/) which gathers all the data to send it then to 
 
 In addition, the microservices are started with an agent to broadcast the traces to the collector.   
 
@@ -136,16 +135,13 @@ Docker Compose version v2.24.7
 ```
 
 #### If you don't want to bother with a local setup
-
-##### With Gitpod (recommended)
-You can use [Gitpod](https://gitpod.io).
+It's strongly recommended to use [Gitpod](https://gitpod.io).
 You must create an account first.
 You then can open this project in either your local VS Code or directly in your browser:
 
 [![Open in Gitpod](img/open-in-gitpod.svg)](https://gitpod.io/#github.com/worldline/observability-workshop.git)
 
 ## Environment Setup
-Duration: 0:05:00
 
 ### Open GitPod
 
@@ -162,7 +158,7 @@ The "infrastructure stack" is composed of the following components:
 * One [Configuration server](https://docs.spring.io/spring-cloud-config/) is also used to centralise the configuration of our microservices.
 * The following microservices: API Gateway, Merchant BO, Fraud Detect, Smart Bank Gateway
 
-If you run your application on GitPod, the following step is automatically started at the startup.
+If you run your application on GitPod, the following step are automatically started during the provisioning of your GitPod environment.
 
 Otherwise, to run it on your desktop, execute the following commands
 
@@ -184,12 +180,37 @@ $ docker compose ps -a
 ```
 And check the status of every service.
 
+For instance:
+
+```bash
+❯ docker compose ps
+NAME                                           IMAGE                         COMMAND                  SERVICE               CREATED         STATUS                     PORTS
+api-gateway                                    api-gateway:latest            "java -javaagent:/ap…"   api-gateway           8 minutes ago   Up 7 minutes (healthy)     0.0.0.0:8080->8080/tcp, :::8080->8080/tcp
+config-server                                  config-server:latest          "java -javaagent:/ap…"   config-server         8 minutes ago   Up 7 minutes (healthy)     0.0.0.0:8888->8888/tcp, :::8888->8888/tcp
+discovery-server                               discovery-server:latest       "java -javaagent:/ap…"   discovery-server      8 minutes ago   Up 7 minutes (healthy)     0.0.0.0:8761->8761/tcp, :::8761->8761/tcp
+easypay-service                                easypay-service:latest        "java -javaagent:/ap…"   easypay-service       8 minutes ago   Up 7 minutes (healthy)     
+fraudetect                                     fraudetect-service:latest     "java -javaagent:/ap…"   fraudetect-service    8 minutes ago   Up 7 minutes (healthy)     
+kafka                                          confluentinc/cp-kafka:7.6.1   "/etc/confluent/dock…"   kafka                 8 minutes ago   Up 8 minutes (healthy)     9092/tcp, 0.0.0.0:19092->19092/tcp, :::19092->19092/tcp
+merchant-backoffice                            merchant-backoffice:latest    "java -javaagent:/ap…"   merchant-backoffice   8 minutes ago   Up 7 minutes (healthy)     
+observability-workshop-collector-1             grafana/alloy:latest          "/bin/alloy run --se…"   collector             8 minutes ago   Up 8 minutes               0.0.0.0:4317-4318->4317-4318/tcp, :::4317-4318->4317-4318/tcp, 0.0.0.0:12345->12345/tcp, :::12345->12345/tcp
+observability-workshop-grafana-1               grafana/grafana:latest        "sh -xeuc 'mkdir -p …"   grafana               8 minutes ago   Up 7 minutes               0.0.0.0:3000->3000/tcp, :::3000->3000/tcp
+observability-workshop-loki-1                  grafana/loki:latest           "/usr/bin/loki -conf…"   loki                  8 minutes ago   Up 7 minutes               0.0.0.0:3100->3100/tcp, :::3100->3100/tcp
+observability-workshop-postgres-easypay-1      postgres:16                   "docker-entrypoint.s…"   postgres-easypay      8 minutes ago   Up 8 minutes (healthy)     0.0.0.0:5432->5432/tcp, :::5432->5432/tcp
+observability-workshop-postgres-fraudetect-1   postgres:16                   "docker-entrypoint.s…"   postgres-fraudetect   8 minutes ago   Up 7 minutes (healthy)     0.0.0.0:5434->5432/tcp, :::5434->5432/tcp
+observability-workshop-postgres-merchantbo-1   postgres:16                   "docker-entrypoint.s…"   postgres-merchantbo   8 minutes ago   Up 8 minutes (healthy)     0.0.0.0:5435->5432/tcp, :::5435->5432/tcp
+observability-workshop-postgres-smartbank-1    postgres:16                   "docker-entrypoint.s…"   postgres-smartbank    8 minutes ago   Up 7 minutes (healthy)     0.0.0.0:5433->5432/tcp, :::5433->5432/tcp
+observability-workshop-prometheus-1            prom/prometheus:v2.52.0       "/bin/prometheus --c…"   prometheus            8 minutes ago   Up 8 minutes               0.0.0.0:9090->9090/tcp, :::9090->9090/tcp
+observability-workshop-tempo-1                 grafana/tempo:latest          "/tempo -config.file…"   tempo                 8 minutes ago   Up 7 minutes               0.0.0.0:3200->3200/tcp, :::3200->3200/tcp, 0.0.0.0:9095->9095/tcp, :::9095->9095/tcp, 0.0.0.0:9411->9411/tcp, :::9411->9411/tcp, 0.0.0.0:14268->14268/tcp, :::14268->14268/tcp
+smartbank-gateway                              smartbank-gateway:latest      "java -Xmx4g -javaag…"   smartbank-gateway     8 minutes ago   Up 7 minutes (unhealthy)   
+
+```
+
 #### Validation
 
 Open the [Eureka](https://cloud.spring.io/spring-cloud-netflix/) website started during the infrastructure setup.
 
-If you run this workshop on your desktop, you can go to this URL: http://localhost:8761.
-If you run it on GitPod, you can go to the corresponding URL (e.g., https://8761-worldline-observability-w98vrd59k5h.ws-eu114.gitpod.io) instead.
+* If you run this workshop on your desktop, you can go to this URL: http://localhost:8761.
+* If you run it on GitPod, you can go to the corresponding URL (e.g., https://8761-worldline-observability-w98vrd59k5h.ws-eu114.gitpod.io) instead.
 
 You can now reach our platform to initiate a payment:
 
@@ -223,7 +244,6 @@ transfer-encoding: chunked
 ```
 
 ## Logs 
-Duration: 0:30:00
 
 ### Some functional issues
 One of our customers raised an issue: 
@@ -666,7 +686,6 @@ Finally, you can search logs based on the correlation ID
 
 
 ## Metrics
-Duration: 0:30:00
 
 Let’s take control of our application’s metrics!
 
@@ -1157,7 +1176,6 @@ k6 -u 2 -d 2m k6/01-payment-only.js
 > Just hover the panel you are interested in, click on the three dots and select Edit.
 
 ## Traces
-Duration: 0:20:00
 
 Stop the easypay service.
 
@@ -1208,21 +1226,20 @@ To avoid storing useless data into Tempo, we can sample the data in two ways:
 
 In this workshop, we will implement the latter.
 
-In the alloy configuration file (``docker/alloy/config.alloy``), put this configuration just after the ``SAMPLING`` comment:
+In the alloy configuration file (``docker/alloy/config.alloy``), uncomment this configuration just after the ``SAMPLING`` comment:
 ```
 // SAMPLING
-//
 otelcol.processor.tail_sampling "actuator" {
-policy {
-name = "filter_http_url"
-type = "string_attribute"
-string_attribute {
-key = "http.url"
-values = ["/actuator/health", "/actuator/prometheus"]
-enabled_regex_matching = true
-invert_match = true
-}
-}
+	policy {
+		name = "filter_http_url"
+		type = "string_attribute"
+		string_attribute {
+			key = "http.url"
+			values = ["/actuator/health", "/actuator/prometheus"]
+			enabled_regex_matching = true
+			invert_match = true
+		}
+	}
 
 	policy {
 		name = "filter_url_path"
@@ -1234,6 +1251,11 @@ invert_match = true
 			invert_match = true
 		}
 	}
+
+	output {
+		traces = [otelcol.processor.batch.default.input]
+	}
+}
 ```
 
 This configuration will filter the [SPANs](https://opentelemetry.io/docs/concepts/signals/traces/#spans) created from ``/actuator`` API calls.
@@ -1245,8 +1267,6 @@ $ docker compose restart collector
 ```
 
 ## Correlate Traces, Logs
-Duration: 0:15:00
-
 
 Let's go back to the Grafana explore dashboard. 
 Select the ``Loki`` datasource
