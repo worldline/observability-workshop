@@ -42,15 +42,15 @@ public class PaymentResource {
     @GetMapping
     @Operation(description = "List all payments that have been processed", summary = "List all payments")
     public ResponseEntity<List<Payment>> findAll() {
-        LOG.info("Request: get all processed payments");
+//        LOG.info("Request: get all processed payments");
         return ResponseEntity.ok(paymentService.findAll());
     }
 
     @GetMapping("count")
     @Operation(description = "Count all payments", summary = "Count payments")
     public ResponseEntity<Long> count() {
-        LOG.info("Request: get number of processed payments");
-        return ResponseEntity.ok(paymentService.count());
+//        LOG.info("Request: get number of processed payments");
+//        return ResponseEntity.ok(paymentService.count());
     }
 
     @GetMapping("{id}")
@@ -59,14 +59,14 @@ public class PaymentResource {
     @ApiResponse(responseCode = "204", description = "Payment not found", content = @Content(mediaType = "text/plain"))
     public ResponseEntity<Payment> findById(
             @Parameter(description = "The payment id to be retrieved", required = true) @PathVariable("id") String paymentId) {
-        LOG.info("Request: get payment by id: {}", paymentId);
+//        LOG.info("Request: get payment by id: {}", paymentId);
         UUID id = UUID.fromString(paymentId);
         var payment = paymentService.findById(id);
         if (payment.isEmpty()) {
-            LOG.warn("Payment with id {} not found.", paymentId);
+//            LOG.warn("Payment with id {} not found.", paymentId);
             return ResponseEntity.notFound().build();
         }
-        LOG.debug("Response: found payment: {}", payment.get());
+//        LOG.debug("Response: found payment: {}", payment.get());
         return ResponseEntity.ok(payment.get());
     }
 

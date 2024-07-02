@@ -149,6 +149,8 @@ We will assume you will use GitPod for this workshop :)
 
 [![Open in Gitpod](img/open-in-gitpod.svg)](https://gitpod.io/#github.com/worldline/observability-workshop.git)
 
+When a messages invites you making an URL public, select and validate it.
+
 ### Start the infrastructure
 
 The "infrastructure stack" is composed of the following components:
@@ -521,7 +523,11 @@ return httpResponse;
 
 ```
 
-Go to the MDC spring profile configuration file (``easypay-service/src/main/resources/application-mdc.properties``) and check the configuration got both the ``CardNumber`` & ``POS``fields.
+Go to the MDC spring profile configuration file (``easypay-service/src/main/resources/application-mdc.properties``) and check the configuration of both the ``CardNumber`` & ``POS``fields.
+
+```properties
+[...] %clr(CardNumber=){faint}%clr(%X{CardNumber:-null}) %clr(POS=){faint}%clr(%X{POS:-null}) [...] 
+```
 
 Activate the ``mdc`` profile in the ``compose.yml`` file:
 
@@ -567,7 +573,6 @@ Rebuild/Restart then the whole platform:
 $ docker compose down
 $ docker compose up -d --build --remove-orphans
 ```
-
 
 > aside positive
 >
@@ -665,7 +670,6 @@ Now open the explore dashboard : ``http://localhost:12345/explore``.
 Select the Loki datasource.
 
 In the label filter, select the application as ``easypay-service`` and click on ``Run Query``.
-
 
 Add then a JSON parser operation , click on ``Run query`` again and check out the logs.
 
