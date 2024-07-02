@@ -574,6 +574,7 @@ $ docker compose down
 $ docker compose up -d --build --remove-orphans
 ```
 
+
 > aside positive
 >
 > During this workshop, we will only obfuscate the card numbers in Loki. It will therefore be stored as is in the log files but obfuscated in Loki and by this way in the data exposed on Grafana.
