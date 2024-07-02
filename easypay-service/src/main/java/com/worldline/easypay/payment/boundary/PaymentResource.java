@@ -50,7 +50,7 @@ public class PaymentResource {
     @Operation(description = "Count all payments", summary = "Count payments")
     public ResponseEntity<Long> count() {
 //        LOG.info("Request: get number of processed payments");
-//        return ResponseEntity.ok(paymentService.count());
+        return ResponseEntity.ok(paymentService.count());
     }
 
     @GetMapping("{id}")
