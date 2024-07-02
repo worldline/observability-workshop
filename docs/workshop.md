@@ -814,9 +814,9 @@ Now explore again the targets (``Status`` > ``Targets``) on the Prometheus dashb
 
 * Select the ``Prometheus`` datasource instead of the ``Loki`` one.
 
-In this section you will hands on the metrics query builder of Grafana.
+In this section you will hand on the metrics query builder of Grafana.
 
-The ``Metric`` field lists all the metrics available in Prometheus server: take time to explore them.
+The ``Metric`` field lists all the metrics available in the Prometheus server: take time to explore them.
 
 * For example, you can select the metric named ``jvm_memory_used_bytes``, and click on the ``Run query`` button to plot the memory usage of all your services by memory area,
 
@@ -854,13 +854,13 @@ To import these dashboards:
 > Imported dashboards are available directly from the ``Dashboards`` section of Grafana.
 
 Explore the ``JVM Micrometer`` dashboard: it works almost out of box.  
-It contains lot of useful information about JVMs running our services.
+It contains a lot of useful information about JVMs running our services.
 
 The ``application`` filter (top of the dashboard) let you select the service you want to explore metrics.
 
 ### Incident!
 
-Now let's simulate some traffic using Grafana K6.
+Now let's simulate some traffic using [Grafana K6](https://k6.io/).
 
 Run the following command: 
 
@@ -962,7 +962,7 @@ public class PaymentService {
 ```
 1. Declare the two timers,
 2. Injects the ``MeterRegistry`` provided by Spring Boot Actuator in the class constructor, as it is required to initialize the timers,
-3. Intitialize the two timers by giving them a name (4), a description (5) and adding them to the meter registry.
+3. Initialize the two timers by giving them a name (4), a description (5) and adding them to the meter registry.
 
 #### 2. Record time spent in the methods
 
