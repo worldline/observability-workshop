@@ -43,7 +43,7 @@ This is how it validates every payment:
 3. Check the credit card type
 4. Check the payment threshold, it calls the Smart Bank Gateway for authorization
 
-If the payment is validated it stores it and broadcasts it to all the other microservices through Kafka.
+If the payment is validated, it stores it and broadcasts it to all the other microservices through Kafka.
 
 #### Fraud detection Service
 
@@ -67,7 +67,7 @@ As mentioned earlier, our observability stack is composed of :
 * [Loki](https://grafana.com/oss/loki/) for storing the logs
 * [Tempo](https://grafana.com/oss/tempo/) for storing the traces
 * [Grafana](https://grafana.com/) for the dashboards
-* The [OTEL collector](https://opentelemetry.io/docs/collector/) which gathers all the data to send it then to 
+*  [GRAFANA Alloy - OTEL collector](https://grafana.com/docs/alloy/latest/) which gathers all the data to send it then to 
 
 In addition, the microservices are started with an agent to broadcast the traces to the collector.   
 
@@ -136,22 +136,21 @@ Docker Compose version v2.24.7
 ```
 
 #### If you don't want to bother with a local setup
-
-##### With Gitpod (recommended)
-You can use [Gitpod](https://gitpod.io).
+It's strongly recommended to use [Gitpod](https://gitpod.io).
 You must create an account first.
 You then can open this project in either your local VS Code or directly in your browser:
 
 [![Open in Gitpod](img/open-in-gitpod.svg)](https://gitpod.io/#github.com/worldline/observability-workshop.git)
 
 ## Environment Setup
-Duration: 0:05:00
 
 ### Open GitPod
 
 We will assume you will use GitPod for this workshop :) 
 
 [![Open in Gitpod](img/open-in-gitpod.svg)](https://gitpod.io/#github.com/worldline/observability-workshop.git)
+
+When a messages invites you making an URL public, select and validate it.
 
 ### Start the infrastructure
 
@@ -162,7 +161,7 @@ The "infrastructure stack" is composed of the following components:
 * One [Configuration server](https://docs.spring.io/spring-cloud-config/) is also used to centralise the configuration of our microservices.
 * The following microservices: API Gateway, Merchant BO, Fraud Detect, Smart Bank Gateway
 
-If you run your application on GitPod, the following step is automatically started at the startup.
+If you run your application on GitPod, the following step are automatically started during the provisioning of your GitPod environment.
 
 Otherwise, to run it on your desktop, execute the following commands
 
@@ -184,12 +183,37 @@ $ docker compose ps -a
 ```
 And check the status of every service.
 
+For instance:
+
+```bash
+❯ docker compose ps
+NAME                                           IMAGE                         COMMAND                  SERVICE               CREATED         STATUS                     PORTS
+api-gateway                                    api-gateway:latest            "java -javaagent:/ap…"   api-gateway           8 minutes ago   Up 7 minutes (healthy)     0.0.0.0:8080->8080/tcp, :::8080->8080/tcp
+config-server                                  config-server:latest          "java -javaagent:/ap…"   config-server         8 minutes ago   Up 7 minutes (healthy)     0.0.0.0:8888->8888/tcp, :::8888->8888/tcp
+discovery-server                               discovery-server:latest       "java -javaagent:/ap…"   discovery-server      8 minutes ago   Up 7 minutes (healthy)     0.0.0.0:8761->8761/tcp, :::8761->8761/tcp
+easypay-service                                easypay-service:latest        "java -javaagent:/ap…"   easypay-service       8 minutes ago   Up 7 minutes (healthy)     
+fraudetect                                     fraudetect-service:latest     "java -javaagent:/ap…"   fraudetect-service    8 minutes ago   Up 7 minutes (healthy)     
+kafka                                          confluentinc/cp-kafka:7.6.1   "/etc/confluent/dock…"   kafka                 8 minutes ago   Up 8 minutes (healthy)     9092/tcp, 0.0.0.0:19092->19092/tcp, :::19092->19092/tcp
+merchant-backoffice                            merchant-backoffice:latest    "java -javaagent:/ap…"   merchant-backoffice   8 minutes ago   Up 7 minutes (healthy)     
+observability-workshop-collector-1             grafana/alloy:latest          "/bin/alloy run --se…"   collector             8 minutes ago   Up 8 minutes               0.0.0.0:4317-4318->4317-4318/tcp, :::4317-4318->4317-4318/tcp, 0.0.0.0:12345->12345/tcp, :::12345->12345/tcp
+observability-workshop-grafana-1               grafana/grafana:latest        "sh -xeuc 'mkdir -p …"   grafana               8 minutes ago   Up 7 minutes               0.0.0.0:3000->3000/tcp, :::3000->3000/tcp
+observability-workshop-loki-1                  grafana/loki:latest           "/usr/bin/loki -conf…"   loki                  8 minutes ago   Up 7 minutes               0.0.0.0:3100->3100/tcp, :::3100->3100/tcp
+observability-workshop-postgres-easypay-1      postgres:16                   "docker-entrypoint.s…"   postgres-easypay      8 minutes ago   Up 8 minutes (healthy)     0.0.0.0:5432->5432/tcp, :::5432->5432/tcp
+observability-workshop-postgres-fraudetect-1   postgres:16                   "docker-entrypoint.s…"   postgres-fraudetect   8 minutes ago   Up 7 minutes (healthy)     0.0.0.0:5434->5432/tcp, :::5434->5432/tcp
+observability-workshop-postgres-merchantbo-1   postgres:16                   "docker-entrypoint.s…"   postgres-merchantbo   8 minutes ago   Up 8 minutes (healthy)     0.0.0.0:5435->5432/tcp, :::5435->5432/tcp
+observability-workshop-postgres-smartbank-1    postgres:16                   "docker-entrypoint.s…"   postgres-smartbank    8 minutes ago   Up 7 minutes (healthy)     0.0.0.0:5433->5432/tcp, :::5433->5432/tcp
+observability-workshop-prometheus-1            prom/prometheus:v2.52.0       "/bin/prometheus --c…"   prometheus            8 minutes ago   Up 8 minutes               0.0.0.0:9090->9090/tcp, :::9090->9090/tcp
+observability-workshop-tempo-1                 grafana/tempo:latest          "/tempo -config.file…"   tempo                 8 minutes ago   Up 7 minutes               0.0.0.0:3200->3200/tcp, :::3200->3200/tcp, 0.0.0.0:9095->9095/tcp, :::9095->9095/tcp, 0.0.0.0:9411->9411/tcp, :::9411->9411/tcp, 0.0.0.0:14268->14268/tcp, :::14268->14268/tcp
+smartbank-gateway                              smartbank-gateway:latest      "java -Xmx4g -javaag…"   smartbank-gateway     8 minutes ago   Up 7 minutes (unhealthy)   
+
+```
+
 #### Validation
 
 Open the [Eureka](https://cloud.spring.io/spring-cloud-netflix/) website started during the infrastructure setup.
 
-If you run this workshop on your desktop, you can go to this URL: http://localhost:8761.
-If you run it on GitPod, you can go to the corresponding URL (e.g., https://8761-worldline-observability-w98vrd59k5h.ws-eu114.gitpod.io) instead.
+* If you run this workshop on your desktop, you can go to this URL: http://localhost:8761.
+* If you run it on GitPod, you can go to the corresponding URL (e.g., https://8761-worldline-observability-w98vrd59k5h.ws-eu114.gitpod.io) instead.
 
 You can now reach our platform to initiate a payment:
 
@@ -223,7 +247,6 @@ transfer-encoding: chunked
 ```
 
 ## Logs 
-Duration: 0:30:00
 
 ### Some functional issues
 One of our customers raised an issue: 
@@ -501,7 +524,11 @@ return httpResponse;
 
 ```
 
-Go to the MDC spring profile configuration file (``easypay-service/src/main/resources/application-mdc.properties``) and check the configuration got both the ``CardNumber`` & ``POS``fields.
+Go to the MDC spring profile configuration file (``easypay-service/src/main/resources/application-mdc.properties``) and check the configuration of both the ``CardNumber`` & ``POS``fields.
+
+```properties
+[...] %clr(CardNumber=){faint}%clr(%X{CardNumber:-null}) %clr(POS=){faint}%clr(%X{POS:-null}) [...] 
+```
 
 Activate the ``mdc`` profile in the ``compose.yml`` file:
 
@@ -646,7 +673,6 @@ Select the Loki datasource.
 
 In the label filter, select the application as ``easypay-service`` and click on ``Run Query``.
 
-
 Add then a JSON parser operation , click on ``Run query`` again and check out the logs.
 
 Additionally, you can add these expressions in the JSON parser operation box:
@@ -666,7 +692,6 @@ Finally, you can search logs based on the correlation ID
 
 
 ## Metrics
-Duration: 0:30:00
 
 Let’s take control of our application’s metrics!
 
@@ -791,9 +816,9 @@ Now explore again the targets (``Status`` > ``Targets``) on the Prometheus dashb
 
 * Select the ``Prometheus`` datasource instead of the ``Loki`` one.
 
-In this section you will hands on the metrics query builder of Grafana.
+In this section you will hand on the metrics query builder of Grafana.
 
-The ``Metric`` field lists all the metrics available in Prometheus server: take time to explore them.
+The ``Metric`` field lists all the metrics available in the Prometheus server: take time to explore them.
 
 * For example, you can select the metric named ``jvm_memory_used_bytes``, and click on the ``Run query`` button to plot the memory usage of all your services by memory area,
 
@@ -831,13 +856,13 @@ To import these dashboards:
 > Imported dashboards are available directly from the ``Dashboards`` section of Grafana.
 
 Explore the ``JVM Micrometer`` dashboard: it works almost out of box.  
-It contains lot of useful information about JVMs running our services.
+It contains a lot of useful information about JVMs running our services.
 
 The ``application`` filter (top of the dashboard) let you select the service you want to explore metrics.
 
 ### Incident!
 
-Now let's simulate some traffic using Grafana K6.
+Now let's simulate some traffic using [Grafana K6](https://k6.io/).
 
 Run the following command: 
 
@@ -939,7 +964,7 @@ public class PaymentService {
 ```
 1. Declare the two timers,
 2. Injects the ``MeterRegistry`` provided by Spring Boot Actuator in the class constructor, as it is required to initialize the timers,
-3. Intitialize the two timers by giving them a name (4), a description (5) and adding them to the meter registry.
+3. Initialize the two timers by giving them a name (4), a description (5) and adding them to the meter registry.
 
 #### 2. Record time spent in the methods
 
@@ -1157,8 +1182,6 @@ k6 -u 2 -d 2m k6/01-payment-only.js
 > Just hover the panel you are interested in, click on the three dots and select Edit.
 
 ## Traces
-Duration: 20 minutes
-
 In this section, we'll explore **distributed tracing**, the third pillar of application observability.
 
 Distributed tracing is an essential tool for monitoring and analyzing the performance of complex applications. It tracks the flow of requests across multiple services and components, helping to identify bottlenecks and improve efficiency — particularly useful for intricate systems like Easypay.
@@ -1371,6 +1394,7 @@ To avoid storing unnecessary data in Tempo, we can sample the data in two ways:
 In this workshop, we will implement Tail Sampling.
 
 Modify the Alloy configuration file (``docker/alloy/config.alloy``) as follows:
+In the alloy configuration file (``docker/alloy/config.alloy``), uncomment this configuration just after the ``SAMPLING`` comment:
 ```
 // ...
 // RECEIVER (OTLP)
@@ -1414,7 +1438,6 @@ otelcol.processor.tail_sampling "actuator" {
 		traces = [otelcol.processor.batch.default.input] // (4)
 	}
 }
-// ...
 ```
 1. Modify the output of the `otelcol.receiver.otlp` to export traces to the [otelcol.processor.tail_sampling](https://grafana.com/docs/alloy/latest/reference/components/otelcol.processor.tail_sampling/) component defined just after.
 2. Create a new `otelcol.processor.tail_sampling` component.
@@ -1537,7 +1560,6 @@ http POST :8080/api/easypay/payments posId=POS-01 cardNumber=5555567898780008 ex
 > Similarly, your traces being ingested by Tempo might also take some time. Patience is key 😅
 
 ## Correlate Traces, Logs
-Duration: 0:15:00
 
 Let's go back to the Grafana explore dashboard. 
 Select the ``Loki`` datasource
@@ -1552,7 +1574,7 @@ They will help us correlate our different requests logs and traces.
 > These notions are part of the [W3C Trace Context Specification](https://www.w3.org/TR/trace-context/).
 
 Now, go below in the Fields section. 
-You should see a ``Links`` sub-section with a ``View Trace`` button.
+You should see a ``Links`` subsection with a ``View Trace`` button.
 
 Click on it.
 You will see the corresponding trace of this log.

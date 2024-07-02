@@ -69,6 +69,77 @@ loki.write "endpoint" {
 	}
 }
 
+/////////////////////////
+// AGENT OTEL & TRACES
+/////////////////////////
+
+// RECEIVER (OTLP)
+otelcol.receiver.otlp "default" {
+	grpc {
+		endpoint = "0.0.0.0:4317"
+	}
+
+	http {
+		endpoint = "0.0.0.0:4318"
+	}
+
+	output {
+		metrics = [otelcol.processor.batch.default.input]
+		logs    = [otelcol.processor.batch.default.input]
+		traces  = [otelcol.processor.tail_sampling.actuator.input]
+	}
+}
+
+//SAMPLING
+/*
+otelcol.processor.tail_sampling "actuator" {
+	policy {
+		name = "filter_http_url"
+		type = "string_attribute"
+		string_attribute {
+			key = "http.url"
+			values = ["/actuator/health", "/actuator/prometheus"]
+			enabled_regex_matching = true
+			invert_match = true
+		}
+	}
+
+	policy {
+		name = "filter_url_path"
+		type = "string_attribute"
+		string_attribute {
+			key = "url.path"
+			values = ["/actuator/health", "/actuator/prometheus"]
+			enabled_regex_matching = true
+			invert_match = true
+		}
+	}
+
+	output {
+		traces = [otelcol.processor.batch.default.input]
+	}
+}
+*/
+
+otelcol.processor.batch "default" {
+	output {
+		metrics = [otelcol.exporter.prometheus.default.input]
+		logs    = [otelcol.exporter.loki.default.input]
+		traces  = [otelcol.exporter.otlp.tempo.input]
+	}
+}
+
+// TRACES EXPORTER (OTLP)
+otelcol.exporter.otlp "tempo" {
+	client {
+		endpoint = "tempo:4317"
+
+		tls {
+			insecure = true
+		}
+	}
+}
+
 // METRICS EXPORTER (PROMETHEUS)
 otelcol.exporter.prometheus "default" {
 	forward_to = [prometheus.remote_write.default.receiver]
