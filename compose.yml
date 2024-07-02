@@ -266,6 +266,7 @@ services:
       - --web.enable-lifecycle
       - --web.enable-remote-write-receiver
       - --enable-feature=otlp-write-receiver
+      - --enable-feature=exemplar-storage
 
   tempo:
     image: grafana/tempo:latest
@@ -303,13 +304,6 @@ services:
           isDefault: true
           version: 1
           editable: true
-          jsonData:
-            derivedFields:
-              - datasourceUid: tempo
-                matcherRegex: 'trace_id'
-                matcherType: 'label'
-                name: TraceID
-                urlDisplayLabel: 'View Trace'
         - name: Prometheus
           type: prometheus
           uid: prometheus
@@ -320,11 +314,6 @@ services:
           isDefault: false
           version: 1
           editable: true
-          jsonData:
-            httpMethod: GET
-            exemplarTraceIdDestinations:
-              - datasourceUid: tempo
-                name: TraceID
         - name: Tempo
           type: tempo
           access: proxy
@@ -340,16 +329,6 @@ services:
             httpMethod: GET
             serviceMap:
               datasourceUid: prometheus
-            tracesToLogsV2:
-              datasourceUid: loki
-              filterBySpanID: false
-              filterByTraceID: true
-              tags:
-              - application
-            tracesToMetrics:
-              datasourceUid: prometheus
-              tags:
-              - application
         EOF
         /run.sh
     image: grafana/grafana:latest
