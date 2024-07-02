@@ -142,7 +142,6 @@ You then can open this project in either your local VS Code or directly in your 
 [![Open in Gitpod](img/open-in-gitpod.svg)](https://gitpod.io/#github.com/worldline/observability-workshop.git)
 
 ## Environment Setup
-Duration: 0:05:00
 
 ### Open GitPod
 
@@ -247,7 +246,6 @@ transfer-encoding: chunked
 ```
 
 ## Logs 
-Duration: 0:30:00
 
 ### Some functional issues
 One of our customers raised an issue: 
