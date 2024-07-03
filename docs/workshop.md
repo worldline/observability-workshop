@@ -66,7 +66,7 @@ As mentioned earlier, our observability stack is composed of :
 * [Loki](https://grafana.com/oss/loki/) for storing the logs
 * [Tempo](https://grafana.com/oss/tempo/) for storing the traces
 * [Grafana](https://grafana.com/) for the dashboards
-*  [GRAFANA Alloy - OTEL collector](https://grafana.com/docs/alloy/latest/) which gathers all the data to send it then to 
+*  [Grafana Alloy - OTEL collector](https://grafana.com/docs/alloy/latest/) which gathers all the data to send it then to 
 
 In addition, the microservices are started with an agent to broadcast the traces to the collector.   
 
@@ -93,7 +93,7 @@ You **MUST** have set up these tools first:
 * Any IDE ([IntelliJ IDEA](https://www.jetbrains.com/idea), [VSCode](https://code.visualstudio.com/), [Netbeans](https://netbeans.apache.org/),...) you want
 * [cURL](https://curl.se/), [jq](https://stedolan.github.io/jq/), [HTTPie](https://httpie.io/) or any tool to call your REST APIs
 
-Here are commands to validate your environment:
+🛠️ Here are commands to validate your environment:
 
 **Java**
 
@@ -107,7 +107,7 @@ OpenJDK 64-Bit Server VM Temurin-21.0.3+9 (build 21.0.3+9-LTS, mixed mode, shari
 
 **Gradle**
 
-If you use the wrapper, you won't have troubles. Otherwise...:
+🛠️ If you use the wrapper, you won't have troubles. Otherwise...:
 
 ```jshelllanguage
 $ gradle -version
@@ -160,9 +160,9 @@ The "infrastructure stack" is composed of the following components:
 * One [Configuration server](https://docs.spring.io/spring-cloud-config/) is also used to centralise the configuration of our microservices.
 * The following microservices: API Gateway, Merchant BO, Fraud Detect, Smart Bank Gateway
 
-If you run your application on GitPod, the following step are automatically started during the provisioning of your GitPod environment.
+ℹ️ If you run your application on GitPod, the following step are automatically started during the provisioning of your GitPod environment.
 
-Otherwise, to run it on your desktop, execute the following commands
+🛠️ Otherwise, to run it on your desktop, execute the following commands
 
 ``` bash
 $ bash scripts/download-agent.sh
@@ -175,7 +175,8 @@ $ ./gradlew tasks
 ``` bash
 $ docker compose up -d --build --remove-orphans
 ```
-To check if all the services are up, you can run this command:
+
+✅ To check if all the services are up, you can run this command:
 
 ``` bash
 $ docker compose ps -a
@@ -209,18 +210,26 @@ smartbank-gateway                              smartbank-gateway:latest      "ja
 
 #### Validation
 
-Open the [Eureka](https://cloud.spring.io/spring-cloud-netflix/) website started during the infrastructure setup.
+✅ Open the [Eureka](https://cloud.spring.io/spring-cloud-netflix/) website started during the infrastructure setup. The following instances should be registered with Eureka:
 
-* If you run this workshop on your desktop, you can go to this URL: http://localhost:8761.
-* If you run it on GitPod, you can go to the corresponding URL (e.g., https://8761-worldline-observability-w98vrd59k5h.ws-eu114.gitpod.io) instead.
+* API-GATEWAY
+* EASYPAY-SERVICE
+* FRAUDETECT-SERVICE
+* MERCHANT-BACKOFFICE
+* SMARTBANK-GATEWAY
 
-You can now reach our platform to initiate a payment:
+> aside positive
+>
+> If you run this workshop on your desktop, you can go to this URL: [http://localhost:8761].  
+> If you run it on GitPod, you can go to the corresponding URL (e.g., https://8761-worldline-observability-w98vrd59k5h.ws-eu114.gitpod.io) instead by going into the `PORTS` view.
+
+🛠️ You can now access our platform to initiate a payment:
 
 ```bash
 $ http POST :8080/api/easypay/payments posId=POS-01 cardNumber=5555567898780008 expiryDate=789456123 amount:=25000
 ```
 
-You should get the following content:
+✅ You should get the following content:
 
 ```bash
 HTTP/1.1 201 Created
@@ -255,9 +264,9 @@ One of our customers raised an issue:
 Normally the first thing to do is checking the logs. 
 Before that, we will reproduce these issues.
 
-You can check the API as following:
+🛠️ You can check the API as following:
 
-For the ``AMOUNT_EXCEEDED`` error:
+* For the ``AMOUNT_EXCEEDED`` error:
 
 ```bash
 $ http POST :8080/api/easypay/payments posId=POS-01 cardNumber=5555567898780008 expiryDate=789456123 amount:=51000
@@ -284,7 +293,7 @@ transfer-encoding: chunked
 }
 ```
 
-And for the ``INVALID_CARD_NUMBER`` error:
+* And for the ``INVALID_CARD_NUMBER`` error:
 
 ```bash
 $  http POST :8080/api/easypay/payments posId=POS-01 cardNumber=5555567898780007 expiryDate=789456123 amount:=51000
@@ -312,10 +321,14 @@ transfer-encoding: chunked
 
 ```
 
-Go then to the log folder (``easypay-service/logs/``).
-You should get these log entries in JSON format. 
-Open one of these files and check out the logs. 
-Look into the ``easypay-service-log.json`` to pinpoint these issues.
+🛠️ It’s time to have a look to our `easypay-service` logs!  
+Service is started in a Docker container. To get its output you can use the following command:
+
+```bash
+$ docker compose logs -f easypay-service
+```
+
+👀 Look into the console `logs` to pinpoint these issues.
 
 > aside positive
 >
@@ -352,7 +365,8 @@ For instance, [SLF4J](https://www.slf4j.org/) offers the [following log levels b
 
 #### ``AMOUNT_EXCEEDED`` issue
 
-Go the ``easypay-service/src/main/java/com/worldline/easypay/payment/control/bank/BankAuthorService.java`` class and modify the following code block
+📝 Go the ``easypay-service/src/main/java/com/worldline/easypay/payment/control/bank/BankAuthorService.java`` class and modify the following code block
+
 ```java
 @Retry(name = "BankAuthorService", fallbackMethod = "acceptByDelegation")
 public boolean authorize(PaymentProcessingContext context) {
@@ -370,10 +384,20 @@ public boolean authorize(PaymentProcessingContext context) {
 }
 ```
 
-Modify the exception trace to provide contextual information such as the authorId, the status of the call and the result. 
+Add a log before the `return context.authorized;` instruction to provide contextual information such as the authorId and the result of the call (authorized or not).
+
+For the lazy, you can write something like that:
+```java
+[...]
+context.bankCalled = true;
+context.authorId = Optional.of(response.authorId());
+context.authorized = response.authorized();
+log.info("Bank answered payment authorization with authorId={}, authorized={}", response.authorId(), response.authorized());
+return context.authorized;
+```
 
 #### ``INVALID_CARD_NUMBER`` issue
-Go to the ``easypay-service/src/main/java/com/worldline/easypay/payment/control/CardValidator.java`` class and modify the following block code in the process method in the same way:
+📝 Go to the ``easypay-service/src/main/java/com/worldline/easypay/payment/control/PaymentService.java`` class and modify the following block code in the `process` method in the same way:
 
 ```java
 private void process(PaymentProcessingContext context) {
@@ -391,50 +415,55 @@ private void process(PaymentProcessingContext context) {
 For this error, you can log the error with the following content:
 
 * The attributes of the ``PaymentProcessingContext `` 
-* The error message
+* An error message
 
+📝 You can also add more logs, especially in the ``easypay-service/src/main/java/com/worldline/easypay/payment/control/CardValidator.java`` class.  
+You may simply uncomment all the commented logs lines (``// LOG.…``), such as:
 
-You can also add more logs:
-
-In the ``CarValidator.checkLunKey()`` method, you can add a warn message when the key is not valid. 
-For instance:
-
-```java
-log.warn("checkLunKey KO: {}",cardNumber);
-```
-In the ``CarValidator.checkExpiryDate()`` method, you can add a warn message when a ``DateTimeParseException`` is thrown.
-
-For instance:
+* In the ``CarValidator.checkLunKey()`` method, add a warning message when the key is not valid. For instance:
 
 ```java
-log.warn("checkExpiryDate KO: bad format {}",expiryDate);
+LOG.warn("Check card number Luhn key does not pass: {}", cardNumber);
 ```
 
-You can go further and add as many log you think it would help in production.
+* In the ``CarValidator.checkExpiryDate()`` method, add a warning message when a ``DateTimeParseException`` is thrown. For instance:
+
+```java
+LOG.warn("Check card expiry date does not pass: bad format: {}", expiryDate);
+```
+
+* And do the same for other logs…
+
+You can go further and add as many logs as you think would help in production 😎
+
+#### Additional logs
+
+We can also log payment requests and responses to provide even more context, which could be helpful for following requests in this workshop.
+
+📝 Modify the `easypay-service/src/main/java/com/worldline/easypay/payment/boundary/PaymentResource.java` class by uncommenting all `// LOG.…` lines (keep MDC lines for later 😉).
 
 ### Check your code
 
-You can restart your easy pay service running the following commands:
+🛠️ You can redeploy the `easypay-service` with the following commands:
 
 ```bash
-$ docker compose down easypay-service
 $ docker compose build easypay-service
 $ docker compose up -d easypay-service
 ```
 
-Now you can run the same commands ran earlier and check again the logs.
+🛠️ Now you can run the same commands ran earlier and check again the logs (`http POST…`).
 
 ### A technical issue
 
-Another issue was raised for the POS (Point of Sell) ``POS-02``. 
+Another issue was raised for the POS (Point of Sell) ``POS-02`` (but we didn’t know yet!).
 
-When you reach the API using this command:
+🛠️ When you reach the API using this command:
 
 ```bash
 http POST :8080/api/easypay/payments posId=POS-02 cardNumber=5555567898780008 expiryDate=789456123 amount:=25000
 ```
 
-With the following output:
+👀 You should get the following output:
 
 ````bash
 
@@ -449,7 +478,7 @@ HTTP/1.1 500
 }
 ````
 
-You then get the following log message:
+👀 You then get the following log message:
 
 ```bash
 2024-06-05T15:45:35.215+02:00 ERROR 135386 --- [easypay-service] [o-auto-1-exec-7] o.a.c.c.C.[.[.[/].[dispatcherServlet]    : Servlet.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed: java.lang.NullPointerException: Cannot invoke "java.lang.Boolean.booleanValue()" because "java.util.List.get(int).active" is null] with root cause
@@ -466,9 +495,7 @@ java.lang.NullPointerException: Cannot invoke "java.lang.Boolean.booleanValue()"
     [...]
 ```
 
-To find the root cause, add first a _smart_ log entry in the ``easypay-service/src/main/java/com/worldline/easypay/payment/control/PosValidator.java`` class.
-
-In the ``isActive()`` method, catch the exception and trace the error:
+📝 To find the root cause, add first a _smart_ log entry in the ``easypay-service/src/main/java/com/worldline/easypay/payment/control/PosValidator.java`` class. In the ``isActive()`` method, catch the exception and trace the error:
 
 ```java
 public boolean isActive(String posId) {
@@ -494,20 +521,30 @@ public boolean isActive(String posId) {
     }
 }
 ```
-        
-You can also prevent this issue by simply fixing the SQL import file.
 
-In the file ``easypay-service/src/main/resources/db/postgresql/data.sql``, modify the implied line for ``POS-02`` from:
+This is most likely an issue with some data in the database… Thanks to logs, we may quickly get the idea that the problem comes from the point of sale with ID `POS-02`.
 
-```sql 
-INSERT INTO pos_ref(id, pos_id, location, active) VALUES (2, 'POS-02', 'Blois France', NULL) ON CONFLICT DO NOTHING;
+It is easy to identify the issue if we don’t have traffic against our application, but what if we have more realistic traffic?
+
+🛠️ Generate some load with `k6` (a Grafana tool for load testing):
+
+```bash
+$ k6 run -u 5 -d 30s k6/01-payment-only.js
 ```
 
-to 
+👀 Check again logs:
 
-```sql 
-INSERT INTO pos_ref(id, pos_id, location, active) VALUES (2, 'POS-02', 'Blois France', true) ON CONFLICT DO NOTHING;
+```bash
+$ docker compose logs -f easypay-service
 ```
+
+Logs are now interleaved due to several requests being executed concurrently. It becomes harder to identify which point of sale is causing this error...
+
+👀 If you look into the SQL import file (`easypay-service/src/main/resources/db/postgresql/data.sql`), you'll notice a `NULL` value instead of a boolean for the `active` column.
+
+> aside negative
+>
+> Let’s keep the issue as it is for now.
 
 ### Using Mapped Diagnostic Context (MDC) to get more insights
 > aside positive
@@ -515,28 +552,30 @@ INSERT INTO pos_ref(id, pos_id, location, active) VALUES (2, 'POS-02', 'Blois Fr
 >  Mapped Diagnostic Context (MDC) will help us add more context on every log output. For more information, refer to this web page: [https://logback.qos.ch/manual/mdc.html](https://logback.qos.ch/manual/mdc.html). 
 
 
-Go to the ``PaymentResource`` class and modify the method ``processPayment()`` to instantiate the [MDC](https://logback.qos.ch/manual/mdc.html):
-
+📝 Go to the ``PaymentResource`` class and modify the method ``processPayment()`` to instantiate the [MDC](https://logback.qos.ch/manual/mdc.html):
 
 ```java
 public ResponseEntity<PaymentResponse> processPayment(PaymentRequest paymentRequest)
+  MDC.put("CardNumber",paymentRequest.cardNumber());
+  MDC.put("POS",paymentRequest.posId());
 
-MDC.put("CardNumber",paymentRequest.cardNumber());
-MDC.put("POS",paymentRequest.posId());
-
-[...]
-MDC.clear();
+  [...]
+  MDC.clear();
 return httpResponse;
 
 ```
 
-Go to the MDC spring profile configuration file (``easypay-service/src/main/resources/application-mdc.properties``) and check the configuration of both the ``CardNumber`` & ``POS``fields.
+👀 Go to the MDC spring profile configuration file (``easypay-service/src/main/resources/application-mdc.properties``) and check the configuration of both the ``CardNumber`` & ``POS``fields.
 
 ```properties
 [...] %clr(CardNumber=){faint}%clr(%X{CardNumber:-null}) %clr(POS=){faint}%clr(%X{POS:-null}) [...] 
 ```
 
-Activate the ``mdc`` profile in the ``compose.yml`` file:
+> aside positive
+>
+> `%X` allows to print the content of a MDC map.
+
+📝 Activate the ``mdc`` profile in the ``compose.yml`` file:
 
 ```yaml
   easypay-service:
@@ -545,48 +584,24 @@ Activate the ``mdc`` profile in the ``compose.yml`` file:
       SPRING_PROFILES_ACTIVE: default,docker,mdc
 ```
 
-> aside positive
-> To apply these modifications, we must restart the ``easypay-service``. 
-> It will be done later.
-> 
+🛠️ Rebuild and redeploy the `easypay-service`:
+
+```bash
+$ docker compose build easypay-service
+$ docker compose up -d easypay-service
+```
+
 ### Adding more content in our logs
 
-To have more logs, we will run several HTTP requests using [K6](https://k6.io/):
-
-Run the following command:
+🛠️ To have more logs, we will run several HTTP requests using [K6](https://k6.io/). Run the following command:
 
 ```bash
 $ k6 run -u 5 -d 5s k6/01-payment-only.js
 ```
+👀 Check then the logs to pinpoint some exceptions. 
 
-Check then the logs to pinpoint some exceptions.
+### Logs Correlation
 
-### Personal Identifiable Information (PII) obfuscation
-For compliance and preventing personal data loss, we will obfuscate the card number in the logs:
-
-In the Alloy configuration file (``docker/alloy/config.alloy``), uncomment the [luhn stage](https://grafana.com/docs/alloy/latest/reference/components/loki.process/#stageluhn-block).
-
-```
-/*stage.luhn {
-min_length  = 13
-replacement = "**MASKED**"
-}
-*/
-``` 
-
-Rebuild/Restart then the whole platform: 
-
-```bash
-$ docker compose down
-$ docker compose up -d --build --remove-orphans
-```
-
-
-> aside positive
->
-> During this workshop, we will only obfuscate the card numbers in Loki. It will therefore be stored as is in the log files but obfuscated in Loki and by this way in the data exposed on Grafana.
-
-### Logs Correlation  
 > aside positive
 >
 > You are probably wondering how to smartly debug in production when you have plenty of logs for several users and by the way different transactions?
@@ -596,21 +611,30 @@ $ docker compose up -d --build --remove-orphans
 
 ### Let's dive into our logs on Grafana!
 
-Logs are stored in the logs folder (``easypay-service/logs``).
+Logs are stored in the `logs` folder. You should find a `.log.json` file for each service in our application.  
+We have configured our Spring Boot applications to output logs:
 
-We use then [Promtail to broadcast them to Loki](https://grafana.com/grafana/dashboards/14055-loki-stack-monitoring-promtail-loki/) through [Grafana Alloy (OTEL Collector)](https://grafana.com/docs/alloy/latest/).
+* In the console (the one we can see),
+* But also in a file with JSON format.
 
-Check out the Logging configuration in the ``docker/alloy/config.alloy`` file:
+> aside positive
+> 
+> Structured logging may be less readable for humans, but it is perfect for log concentrators as they are easy to parse!  
+> You can look at a `logback-spring.xml` file to see the configuration we used (in the `src/main/resources` directory of one of the modules).
+
+👀 You can take a look at log files such as `easypay-service.log.json` to see their structure: a lot of information is available!
+
+In this section we will use [Promtail to broadcast them to Loki](https://grafana.com/grafana/dashboards/14055-loki-stack-monitoring-promtail-loki/) through [Grafana Alloy (OTEL Collector)](https://grafana.com/docs/alloy/latest/).  
+[Loki](https://grafana.com/oss/loki/), our storage backend, is listening on host `loki` and port `3100`.
+
+#### Configure Grafana Alloy collector
+
+📝 Add the following Logging configuration to the ``docker/alloy/config.alloy`` file:
 
 ```json
 ////////////////////
-// (1) LOGS
+// LOGS
 ////////////////////
-
-loki.source.file "logfiles" {
-	targets    = local.file_match.logs.targets
-	forward_to = [loki.write.endpoint.receiver]
-}
 
 // JSON LOG FILES (1)
 local.file_match "jsonlogs" {
@@ -625,30 +649,34 @@ loki.source.file "jsonlogfiles" {
 loki.process "jsonlogs" {
 	forward_to = [loki.write.endpoint.receiver]
 
-	//stage.luhn { }
-    // (4)
+  // (4)
 	stage.json {
 		expressions = {
-			// timestamp   = "timestamp",
+			timestamp   = "timestamp",
 			application = "context.properties.applicationName",
 			instance    = "context.properties.instance",
+      level       = "level",
 		}
 	}
-// (5)
+
+  // (5)
 	stage.labels {
 		values = {
 			application = "application",
 			instance    = "instance",
+      level       = "level,
 		}
 	}
 
-	/*stage.timestamp {
+  // (6)
+	stage.timestamp {
 		source = "timestamp"
 		format = "RFC3339"
 		fallback_formats = ["UnixMs",]
-	}*/
+	}
 }
-    // (6)
+
+// (7)
 // EXPORTER (LOKI)
 loki.write "endpoint" {
 	endpoint {
@@ -656,41 +684,111 @@ loki.write "endpoint" {
 	}
 }
 ```
-As you can see, the JSON files are automatically grabbed and broadcast to Loki.
+Thanks to this configuration, the JSON files are automatically grabbed and broadcast to Loki.
 Here is a short summary of the following steps:
 
-1. Configuration of the input files
-2. Configuration of the broadcasting within Alloy
-3. Process definition
-4. Applying some contextual information suck like the application name
-5. Follow up the previous action and applying labels
-6. Output definition
+1. List the input file we are interested in (all `.json` files in the `logs` directory)
+2. Reads log entries from files defined in (1) and forward them to Alloy’s Loki components
+3. Process log entries to parse them, extract data, transform data, and filter log entries
+4. Extract contextual information from JSON log entry, such as the application name
+5. Follow up the previous action by applying labels which will be available in Loki
+6. Extract timestamp from the log file instead of using Promtail scrape time,
+7. Define the output to Loki
 
-Open a browser page to Grafana.
+🛠️ Restart the Grafana Alloy collector:
 
-Check out first the page ``http://localhost:12345/graph``
-Select the ``loki.source.jsonlogfiles`` component.
+```bash
+$ docker compose restart collector
+```
 
-Check all the targets.
+👀 Open a browser page to Alloy UI (`port 12345`):
 
-Now open the explore dashboard : ``http://localhost:12345/explore``.
+* Check out first the page ``http://localhost:12345/graph``,
+* Select the ``loki.source.file`` component named `jsonlogfiles`,
+* Check all the targets.
 
-Select the Loki datasource.
+#### Explore logs with Grafana
 
-In the label filter, select the application as ``easypay-service`` and click on ``Run Query``.
+> aside positive
+>
+> For this workshop, we have already configured the Loki datasource in Grafana.  
+> You can take a look at its configuration in Grafana (port `3000`) by navigating to the `Connections` > `Data sources` section.  
+> We only setup the Loki server url.
 
-Add then a JSON parser operation , click on ``Run query`` again and check out the logs.
+🛠️ Go to Grafana (port `3000`):
+* Open an `Explore` dashboard,
+* Select the Loki datasource.
 
-Additionally, you can add these expressions in the JSON parser operation box:
+Grafana offers a form to help you build your queries:
+* Filtering labels,
+* Finding text in logs,
+* Parsing logs to extract and filter values,
+* ...
 
-* Expression: ``message="message"``
-* Level: ``level="level"``
+You can also use a dedicated query language to make your queries directly: this is named [LogQL](https://grafana.com/docs/loki/latest/query/).
 
-Check out the logs again, view it now as a table.
 
-You can also view traces for the other services (e.g., ``api-gateway``) 
+🛠️ Let’s get logs from the `easypay-service`:
+* In the `Label filter`, select the application as ``easypay-service``,
+* Click on ``Run Query``,
+* Check out logs on the bottom of the view and unfold some of them.
 
-Finally, you can search logs based on the correlation ID
+Now we want to display logs in a table format with the timestamp, the log level and the message.  
+In order to do that, we should extract the message from the JSON as it is not done automatically.
+
+🛠️ Modify the query such as:
+* Keep the same `Label filters` for the application `easypay-service`,
+* Click on `+ Operations` and select `Formats` > `Json`: this will let us parse the log as JSON,
+* Click on `+ Expression` to extract the JSON `message` field,
+* Type `message="message"` to extract the value in a field with the same name,
+* Click on `Run query` and unfold a log: you should see a new field named `message` in the `Fields` group.
+
+🛠️ Time to format:
+* Click on `Table` just below the `Logs volume` graph, to the right,
+* Select the `Time`, `level` and `message` fields.
+
+🛠️ Do not hesitate to hit the easypay payment endpoint with curl/httpie or k6 to generate some logs (whichever you prefer):
+
+```bash
+http POST :8080/api/easypay/payments posId=POS-01 cardNumber=5555567898780008 expiryDate=789456123 amount:=40000
+# OR
+k6 run -u 1 -d 2m k6/01-payment-only.js
+```
+
+👀 You can also view traces for the other services (e.g., ``api-gateway``).
+
+👀 You can also search logs based on the correlation ID.
+
+Maybe another issue? Do you see the card numbers? 😨
+
+### Personal Identifiable Information (PII) obfuscation
+For compliance and to prevent personal data loss, we will obfuscate the card number in the logs.
+
+🛠️ In the Alloy configuration file (``docker/alloy/config.alloy``), add a [luhn stage](https://grafana.com/docs/alloy/latest/reference/components/loki.process/#stageluhn-block) at the end of the `loki.process "jsonlogs"` block definition:
+
+```hcl
+loki.process "jsonlogs" {
+  //...
+  stage.luhn {
+    min_length  = 13
+    replacement = "**MASKED**"
+  }
+}
+``` 
+
+🛠️ Restart the collector: 
+
+```bash
+$ docker compose restart collector
+```
+
+🛠️ Generate some logs with curl/httpie or k6.
+
+✅ Check the card numbers are now obfuscated with the ``**MASKED**`` content. 
+
+> aside positive
+>
+> During this workshop, we will only obfuscate the card numbers in Loki. It will therefore be stored as is in the log files but obfuscated in Loki and by this way in the data exposed on Grafana.
 
 ## Metrics
 
@@ -704,25 +802,25 @@ Let’s take control of our application’s metrics!
 
 ### Metrics exposed by the application
 
-Check out the ``easypay-service`` metrics definitions exposed by Spring Boot Actuator first:
+🛠️ Check out the ``easypay-service`` metrics definitions exposed by Spring Boot Actuator first:
 
 ```bash
-http :8080/actuator/metrics
+$ http :8080/actuator/metrics
 ```
 
-Explore the output.
+👀 Explore the output.
 
-Now get the Prometheus metrics using this command:
+🛠️ Now get the Prometheus metrics using this command:
 
 ```bash
-http :8080/actuator/prometheus
+$ http :8080/actuator/prometheus
 ```
 
 This is an endpoint exposed by Actuator to let the Prometheus server get your application metrics.
 
 ### How are metrics scraped?
 
-Check out the Prometheus (``docker/prometheus/prometheus.yml``) configuration file.
+👀 Check out the Prometheus (``docker/prometheus/prometheus.yml``) configuration file.
 All the scraper's definitions are configured here.
 
 > aside positive
@@ -762,7 +860,7 @@ Hopefully, Prometheus is also able to query our ``discovery-server`` (Eureka ser
 1. We plugged Prometheus to our Eureka `discovery-server` to explore all the metrics of the underlying systems
 2. Configuration allows additional operations, such as relabelling the final metric before storing it into Prometehus
 
-You can have an overview of all the scraped applications on the Prometheus dashboard:
+👀 You can have an overview of all the scraped applications on the Prometheus dashboard:
 
 * Go to ``http://localhost:9090`` if you started the stack locally, or use the link provided by GitPod in the `PORTS` view for port `9090`,
 * Click on ``Status`` > ``Targets``,
@@ -772,7 +870,7 @@ You can have an overview of all the scraped applications on the Prometheus dashb
 
 ### Add scrape configuration for our easypay service
 
-Modify the ``docker/prometheus/prometheus.yml`` file to add a new configuration to scrape the easypay service.
+📝 Modify the ``docker/prometheus/prometheus.yml`` file to add a new configuration to scrape the easypay service.
 You can use the ``prometheus-config-server`` configuration as a model:
 
 * Job name: ``prometheus-easypay-service``
@@ -792,13 +890,13 @@ That should give you the following yaml configuration:
           - easypay-service:8080
 ```
 
-Restart the Prometheus server to take into account this new configuration:
+🛠️ Restart the Prometheus server to take into account this new configuration:
 
 ```bash
-docker compose restart prometheus
+$ docker compose restart prometheus
 ```
 
-Now explore again the targets (``Status`` > ``Targets``) on the Prometheus dashboard (``port 9090``). 
+👀 Now explore again the targets (``Status`` > ``Targets``) on the Prometheus dashboard (``port 9090``). 
 
 > aside positive
 >
@@ -813,22 +911,21 @@ Now explore again the targets (``Status`` > ``Targets``) on the Prometheus dashb
 > You can have a look at its configuration in Grafana (``port 3000``) in the ``Connections`` > ``Data sources`` section.  
 > It is pretty straightforward as we have only setup the Prometheus server URL.
 
-* Go to Grafana and start again an ``Explore`` dashboard.
+🛠️ Go to Grafana and start again an ``Explore`` dashboard.
 
-* Select the ``Prometheus`` datasource instead of the ``Loki`` one.
+🛠️ Select the ``Prometheus`` datasource instead of the ``Loki`` one.
 
 In this section you will hand on the metrics query builder of Grafana.
 
 The ``Metric`` field lists all the metrics available in the Prometheus server: take time to explore them.
 
-* For example, you can select the metric named ``jvm_memory_used_bytes``, and click on the ``Run query`` button to plot the memory usage of all your services by memory area,
+🛠️ For example, you can select the metric named ``jvm_memory_used_bytes``, and click on the ``Run query`` button to plot the memory usage of all your services by memory area,
 
-* If you want to plot the total memory usage of your services:
+🛠️ If you want to plot the total memory usage of your services:
   * Click on ``Operations`` and select ``Aggregations`` > ``Sum``, and ``Run query``: you obtain the whole memory consumption of all your JVMs,
   * To split the memory usage per service, you can click on the ``By label`` button and select the label named ``application`` (do not forget to click on ``Run query`` afterthat).
 
-* You can also filter metrics to be displayed using ``Label filters``: try to create a filter to display only the metric related to the application named easypay-service.
-* Check the card numbers are now obfuscated with the ``**MASKED**`` content. 
+🛠️ You can also filter metrics to be displayed using ``Label filters``: try to create a filter to display only the metric related to the application named easypay-service.
 
 > aside positive
 >
@@ -845,7 +942,7 @@ We will choose the second solution right now and import the following dashboards
 * [JVM Micrometer](https://grafana.com/grafana/dashboards/12271-jvm-micrometer/), which ID is `12271`,
 * [Spring Boot JDBC & HikariCP](https://grafana.com/grafana/dashboards/20729-spring-boot-jdbc-hikaricp/), which ID is `20729`.
 
-To import these dashboards:
+🛠️ To import these dashboards:
 * Go to Grafana (``port 3000``), and select the ``Dashboards`` section on the left,
 * Then click on ``New`` (top right), and click on ``Import``,
 * In the ``Find and import…`` field, just paste the ID of the dashboard and click on ``Load``,
@@ -856,40 +953,40 @@ To import these dashboards:
 >
 > Imported dashboards are available directly from the ``Dashboards`` section of Grafana.
 
-Explore the ``JVM Micrometer`` dashboard: it works almost out of box.  
+👀 Explore the ``JVM Micrometer`` dashboard: it works almost out of box.  
 It contains a lot of useful information about JVMs running our services.
 
 The ``application`` filter (top of the dashboard) let you select the service you want to explore metrics.
 
 ### Incident!
 
-Now let's simulate some traffic using [Grafana K6](https://k6.io/).
-
-Run the following command: 
+🛠️ Now let's simulate some traffic using [Grafana K6](https://k6.io/). Run the following command: 
 
 ```bash
 $ k6 run -u 5 -d 2m k6/02-payment-smartbank.js
 ```
 
-Go back to the Grafana dashboard, click on ``Dashboards`` and select ``JVM Micrometer``.
+👀 Go back to the Grafana dashboard, click on ``Dashboards`` and select ``JVM Micrometer``:
 
-Explore the dashboard for the ``easypay-service``, especially the Garbage collector and CPU statistics.
+* Explore the dashboard for the ``easypay-service``, especially the Garbage collector and CPU statistics.
 
-Look around the other ``Spring Boot JDBC & HikariCP`` dashboard then and see what happens on the database connection pool for ``easypay-service``.
+* Look around the other ``Spring Boot JDBC & HikariCP`` dashboard then and see what happens on the database connection pool for ``easypay-service``.
 
-We were talking about an incident, isn’t it? Let's go back to the Explore view of Grafana, select Loki as a data source and see what happens!
+We were talking about an incident, isn’t it? 
 
-Create a query with the following parameters to get error logs of the ``smartbank-gateway`` service:
+👀 Let's go back to the Explore view of Grafana, select Loki as a data source and see what happens!
+
+🛠️ Create a query with the following parameters to get error logs of the ``smartbank-gateway`` service:
 
 * Label filters: ``application`` = ``smartbank-gateway``
 * line contains/Json: ``expression``= ``level="level"``
 * label filter expression: ``label`` = ``level ; ``operator`` = ``=~`` ; ``value`` = ``WARN|ERROR`` 
 
-Click on ``Run query`` and check out the logs.
+🛠️ Click on ``Run query`` and check out the logs.
 
 Normally you would get a ``java.lang.OutOfMemoryError`` due to a saturated Java heap space.
 
-To get additional insights, you can go back to the JVM dashboard and select the ``smartbank-gateway`` application.
+👀 To get additional insights, you can go back to the JVM dashboard and select the ``smartbank-gateway`` application.
 
 Normally you will see the used JVM Heap reaching the maximum allowed.
 
@@ -935,7 +1032,7 @@ We need to declare two timers in our code:
 * ``processTimer`` to record the ``rivieradev.payment.process`` metric: it represents the payment processing time and record the time spent in the `process` method,
 * ``storeTimer`` to record the ``rivieradev.payment.store`` metric: it represents the time required to store a payment in database by recording the time spent in the `store` method.
 
-Let’s modify the ``com.worldline.easypay.payment.control.PaymentService`` class to declare them:
+📝 Let’s modify the ``com.worldline.easypay.payment.control.PaymentService`` class to declare them:
 
 ```java
 // ...
@@ -977,7 +1074,7 @@ timer.record(() -> {
 });
 ```
 
-Let’s modify our `process` and `store` methods to record our latency with the new metrics.  
+📝 Let’s modify our `process` and `store` methods to record our latency with the new metrics.  
 We can simply wrap our original code in a Java `Runnable` functional interface:
 
 ```java
@@ -1004,7 +1101,7 @@ We can simply wrap our original code in a Java `Runnable` functional interface:
 
 #### 3. Add counter
 
-Let’s do the same for the counter:
+📝 Let’s do the same for the counter:
 
 ```java
 // ...
@@ -1028,7 +1125,7 @@ public class PaymentService {
 1. Declares the counter,
 2. Initializes the counter.
 
-The method ``accept`` of the ``PaymentService`` class is invoked for each payment request, it is a good candidate to increment our counter:
+📝 The method ``accept`` of the ``PaymentService`` class is invoked for each payment request, it is a good candidate to increment our counter:
 
 ```java
     @Transactional(Transactional.TxType.REQUIRED)
@@ -1043,30 +1140,30 @@ The method ``accept`` of the ``PaymentService`` class is invoked for each paymen
 
 #### 4. Redeploy easypay
 
-Rebuild the easypay-service:
+🛠️ Rebuild the easypay-service:
 
 ```bash
-docker compose build easypay-service
+$ docker compose build easypay-service
 ```
 
-Redeploy easypay:
+🛠️ Redeploy easypay:
 
 ```bash
-docker compose up -d easypay-service
+$ docker compose up -d easypay-service
 ```
 
-Once easypay is started (you can check logs with the ``docker compose logs -f easypay-service`` command and wait for an output like ``Started EasypayServiceApplication in 32.271 seconds``):
+🛠️ Once easypay is started (you can check logs with the ``docker compose logs -f easypay-service`` command and wait for an output like ``Started EasypayServiceApplication in 32.271 seconds``):
 
 * Execute some queries: 
 
 ```bash
-http POST :8080/api/easypay/payments posId=POS-01 cardNumber=5555567898780008 expiryDate=789456123 amount:=40000
+$ http POST :8080/api/easypay/payments posId=POS-01 cardNumber=5555567898780008 expiryDate=789456123 amount:=40000
 ```
 
 * Go into the container and query the ``actuator/prometheus`` endpoint to look at our new metrics:
 
 ```bash
-docker compose exec -it easypay-service sh
+$ docker compose exec -it easypay-service sh
 / $ curl http://localhost:8080/actuator/prometheus | grep riviera
 ```
 
@@ -1105,7 +1202,7 @@ Finally, our ``Counter`` is the last metric suffixed with ``_total``.
 
 As we are talking about latencies, you may be also interested in histograms to get the distribution of the events per buckets or percentiles values (the famous 0.99, 0.999…). Fortunately, ``Timers`` allow to compute [Histograms and Percentiles](https://docs.micrometer.io/micrometer/reference/concepts/histogram-quantiles.html)!
 
-Modify the two timers as follows:
+📝 Modify the two timers as follows:
 
 ```java
 // ...
@@ -1134,7 +1231,7 @@ public class PaymentService {
 1. Configures the ``Timer`` to publish a histogram allowing to compute aggregable percentiles server-side,
 2. Exposes percentiles value computed from the application: **these value are not aggregable!**
 
-Repeat the previous step `3. Redeploy easypay`.
+🛠️ Repeat the step 4 (redeploy `easypay-service` and get Prometheus metrics in-container).
 
 You should get way more metrics, especially a new one type suffixed with `_bucket`:
 
@@ -1152,13 +1249,13 @@ rivieradev_payment_process_seconds_sum{application="easypay-service",instance="e
 rivieradev_payment_process_seconds_max{application="easypay-service",instance="easypay-service:a44149cd-937a-4e96-abc2-0770343e49bc",namespace="local"} 0.0
 ```
 
-Each ` bucket ` contains the number of event which lasts less than the value defined in the ``le`` tag.
+ℹ️ Each ` bucket ` contains the number of event which lasts less than the value defined in the ``le`` tag.
 
 #### 6. Visualization
 
-Go back to Grafana (`port 3000`), and go into the ``Dashboards`` section.
+🛠️ Go back to Grafana (`port 3000`), and go into the ``Dashboards`` section.
 
-We will import the dashboard defined in the ``docker/grafana/dashboards/easypay-monitoring.json`` file:
+🛠️ We will import the dashboard defined in the ``docker/grafana/dashboards/easypay-monitoring.json`` file:
 * Click on ``New`` (top right), and select ``Import``,
 * In the ``Import via dashboard JSON model`` field, paste the content of the ``easypay-monitoring.json``  file and click on ``Load``,
 * Select Prometheus as a data source.
@@ -1171,10 +1268,10 @@ It provides some dashboards we have created from the new metrics you exposed in 
 * ``Payment Duration distribution``: represents the various percentiles of our application computed from the ``rivieradev_payment_process`` timer and its histogram,
 * ``Requests process performance`` and ``Requests store performance``: are a visualization of the buckets of the two timers we created previously.
 
-You can generate some load to view your dashboards evolving live:
+🛠️ You can generate some load to view your dashboards evolving live:
 
 ```bash
-k6 -u 2 -d 2m k6/01-payment-only.js
+$ k6 -u 2 -d 2m k6/01-payment-only.js
 ```
 
 > aside positive
@@ -1224,7 +1321,7 @@ If you're using *GitPod*, the Java Agent should already be available in the `ins
 🛠️ If you are participating in this workshop on your workstation, or if the file is missing, you can run the following script to download it:
 
 ```bash
-bash -x scripts/download-agent.sh
+$ bash -x scripts/download-agent.sh
 ```
 
 #### Enable Java Agent
@@ -1242,12 +1339,12 @@ COPY instrumentation/grafana-opentelemetry-java.jar /app/grafana-opentelemetry-j
 ENTRYPOINT ["java", "-javaagent:/app/grafana-opentelemetry-java.jar", "-cp","app:app/lib/*","com.worldline.easypay.EasypayServiceApplication"] # (2)
 ```
 
-The ENTRYPOINT instruction specifies the default command that will be executed when the container starts.
+The `ENTRYPOINT` instruction specifies the default command that will be executed when the container starts.
 
 🛠️ You can now build the updated easypay-service container image:
 
 ```bash
-docker compose build easypay-service
+$ docker compose build easypay-service
 ```
 
 #### Configure Grafana Alloy
@@ -1317,7 +1414,7 @@ services:
 🛠️ To apply the new settings, restart Grafana Alloy with the following command:
 
 ```bash
-docker compose restart collector
+$ docker compose restart collector
 ```
 
 ✅ After restarting, verify that Grafana Alloy is up and running with the updated configuration by accessing the Alloy dashboard on port ``12345``.
@@ -1325,13 +1422,13 @@ docker compose restart collector
 🛠️ Redeploy the updated ``easypay-service``:
 
 ```bash
-docker compose up -d easypay-service
+$ docker compose up -d easypay-service
 ```
 
 ✅ To ensure easypay-service has started up correctly, check its logs with:
 
 ```bash
-docker compose logs -f easypay-service
+$ docker compose logs -f easypay-service
 ```
 
 #### Explore Traces with Grafana
@@ -1345,7 +1442,7 @@ docker compose logs -f easypay-service
 🛠️ Generate some load on the application to produce traces:
 
 ```bash
-k6 run -u 1 -d 5m k6/01-payment-only.js
+$ k6 run -u 1 -d 5m k6/01-payment-only.js
 ```
 
 🛠️ Let’s explore your first traces in Grafana:
@@ -1396,7 +1493,6 @@ To avoid storing unnecessary data in Tempo, we can sample the data in two ways:
 In this workshop, we will implement Tail Sampling.
 
 Modify the Alloy configuration file (``docker/alloy/config.alloy``) as follows:
-In the alloy configuration file (``docker/alloy/config.alloy``), uncomment this configuration just after the ``SAMPLING`` comment:
 ```
 // ...
 // RECEIVER (OTLP)
@@ -1542,8 +1638,8 @@ This will provide the whole PaymentProcessingContext into the trace.
 🛠️ As we did before:
 
 ```bash
-docker compose build easypay-service
-docker compose up -d easypay-service
+$ docker compose build easypay-service
+$ docker compose up -d easypay-service
 ```
 
 #### 4. Test it!
@@ -1551,7 +1647,7 @@ docker compose up -d easypay-service
 🛠️ Generate some payments:
 
 ```bash
-http POST :8080/api/easypay/payments posId=POS-01 cardNumber=5555567898780008 expiryDate=789456123 amount:=40000
+$ http POST :8080/api/easypay/payments posId=POS-01 cardNumber=5555567898780008 expiryDate=789456123 amount:=40000
 ```
 
 👀 Go back to Grafana and try to find your new traces using what you've learned previously. Observe the spans you added.
@@ -1649,8 +1745,8 @@ This will provide the whole PaymentProcessingContext into the trace.
 🛠️ As we did before:
 
 ```bash
-docker compose build easypay-service
-docker compose up -d easypay-service
+$ docker compose build easypay-service
+$ docker compose up -d easypay-service
 ```
 
 #### 4. Test it!
@@ -1658,7 +1754,7 @@ docker compose up -d easypay-service
 🛠️ Generate some payments:
 
 ```bash
-http POST :8080/api/easypay/payments posId=POS-01 cardNumber=5555567898780008 expiryDate=789456123 amount:=40000
+$ http POST :8080/api/easypay/payments posId=POS-01 cardNumber=5555567898780008 expiryDate=789456123 amount:=40000
 ```
 
 👀 Go back to Grafana and try to find your new traces using what you've learned previously. Observe the spans you added.
@@ -1746,20 +1842,20 @@ Exemplars are annotations used in metrics that link specific occurrences, like l
 🛠️ Generate some load towards the `easypay-service`:
 
 ```bash
-k6 run -u 1 -d 2m k6/01-payment-only.js
+$ k6 run -u 1 -d 2m k6/01-payment-only.js
 ```
 
 👀 Now, let's see how exemplars are exported by our service:
 * Access the `easypay-service` container::
 
 ```bash
-docker compose exec -it easypay-service sh
+$ docker compose exec -it easypay-service sh
 ```
 
 * Query actuator for Prometheus metrics, but in the OpenMetrics format:
 
 ```bash
-curl http://localhost:8080/actuator/metrics -H 'Accept: application/openmetrics-text' | grep 'trace_id'
+$ curl http://localhost:8080/actuator/metrics -H 'Accept: application/openmetrics-text' | grep 'trace_id'
 ```
 
 You should obtain metrics with the following format:
