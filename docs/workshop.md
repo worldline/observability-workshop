@@ -312,9 +312,10 @@ transfer-encoding: chunked
 
 ```
 
-Go then to the log folder (``easypay-service/logs/``) , look around the log files and look into these issues.
-
-You should get these log entries in JSON format. Open one of these files and check out the logs.
+Go then to the log folder (``easypay-service/logs/``).
+You should get these log entries in JSON format. 
+Open one of these files and check out the logs. 
+Look into the ``easypay-service-log.json`` to pinpoint these issues.
 
 > aside positive
 >
@@ -339,7 +340,8 @@ Think to use the corresponding class to instantiate it!
 
 Use the most appropriate log level
 
-The log level is a fundamental concept in logging, no matter which logging framework you use. It allows you to tag log records according to their severity or importance. SLF4J offers the following log levels by default:
+The log level is a fundamental concept in logging. Whether the logging framework you use, it allows you to tag log records according to their severity or importance. 
+For instance, [SLF4J](https://www.slf4j.org/) offers the [following log levels by default](https://www.slf4j.org/apidocs/org/slf4j/event/Level.html):
 
 * ``TRACE`` : typically used to provide detailed diagnostic information that can be used for troubleshooting and debugging. Compare to DEBUG messages, TRACE messages are more fine-grained and verbose.
 * ``DEBUG``: used to provide information that can be used to diagnose issues especially those related to program state.
@@ -393,6 +395,7 @@ For this error, you can log the error with the following content:
 
 
 You can also add more logs:
+
 In the ``CarValidator.checkLunKey()`` method, you can add a warn message when the key is not valid. 
 For instance:
 
@@ -400,6 +403,7 @@ For instance:
 log.warn("checkLunKey KO: {}",cardNumber);
 ```
 In the ``CarValidator.checkExpiryDate()`` method, you can add a warn message when a ``DateTimeParseException`` is thrown.
+
 For instance:
 
 ```java
@@ -410,10 +414,12 @@ You can go further and add as many log you think it would help in production.
 
 ### Check your code
 
-You can restart your easy pay service by typing ``CTRL+C`` in your console prompt, and run the following command:
+You can restart your easy pay service running the following commands:
 
 ```bash
-$ ./gradlew :easypay-service:bootRun -x test
+$ docker compose down easypay-service
+$ docker compose build easypay-service
+$ docker compose up -d easypay-service
 ```
 
 Now you can run the same commands ran earlier and check again the logs.
@@ -421,6 +427,7 @@ Now you can run the same commands ran earlier and check again the logs.
 ### A technical issue
 
 Another issue was raised for the POS (Point of Sell) ``POS-02``. 
+
 When you reach the API using this command:
 
 ```bash
@@ -490,7 +497,7 @@ public boolean isActive(String posId) {
         
 You can also prevent this issue by simply fixing the SQL import file.
 
-In the file ``easypay-service/src/main/resources/db/postgresql/data.sql``, Modify the implied line for ``POS-02`` from:
+In the file ``easypay-service/src/main/resources/db/postgresql/data.sql``, modify the implied line for ``POS-02`` from:
 
 ```sql 
 INSERT INTO pos_ref(id, pos_id, location, active) VALUES (2, 'POS-02', 'Blois France', NULL) ON CONFLICT DO NOTHING;
@@ -505,7 +512,7 @@ INSERT INTO pos_ref(id, pos_id, location, active) VALUES (2, 'POS-02', 'Blois Fr
 ### Using Mapped Diagnostic Context (MDC) to get more insights
 > aside positive
 >
->  Mapped Diagnostic Context (MDC) will help us add more context on every log output. For more information, refer to this web page: https://logback.qos.ch/manual/mdc.html 
+>  Mapped Diagnostic Context (MDC) will help us add more context on every log output. For more information, refer to this web page: [https://logback.qos.ch/manual/mdc.html](https://logback.qos.ch/manual/mdc.html). 
 
 
 Go to the ``PaymentResource`` class and modify the method ``processPayment()`` to instantiate the [MDC](https://logback.qos.ch/manual/mdc.html):
@@ -684,11 +691,6 @@ Check out the logs again, view it now as a table.
 You can also view traces for the other services (e.g., ``api-gateway``) 
 
 Finally, you can search logs based on the correlation ID
-
-> aside negative
->
-> TODO MEttre la procédure
-
 
 ## Metrics
 
@@ -1667,7 +1669,6 @@ http POST :8080/api/easypay/payments posId=POS-01 cardNumber=5555567898780008 ex
 > Similarly, your traces being ingested by Tempo might also take some time. Patience is key 😅
 
 ## Correlation
-Duration: 0:15:00
 
 Grafana allows correlation between all our telemetry data:
 
