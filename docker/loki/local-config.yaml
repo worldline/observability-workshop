@@ -40,3 +40,6 @@ ruler:
 # If you would like to disable reporting, uncomment the following lines:
 analytics:
   reporting_enabled: false
+
+limits_config:
+  max_global_streams_per_user: 10000
