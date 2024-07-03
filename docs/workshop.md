@@ -70,6 +70,16 @@ As mentioned earlier, our observability stack is composed of :
 
 In addition, the microservices are started with an agent to broadcast the traces to the collector.   
 
+### Icons
+
+You will the following icons during the workshop:
+
+🛠️ An action to perform,
+📝 A file to modify,
+👀 Something to observe,
+✅ Validate something,
+ℹ️ Some information.
+
 ## Prerequisites
 ### Skills
 
