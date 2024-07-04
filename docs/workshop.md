@@ -22,7 +22,8 @@ During this workshop we will use the Grafana stack and Prometheus:
 * [Tempo](https://grafana.com/oss/tempo/): for storing traces
 * [Prometheus](https://prometheus.io/): for gathering and storing metrics.
 
-We will also cover the OpenTelemetry Collector which gathers & broadcasts then the data coming from our microservices
+We will also cover the [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/) which gathers & broadcasts then the data coming from our microservices.  
+And as we are talking about Grafana, you will use [Grafana Alloy](https://grafana.com/docs/alloy/latest/) which is one of its implementation (and replaces the deprecated Grafana Agent).
 
 ## Workshop overview
 
@@ -74,11 +75,11 @@ In addition, the microservices are started with an agent to broadcast the traces
 
 You will the following icons during the workshop:
 
-🛠️ An action to perform,
-📝 A file to modify,
-👀 Something to observe,
-✅ Validate something,
-ℹ️ Some information.
+🛠️ An action to perform,  
+📝 A file to modify,  
+👀 Something to observe,  
+✅ Validate something,  
+ℹ️ Some information.  
 
 ## Prerequisites
 ### Skills
@@ -230,8 +231,10 @@ smartbank-gateway                              smartbank-gateway:latest      "ja
 
 > aside positive
 >
-> If you run this workshop on your desktop, you can go to this URL: [http://localhost:8761].  
-> If you run it on GitPod, you can go to the corresponding URL (e.g., https://8761-worldline-observability-w98vrd59k5h.ws-eu114.gitpod.io) instead by going into the `PORTS` view.
+> If you run this workshop on your desktop, you can go to this URL: [http://localhost:8761](http://localhost:8761).    
+> If you run it on GitPod, you can go to the corresponding URL (e.g., https://8761-worldline-observability-w98vrd59k5h.ws-eu114.gitpod.io) instead by going into the `PORTS` view and select the url next to the port `8761`.
+
+✅ All services should be registered before continuing…
 
 🛠️ You can now access our platform to initiate a payment:
 
@@ -269,7 +272,7 @@ transfer-encoding: chunked
 ### Some functional issues
 One of our customers raised an issue: 
 
-> When I reach your API, I usually either an ``AMOUNT_EXCEEDED`` or ``INVALID_CARD_NUMBER`` error.
+> « When I reach your API, I usually either an ``AMOUNT_EXCEEDED`` or ``INVALID_CARD_NUMBER`` error. »
 
 Normally the first thing to do is checking the logs. 
 Before that, we will reproduce these issues.
@@ -306,7 +309,7 @@ transfer-encoding: chunked
 * And for the ``INVALID_CARD_NUMBER`` error:
 
 ```bash
-$  http POST :8080/api/easypay/payments posId=POS-01 cardNumber=5555567898780007 expiryDate=789456123 amount:=51000
+$  http POST :8080/api/easypay/payments posId=POS-01 cardNumber=5555567898780007 expiryDate=789456123 amount:=25000
 
 HTTP/1.1 201 Created
 Content-Type: application/json
@@ -380,7 +383,7 @@ For instance, [SLF4J](https://www.slf4j.org/) offers the [following log levels b
 ```java
 @Retry(name = "BankAuthorService", fallbackMethod = "acceptByDelegation")
 public boolean authorize(PaymentProcessingContext context) {
- log.info("Authorize payment for {}", context);
+ LOG.info("Authorize payment for {}", context);
  try {
   var response = client.authorize(initRequest(context));
   context.bankCalled = true;
@@ -388,7 +391,7 @@ public boolean authorize(PaymentProcessingContext context) {
   context.authorized = response.authorized();
   return context.authorized;
  } catch (Exception e) {
-  log.warn("Should retry or fallback: {}", e.getMessage());
+  LOG.warn("Should retry or fallback: {}", e.getMessage());
   throw e;
  }
 }
@@ -402,7 +405,7 @@ For the lazy, you can write something like that:
 context.bankCalled = true;
 context.authorId = Optional.of(response.authorId());
 context.authorized = response.authorized();
-log.info("Bank answered payment authorization with authorId={}, authorized={}", response.authorId(), response.authorized());
+LOG.info("Bank answered payment authorization with authorId={}, authorized={}", response.authorId(), response.authorized());
 return context.authorized;
 ```
 
@@ -515,18 +518,18 @@ public boolean isActive(String posId) {
         List<PosRef> posList = posRefRepository.findAll(Example.of(probe));
 
         if (posList.isEmpty()) {
-            log.warn("checkPosStatus NOK, unknown posId {}", posId);
+            LOG.warn("checkPosStatus NOK, unknown posId {}", posId);
             return false;
         }
 
         boolean result = posList.get(0).active;
 
         if (!result) {
-            log.warn("checkPosStatus NOK, inactive posId {}", posId);
+            LOG.warn("checkPosStatus NOK, inactive posId {}", posId);
         }
         return result;
     } catch (NullPointerException e) {
-        log.warn("Invalid value for this POS: {}", posId);
+        LOG.warn("Invalid value for this POS: {}", posId);
         throw e;
     }
 }
@@ -624,7 +627,7 @@ $ k6 run -u 5 -d 5s k6/01-payment-only.js
 Logs are stored in the `logs` folder. You should find a `.log.json` file for each service in our application.  
 We have configured our Spring Boot applications to output logs:
 
-* In the console (the one we can see),
+* In the console (those you read with `docker compose -f logs`),
 * But also in a file with JSON format.
 
 > aside positive
@@ -674,7 +677,7 @@ loki.process "jsonlogs" {
 		values = {
 			application = "application",
 			instance    = "instance",
-      level       = "level,
+      level       = "level",
 		}
 	}
 
@@ -765,7 +768,7 @@ http POST :8080/api/easypay/payments posId=POS-01 cardNumber=5555567898780008 ex
 k6 run -u 1 -d 2m k6/01-payment-only.js
 ```
 
-👀 You can also view traces for the other services (e.g., ``api-gateway``).
+👀 You can also view logs for the other services (e.g., ``api-gateway``).
 
 👀 You can also search logs based on the correlation ID.
 
@@ -1281,7 +1284,7 @@ It provides some dashboards we have created from the new metrics you exposed in 
 🛠️ You can generate some load to view your dashboards evolving live:
 
 ```bash
-$ k6 -u 2 -d 2m k6/01-payment-only.js
+$ k6 run -u 2 -d 2m k6/01-payment-only.js
 ```
 
 > aside positive
@@ -1441,6 +1444,15 @@ $ docker compose up -d easypay-service
 $ docker compose logs -f easypay-service
 ```
 
+✅ If Java agent was correctly taken into account, logs should start with:
+
+```
+easypay-service  | OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+easypay-service  | [otel.javaagent 2024-07-04 15:50:40:219 +0000] [main] INFO io.opentelemetry.javaagent.tooling.VersionLogger - opentelemetry-javaagent - version: 2.4.0
+easypay-service  | [otel.javaagent 2024-07-04 15:50:40:599 +0000] [main] INFO com.grafana.extensions.instrumentations.TestedInstrumentationsContext - Grafana OpenTelemetry Javaagent: version=2.4.0-beta.1, includeAllInstrumentations=true, useTestedInstrumentations=false, includedUntestedInstrumentations=[], excludedInstrumentations=[]
+easypay-service  | [otel.javaagent 2024-07-04 15:50:41:114 +0000] [main] INFO io.opentelemetry.sdk.resources.Resource - Attempting to merge Resources with different schemaUrls. The resulting Resource will have no schemaUrl assigned. Schema 1: https://opentelemetry.io/schemas/1.24.0 Schema 2: https://opentelemetry.io/schemas/1.23.1
+```
+
 #### Explore Traces with Grafana
 
 > aside positive
@@ -1477,7 +1489,6 @@ By default, this view provides the most recent traces available in *Tempo*.
 * Sort the table by `Duration` (click on the column name) to find the slowest trace.
 * Drill down a `Trace ID`.
 
-
 You should see the full stack of the corresponding transaction.
 
 👀 Grafana should open a new view (you can enlarge it by clicking on the three vertical dots and selecting `Widen pane`):
@@ -1487,14 +1498,25 @@ You should see the full stack of the corresponding transaction.
 * Discover that distributed tracing can link transactions through:
   * HTTP (`api-gateway` to `easypay-service` and `easypay-service` to `smartbank-gateway`).
   * Kafka (`easypay-service` to `fraudetect-service` and `merchant-backoffice`).
+
+🛠️ Grafana allows to display a graph of spans as interconnected nodes:
+* Modifiy the Tempo data source:
+  * Go to `Additional settings`,
+  * Check the `Enable node graph` option.
+* Go back to the same kind of trace,
 * Click on `Node graph` to get a graphical view of all the spans participating in the trace.
 
 🛠️ Continue your exploration in the `Search` pane:
-* For example, you can add the `Status` `=` `error` filter to see only traces that contain errors.
+* For example, you can add the `Status` `=` `error` filter to see only traces that contain errors,
+* Try to find our requests with a `NullPointerException`.
 
 ### Sampling
 
 When we instrument our services using the agent, every interaction, including Prometheus calls to the `actuator/prometheus` endpoint, is recorded.
+
+In the `Service Graph` you should have seen a link between the `User` and services other than the `api-gateway` it seems not normal for us: we only created payments through the `api-gateway`!  
+
+👀 If you click on the link and select `View traces` you should see lot of traces regarding `actuator/prometheus`.
 
 To avoid storing unnecessary data in Tempo, we can sample the data in two ways:
 * [Head Sampling](https://opentelemetry.io/docs/concepts/sampling/#head-sampling)
