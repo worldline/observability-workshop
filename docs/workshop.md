@@ -1,10 +1,10 @@
-**author: David Pequegnot & Alexandre Touret
-summary: Observability
+authors: David Pequegnot & Alexandre Touret
+summary: Let your Java application be truly observable! Let's dive into logs, traces and monitoring with the Grafana Stack
 id: observability-workshop
-categories: observability
+categories: observability, java
 environments: Web
 status: Published
-feedback link: 
+feedback link: https://github.com/worldline/observability-workshop/issues
 
 # Make your Java application fully observable with the Grafana Stack
 
