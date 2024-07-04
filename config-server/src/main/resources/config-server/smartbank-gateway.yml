@@ -31,3 +31,6 @@ spring:
       on-profile: docker
   datasource:
     url: jdbc:postgresql://postgres-smartbank:5432/smartbank
+
+server:
+  port: 8080
