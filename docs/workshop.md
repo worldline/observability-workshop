@@ -2095,3 +2095,151 @@ In this section, we will configure the Tempo data source to link our traces to t
 
 This was the last correlation dimension we wanted to show you!
 
+## Profiling (Bonus)
+
+The OpenTelemetry project standardizes telemetry signals, particularly the logs, metrics, and traces we have seen so far.  
+However, just a few months ago, [they announced their work on a fourth signal: profiling](https://opentelemetry.io/blog/2024/profiling/).
+
+Profiling involves measuring the performance characteristics of your application, such as execution time, CPU utilization, or memory usage. It helps identify bottlenecks and optimize resource usage in your application.
+
+If you're familiar with Java, you may already know [async_profiler](https://github.com/async-profiler/async-profiler) for HotSpot JVMs. It defines itself as a "low overhead sampling profiler for Java."
+
+You may have also heard about eBPF, a technology embedded in the Linux kernel that allows running code in a sandbox within the kernel space. This technology is gaining traction in service meshes and in continuous profiling.
+
+Continuous profiling is an ongoing area of interest in the observability field, aimed at finding additional performance improvements.
+
+### (Grafana) Pyroscope
+
+Pyroscope was an open-source project for continuous profiling. It consists of a server that receives profiling samples, which can then be analyzed and displayed as a [flamegraph](https://www.brendangregg.com/flamegraphs.html).
+
+In the Java landscape, it offers a Java Agent based on *async_profiler*, compatible with other agents such as the OpenTelemetry agent. Phew!
+
+In 2023, Grafana acquired Pyroscope and merged it with its own solution, Phlare. Welcome to [Grafana Pyroscope](https://grafana.com/docs/pyroscope/latest/)!
+
+If you want to know more about Continuous Profiling and what it can bring to you, you may want to check out the [Grafana Pyroscope documentation](https://grafana.com/docs/pyroscope/latest/introduction/profiling/).
+
+### Objectives
+
+In this section, we aim to show you:
+* What profiling is,
+* What a flamegraph is,
+* How it integrates in Grafana.
+
+### Enable Continuous Profiling
+
+#### Start the Pyroscope server
+
+🛠️ We will use the `grafana/pyroscope` container image: we already defined a pyroscope service in our `compose.yml` file, but it is not yet enabled. You can start it by enabling the `continuous-profiling` profile:
+
+```bash
+$ docker compose --profile=continuous-profiling up -d
+```
+
+✅ It should start a new service on port `4040`.
+
+🛠️ Go to Grafana Pyroscope dashboard UI on port `4040`:
+
+* You should see Pyroscope self-profiling and a new graph type: a flamegraph.
+* On the top of the dashboard you can select the type of information you want to display:
+  * CPU profiling,
+  * Memory,
+  * Goroutines (it’s a Go process),
+  * Etc.
+* You can also filter your data by tags…
+* And there is a query language: you should be used to this by now! 😉
+
+#### Setup easypay-service for Continuous Profiling
+
+Let’s use an agent again to profile our application.
+
+🛠️ First, download the [agent](https://grafana.com/docs/pyroscope/latest/configure-client/language-sdks/java/). You can use the provided script to download it as `instrumentation/pyroscope.jar`:
+
+```bash
+$ bash ./scripts/download-pyroscope-agent.sh
+
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+100 9782k  100 9782k    0     0  10.2M      0 --:--:-- --:--:-- --:--:-- 13.9M
+Grafana Pyroscope agent downloaded successfully in ./scripts/../instrumentation
+```
+
+📝 Just like for traces, we should modify the `easypay-service/src/main/docker/Dockerfile` file:
+
+```Dockerfile
+# ...
+# Copy Java Agent into the container
+COPY instrumentation/grafana-opentelemetry-java.jar /app/grafana-opentelemetry-java.jar
+
+# Copy pyroscope Java Agent
+COPY instrumentation/pyroscope.jar /app/pyroscope.jar
+
+# Add the -javagent flag to setup the JVM to start with our Java Agent
+ENTRYPOINT ["java", "-javaagent:/app/grafana-opentelemetry-java.jar", "-javaagent:/app/pyroscope.jar", "-cp","app:app/lib/*","com.worldline.easypay.EasypayServiceApplication"]
+```
+
+📝 Pyroscope can be configured with [environment variables](https://grafana.com/docs/pyroscope/latest/configure-client/language-sdks/java/#configuration-options). Let’s do it directly in the `compose.yml` file:
+
+```yaml
+  easypay-service:
+    # ...
+    environment:
+      # ...
+      PYROSCOPE_APPLICATION_NAME: easypay-service # (1)
+      PYROSCOPE_FORMAT: jfr # (2)
+      PYROSCOPE_PROFILER_EVENT: wall # (3)
+      PYROSCOPE_PROFILER_LOCK: 10ms # (4)
+      PYROSCOPE_PROFILER_ALLOC: 512k # (5)
+      PYROSCOPE_LOG_LEVEL: debug
+      PYROSCOPE_SERVER_ADDRESS: http://pyroscope:4040 # (6)
+    # ...
+```
+1. Define an application name (this will create the `service_name` label),
+2. Set format: JFR allows to have multiple events to be recorded,
+3. Type of event to profile: `wall` allows to record the time spent in methods. Other valid values are `itimer` and `cpu`.
+4. Threshold to record lock events,
+5. Threshord to record memory events,
+6. Server address.
+
+🛠️ Rebuild and redeploy `easypay-service`:
+
+```bash
+$ docker compose build easypay-service
+$ docker compose up -d easypay-service
+```
+
+✅ Check logs for correct startup:
+
+```bash
+docker compose logs -f easypay-service
+```
+
+You should see additional logs related to Pyroscope.
+
+👀 Go back to the Pyroscope dashboard (port `4040`):
+
+* In the top menu, you should be able to select the `easypay-service` application,
+* Try to display wall profiling.
+
+### Grafana setup
+
+> aside positive
+> 
+> We already configured the Pyroscope data source in Grafana.  
+> You can take a look at its configuration in the `Connections` > `Data sources` section.
+
+👀 Let’s go to the Grafana `Explore` dashboard:
+
+* Select the `Pyroscope` data source,
+* For the profiling type, select `wall` > `wall`,
+* In the field next to the profiling type, enter a filter to get profiling of the `easypay-service`: `{service_name="easypay-service"}`,
+* Select another profiling type (such as process CPU sampling).
+
+🛠️ Generate some load with `k6`:
+
+```bash
+$ k6 run -u 1 -d 5m k6/02-payment-smartbank.js
+```
+
+👀 Try to find what is taking the most time in the `ProcessPayment.processPayment` method:
+* Use the sandwich view to focus!
