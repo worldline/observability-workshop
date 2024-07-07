@@ -60,4 +60,11 @@ public class PaymentProcessingContext {
                 processingMode);
     }
 
+    @Override
+    public String toString() {
+        return "PaymentProcessingContext [posId=" + posId + ", cardNumber=" + "**MASKED IN CODE**" + ", expiryDate=" + expiryDate
+                + ", amount=" + amount + ", id=" + id + ", responseCode=" + responseCode + ", cardType=" + cardType
+                + ", processingMode=" + processingMode + ", responseTime=" + responseTime + ", dateTime=" + dateTime
+                + ", bankCalled=" + bankCalled + ", authorized=" + authorized + ", authorId=" + authorId + "]";
+    }
 }
