@@ -1302,7 +1302,24 @@ With Spring Boot, there are a couple of approaches to incorporate distributed tr
 * Utilize the [Spring Boot Actuator integration](https://docs.spring.io/spring-boot/docs/current/reference/html/actuator.html#actuator.tracing) with support from [Micrometer Tracing](https://docs.micrometer.io/docs/tracing),
 * Or adopt a broader [Java Agent approach](https://github.com/open-telemetry/opentelemetry-java-instrumentation) provided by the OpenTelemetry project, which automatically instruments our code when attached to our JVM.
 
-For this workshop, we'll use the Java Agent method and, with a focus on Grafana, we will employ their version of the [OpenTelemetry Java Agent](https://github.com/grafana/grafana-opentelemetry-java).
+For this workshop, we'll use the [Spring Boot OpenTelemetry starter](https://opentelemetry.io/docs/zero-code/java/spring-boot-starter/) method
+
+### 2 ways of instrumentation: Pros & Cons
+
+There is two ways to instrument the byte code and broadcast traces : Using a library or through a Java Agent
+Here is a short summary of the pros & cons
+
+**Java Agent**
+
+* It is the default choice for instrumenting a Java program
+* Enable loose coupling between the the artifact & the agent
+
+**Library / Starter**
+
+* Faster than using an agent
+* Mandatory with native mode
+
+If you want to know more about this topic, you can [check out this documentation](https://opentelemetry.io/docs/zero-code/java/spring-boot-starter/).
 
 The Grafana Alloy collector will be used once again, tasked with receiving traces and forwarding them to the Tempo backend.
 
@@ -1327,38 +1344,7 @@ To capture the entire transaction across all services in a trace, it's essential
 > In this workshop, our primary focus will be on the `easypay` service.
 > For efficiency, we have already instrumented the other services beforehand.
 
-#### Download Grafana Opentelemetry Java Agent
-
-If you're using *GitPod*, the Java Agent should already be available in the `instrumentation/grafana-opentelemetry-java.jar` directory.
-
-🛠️ If you are participating in this workshop on your workstation, or if the file is missing, you can run the following script to download it:
-
-```bash
-$ bash -x scripts/download-agent.sh
-```
-
-#### Enable Java Agent
-
-📝 Since we are deploying the easypay-service using *Docker*, we need to modify the last lines of the `easypay-service/src/main/docker/Dockerfile`:
-
-```Dockerfile
-# ...
-USER javauser
-
-# Copy Java Agent into the container
-COPY instrumentation/grafana-opentelemetry-java.jar /app/grafana-opentelemetry-java.jar
-
-# Add the -javagent flag to setup the JVM to start with our Java Agent
-ENTRYPOINT ["java", "-javaagent:/app/grafana-opentelemetry-java.jar", "-cp","app:app/lib/*","com.worldline.easypay.EasypayServiceApplication"] # (2)
-```
-
-The `ENTRYPOINT` instruction specifies the default command that will be executed when the container starts.
-
-🛠️ You can now build the updated easypay-service container image:
-
-```bash
-$ docker compose build easypay-service
-```
+// TODO
 
 #### Configure Grafana Alloy
 
