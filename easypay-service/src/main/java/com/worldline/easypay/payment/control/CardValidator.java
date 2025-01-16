@@ -35,11 +35,11 @@ public class CardValidator {
             YearMonth today = YearMonth.now();
             boolean rc = expiration.equals(today) || expiration.isAfter(today);
             if (!rc) {
-                // LOG.warn("Check card expiry date does not pass: outdated: {}", expiryDate);
+                LOG.warn("Check card expiry date does not pass: outdated: {}", expiryDate);
             }
             return rc;
         } catch (DateTimeParseException e) {
-            // LOG.warn("Check card expiry date does not pass: bad format: {}", expiryDate);
+            LOG.warn("Check card expiry date does not pass: bad format: {}", expiryDate);
             return false;
         }
 
@@ -64,7 +64,7 @@ public class CardValidator {
         }
 
         if (sum % 10 != 0) {
-            // LOG.warn("Check card number Luhn key does not pass: {}", cardNumber);
+            LOG.warn("Check card number Luhn key does not pass");
             return false;
         }
 
@@ -79,7 +79,7 @@ public class CardValidator {
         long count = cardRepository.count(Example.of(probe));
 
         if (count != 0) {
-            // LOG.warn("Check card number validity does not pass: cardNumber {} is black listed", cardNumber);
+            LOG.warn("Check card number validity does not pass: Card is black listed");
             return true;
         }
 
@@ -91,7 +91,7 @@ public class CardValidator {
         // Check card format
         String card = cardNumber.replaceAll("[^0-9]+", ""); //* remove all non-numerics
         if ((card == null) || (card.length() < 13) || (card.length() > 19)) {
-            // LOG.warn("Check card number format: invalid card format");
+            LOG.warn("Check card number format: invalid card format");
             return false;
         }
 

@@ -1,0 +1,52 @@
+server:
+  port: 8081
+
+eureka:
+  instance:
+    prefer-ip-address: true
+
+resilience4j:
+  retry:
+    instances:
+      BankAuthorService:
+        max-attempts: 3
+        wait-duration: 1s
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+        retry-exceptions:
+          - feign.RetryableException
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+spring:
+  application:
+    name: easypay-service
+    instance: ${spring.application.name}:${random.uuid}
+
+  config:
+    import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}
+
+  cloud:
+    refresh:
+      enabled: false
+    inetutils:
+      preferred-networks: 192.168.,172.
+    stream:
+      kafka:
+        binder:
+          defaultBrokerPort: 19092
+      bindings:
+        payment:
+          destination: payment-topic
+
+logging:
+  pattern:
+    level: "%5p [%mdc]"
+
+  structured:
+    format:
+      console: ecs
