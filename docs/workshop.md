@@ -779,10 +779,8 @@ services:
 1. The `OTEL_RESOURCE_ATTRIBUTES` environment variable is used to define the service name, the deployment environment,
    the
    service namespace, the service version and the service instance id,
-    *
-    OpenTelemetry’s [Open Agent Management Protocol specification](https://github.com/open-telemetry/opamp-spec/blob/main/specification.md)
-    defines
-    some [expected attributes](https://github.com/open-telemetry/opamp-spec/blob/main/specification.md#agentdescriptionidentifying_attributes)
+    * OpenTelemetry’s [Open Agent Management Protocol specification](https://github.com/open-telemetry/opamp-spec/blob/main/specification.md)
+    defines some [expected attributes](https://github.com/open-telemetry/opamp-spec/blob/main/specification.md#agentdescriptionidentifying_attributes)
     for telemetry data.
 2. The `OTEL_EXPORTER_OTLP_PROTOCOL` environment variable is used to define the protocol used to send telemetry data to
    the collector.
