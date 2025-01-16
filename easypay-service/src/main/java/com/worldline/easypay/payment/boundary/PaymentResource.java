@@ -31,7 +31,7 @@ import jakarta.validation.constraints.NotNull;
 @RequestMapping("/payments")
 public class PaymentResource {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PaymentResource.class);
+    // private static final Logger LOG = LoggerFactory.getLogger(PaymentResource.class);
 
     PaymentService paymentService;
 
@@ -57,8 +57,7 @@ public class PaymentResource {
     @Operation(description = "Retrieve a given payment with its id", summary = "Retrieve a payment with its id")
     @ApiResponse(responseCode = "200", description = "Payment found", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "204", description = "Payment not found", content = @Content(mediaType = "text/plain"))
-    public ResponseEntity<Payment> findById(
-            @Parameter(description = "The payment id to be retrieved", required = true) @PathVariable("id") String paymentId) {
+    public ResponseEntity<Payment> findById(@Parameter(description = "The payment id to be retrieved", required = true) @PathVariable("id") String paymentId) {
 //        LOG.info("Request: get payment by id: {}", paymentId);
         UUID id = UUID.fromString(paymentId);
         var payment = paymentService.findById(id);
@@ -73,10 +72,9 @@ public class PaymentResource {
     @PostMapping
     @Operation(description = "Process a payment: can be accepted or denied", summary = "Process a payment")
     @ApiResponse(responseCode = "201", description = "Payment processed", content = @Content(mediaType = "application/json"))
-    public ResponseEntity<PaymentResponse> processPayment(
-            @Parameter(description = "The payment to be processed", required = true) @Valid @NotNull @RequestBody PaymentRequest paymentRequest) {
-//        MDC.put("CardNumber",paymentRequest.cardNumber());
-//        MDC.put("POS",paymentRequest.posId());
+    public ResponseEntity<PaymentResponse> processPayment(@Parameter(description = "The payment to be processed", required = true) @Valid @NotNull @RequestBody PaymentRequest paymentRequest) {
+        // MDC.put("cardNumber",paymentRequest.cardNumber());
+        // MDC.put("pos",paymentRequest.posId());
         // LOG.info("Processing new payment: {}", paymentRequest);
         PaymentProcessingContext paymentContext = new PaymentProcessingContext(paymentRequest);
 
@@ -84,8 +82,7 @@ public class PaymentResource {
 
         PaymentResponse response = paymentContext.generateResponse();
 
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
-                .buildAndExpand(response.paymentId()).toUri();
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(response.paymentId()).toUri();
         var httpResponse = ResponseEntity.created(location).body(response);
         // MDC.clear();
         return httpResponse;
