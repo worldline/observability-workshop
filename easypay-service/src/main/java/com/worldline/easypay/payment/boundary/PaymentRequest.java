@@ -8,4 +8,12 @@ public record PaymentRequest(
         @NotNull String cardNumber,
         @NotNull String expiryDate,
         @Min(10) Integer amount) {
+    public String toString() {
+        return "PaymentRequest{" +
+                "posId='" + posId + '\'' +
+                ", cardNumber='****'" +
+                ", expiryDate='" + expiryDate + '\'' +
+                ", amount=" + amount +
+                '}';
+    }
 }

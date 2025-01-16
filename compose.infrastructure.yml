@@ -1,0 +1,190 @@
+services:
+  opentelemetry-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+    volumes:
+      - ./docker/otelcol/otelcol.yaml:/etc/otelcol/config.yaml
+    command: --config /etc/otelcol/config.yaml
+  
+  loki:
+   image: grafana/loki:latest
+   ports:
+     - "3100:3100"
+   volumes:
+     - ./docker/loki/local-config.yaml:/etc/loki/local-config.yaml
+   command:
+     - -config.file=/etc/loki/local-config.yaml
+
+  prometheus:
+   image: prom/prometheus:latest
+   ports:
+     - "9090:9090"
+   volumes:
+     - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+   command:
+     - --config.file=/etc/prometheus/prometheus.yml
+     - --web.enable-lifecycle
+     - --web.enable-remote-write-receiver
+     - --web.enable-otlp-receiver
+     - --enable-feature=exemplar-storage
+     - --log.level=debug
+
+  tempo:
+   image: grafana/tempo:latest
+   ports:
+     - "3200:3200"   # tempo
+     - "9095:9095" # tempo grpc
+     - "9411:9411"   # zipkin
+   volumes:
+     - ./docker/tempo/config.yaml:/etc/tempo/config.yaml
+   command:
+     - -config.file=/etc/tempo/config.yaml
+
+  grafana:
+   environment:
+     - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+     - GF_AUTH_ANONYMOUS_ENABLED=true
+     - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+   volumes:
+     - ./docker/grafana/datasources:/etc/grafana/provisioning/dashboards
+   entrypoint:
+     - sh
+     - -xeuc
+     - |
+       mkdir -p /etc/grafana/provisioning/datasources
+       cat <<EOF > /etc/grafana/provisioning/datasources/ds.yaml
+       apiVersion: 1
+       datasources:
+       - name: Loki
+         type: loki
+         access: proxy
+         orgId: 1
+         url: http://loki:3100
+         basicAuth: false
+         isDefault: true
+         version: 1
+         editable: true
+       - name: Prometheus
+         type: prometheus
+         uid: prometheus
+         access: proxy
+         orgId: 1
+         url: http://prometheus:9090
+         basicAuth: false
+         isDefault: false
+         version: 1
+         editable: true
+       - name: Tempo
+         type: tempo
+         access: proxy
+         orgId: 1
+         url: http://tempo:3200
+         basicAuth: false
+         isDefault: false
+         version: 1
+         editable: true
+         apiVersion: 1
+         uid: tempo
+         jsonData:
+           httpMethod: GET
+           serviceMap:
+             datasourceUid: prometheus
+       - name: Pyroscope
+         type: grafana-pyroscope-datasource
+         url: http://pyroscope:4040
+         uid: pyroscope
+         jsonData:
+           keepCookies: [pyroscope_git_session]
+       EOF
+       /run.sh
+   image: grafana/grafana:latest
+   ports:
+     - "3000:3000"
+
+  postgres-easypay:
+    image: postgres:16
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: easypay
+      POSTGRES_USER: easypay
+      POSTGRES_PASSWORD: easypay
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U easypay"]
+      interval: 5s
+      timeout: 1s
+      retries: 5
+  
+  postgres-smartbank:
+    image: postgres:16
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: smartbank
+      POSTGRES_USER: smartbank
+      POSTGRES_PASSWORD: smartbank
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U smartbank"]
+      interval: 5s
+      timeout: 1s
+      retries: 5
+  
+  postgres-fraudetect:
+    image: postgres:16
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_DB: fraudetect
+      POSTGRES_USER: fraudetect
+      POSTGRES_PASSWORD: fraudetect
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fraudetect"]
+      interval: 5s
+      timeout: 1s
+      retries: 5
+
+  postgres-merchantbo:
+    image: postgres:16
+    ports:
+      - "5435:5432"
+    environment:
+      POSTGRES_DB: merchantbo
+      POSTGRES_USER: merchantbo
+      POSTGRES_PASSWORD: merchantbo
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U merchantbo"]
+      interval: 5s
+      timeout: 1s
+      retries: 5
+      
+  kafka:
+    image: confluentinc/cp-kafka:7.6.1
+    hostname: kafka
+    container_name: kafka
+    ports:
+      - "19092:19092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:19092'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_JMX_HOSTNAME: localhost
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:29093'
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka:9092,CONTROLLER://kafka:29093,PLAINTEXT_HOST://0.0.0.0:19092'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
+      # Replace CLUSTER_ID with a unique base64 UUID using "bin/kafka-storage.sh random-uuid"
+      # See https://docs.confluent.io/kafka/operations-tools/kafka-tools.html#kafka-storage-sh
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server kafka:9092 --list"]
+      interval: 30s
+      timeout: 10s
+      retries: 5

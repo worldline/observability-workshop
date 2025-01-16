@@ -34,6 +34,5 @@ RUN chown -R javauser:javauser /app
 
 USER javauser
 
-COPY instrumentation/grafana-opentelemetry-java.jar /app/grafana-opentelemetry-java.jar
-
-ENTRYPOINT ["java","-javaagent:/app/grafana-opentelemetry-java.jar","-cp","app:app/lib/*","com.worldline.easypay.configserver.ConfigServerApplication"]
+ENTRYPOINT ["java","-cp","app:app/lib/*","
+"]

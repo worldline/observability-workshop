@@ -21,5 +21,21 @@ public record PaymentResponse(
         Boolean authorized,
         Long responseTime,
         ProcessingMode processingMode) {
+    public String toString() {
+        return "PaymentResponse{" +
+                "posId='" + posId + '\'' +
+                ", cardNumber='****'" +
+                ", expiryDate='" + expiryDate + '\'' +
+                ", amount=" + amount +
+                ", paymentId=" + paymentId +
+                ", responseCode=" + responseCode +
+                ", authorId=" + authorId +
+                ", cardType=" + cardType +
+                ", bankCalled=" + bankCalled +
+                ", authorized=" + authorized +
+                ", responseTime=" + responseTime +
+                ", processingMode=" + processingMode +
+                '}';
+    }
 
 }

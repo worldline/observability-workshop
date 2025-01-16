@@ -1,7 +1,8 @@
+import org.springframework.boot.gradle.plugin.SpringBootPlugin
+
 plugins {
 	java
-	id("org.springframework.boot") version "3.3.1"
-	id("io.spring.dependency-management") version "1.1.5"
+	alias(libs.plugins.springBoot)
 }
 
 group = "com.worldline.easypay"
@@ -15,10 +16,13 @@ repositories {
 	mavenCentral()
 }
 
-extra["springCloudVersion"] = "2023.0.2"
 extra["springDocVersion"] = "2.5.0"
 
 dependencies {
+	implementation(platform(SpringBootPlugin.BOM_COORDINATES))
+	implementation(platform(libs.spring.cloud.bom))
+	implementation(platform(libs.opentelemetry.instrumentation.bom))
+
 	// Spring Boot Web
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
@@ -33,18 +37,8 @@ dependencies {
 	// Spring Cloud service discovery client
 	implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
 
-	// Expose metrics with Micrometer using a Prometheus registry
+	// Spring Boot Management and Monitoring
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
-	implementation("io.micrometer:micrometer-registry-prometheus")
-
-	// Logging
-	implementation("ch.qos.logback.contrib:logback-json-classic:0.1.5")
-	implementation("ch.qos.logback.contrib:logback-jackson:0.1.5")
-
-	// Add opentelemetry exemplars support (metrics)
-	implementation(platform("io.opentelemetry:opentelemetry-bom:1.38.0"))
-	implementation("io.opentelemetry:opentelemetry-api")
-	implementation("io.prometheus:prometheus-metrics-tracer-otel-agent:1.3.1")
 
 	// Add caching support
 	implementation("org.springframework.boot:spring-boot-starter-cache")
@@ -53,16 +47,9 @@ dependencies {
 	// OpenAPI
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:${property("springDocVersion")}")
 
-	developmentOnly("org.springframework.boot:spring-boot-devtools")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.testcontainers:postgresql")
-}
-
-dependencyManagement {
-	imports {
-		mavenBom("org.springframework.cloud:spring-cloud-dependencies:${property("springCloudVersion")}")
-	}
 }
 
 tasks.withType<Test> {

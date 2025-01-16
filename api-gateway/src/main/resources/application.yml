@@ -1,3 +1,6 @@
+server:
+  port: 8080
+
 spring:
   application:
     name: api-gateway
@@ -16,7 +19,7 @@ spring:
           filters:
             - StripPrefix=2
         - id: easypay-service
-          uri: lb://EASYPAY-SERVICE
+          uri: http://easypay-service:8080
           predicates:
             - Path=/api/easypay/**
           filters:
@@ -33,11 +36,13 @@ spring:
 management:
   endpoint:
     gateway:
-      enabled: true
+      access: read_only
+
   endpoints:
     web:
       exposure:
         include: "*"
+
   metrics:
     distribution:
       percentiles-histogram:
