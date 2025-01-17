@@ -1,21 +1,19 @@
 package com.worldline.easypay.payment.control;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
 import com.worldline.easypay.cardref.control.CardType;
 import com.worldline.easypay.payment.control.bank.BankAuthorService;
 import com.worldline.easypay.payment.control.track.PaymentTracker;
 import com.worldline.easypay.payment.entity.Payment;
 import com.worldline.easypay.payment.entity.PaymentRepository;
-
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class PaymentService {
@@ -31,8 +29,7 @@ public class PaymentService {
     @Value("${payment.author.threshold:10000}")
     Integer authorThreshold;
 
-    public PaymentService(CardValidator cardValidator, PosValidator posValidator,
-            PaymentRepository paymentRepository, BankAuthorService bankAuthorService, PaymentTracker paymentTracker) {
+    public PaymentService(CardValidator cardValidator, PosValidator posValidator, PaymentRepository paymentRepository, BankAuthorService bankAuthorService, PaymentTracker paymentTracker) {
         this.cardValidator = cardValidator;
         this.posValidator = posValidator;
         this.paymentRepository = paymentRepository;
@@ -41,7 +38,6 @@ public class PaymentService {
     }
 
     private void process(PaymentProcessingContext context) {
-
         if (!posValidator.isActive(context.posId)) {
             context.responseCode = PaymentResponseCode.INACTIVE_POS;
             return;
@@ -67,12 +63,9 @@ public class PaymentService {
         if (context.amount > authorThreshold) {
             if (!bankAuthorService.authorize(context)) {
                 LOG.info("Authorization refused by bank, context=" + context);
-                context.responseCode = context.processingMode.equals(ProcessingMode.STANDARD)
-                        ? PaymentResponseCode.AUTHORIZATION_DENIED
-                        : PaymentResponseCode.AMOUNT_EXCEEDED;
+                context.responseCode = context.processingMode.equals(ProcessingMode.STANDARD) ? PaymentResponseCode.AUTHORIZATION_DENIED : PaymentResponseCode.AMOUNT_EXCEEDED;
             }
         }
-
     }
 
     private void store(PaymentProcessingContext context) {

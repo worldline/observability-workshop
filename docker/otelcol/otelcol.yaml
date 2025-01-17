@@ -1,0 +1,55 @@
+# Input
+receivers:
+  # OpenTelemetry Protocol: logs, metrics and traces
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+# Transform
+processors:
+  # Batch telemetry data for improved performance
+  batch:
+
+# Output
+exporters:
+  # Export to loki via HTTP using the OpenTelemetry Protocol
+  otlphttp/loki:
+    endpoint: http://loki:3100/otlp
+
+  # Export to Prometheus via HTTP using the OpenTelemetry Protocol
+  otlphttp/prometheus:
+    endpoint: http://prometheus:9090/api/v1/otlp
+
+  # Export to Tempo via GRPC using the OpenTelemetry Protocol
+  otlp/tempo:
+    endpoint: tempo:4317
+    tls:
+      insecure: true
+
+  # Debug output (can be used in pipeline for debug)
+  debug:
+    verbosity: detailed
+
+# Telemetry processing pipelines
+service:
+  pipelines:
+    # Receive logs using the OpenTelemetry Protocol and export to Loki
+    logs:
+      receivers: [ otlp ]
+      processors: [ batch ]
+      exporters: [ otlphttp/loki ]
+
+    # Receive metrics using the OpenTelemetry Protocol and export to Prometheus
+    metrics:
+      receivers: [ otlp ]
+      processors: [ batch ]
+      exporters: [ otlphttp/prometheus ]
+
+    # Receive traces using the OpenTelemetry Protocol and export to Tempo
+    traces:
+      receivers: [ otlp ]
+      processors: [ batch ]
+      exporters: [ otlp/tempo ]

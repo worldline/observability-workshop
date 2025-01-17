@@ -1,0 +1,196 @@
+services:
+  config-server:
+    image: config-server:latest
+    hostname: config-server
+    container_name: config-server
+    build:
+      context: .
+      dockerfile: ./config-server/src/main/docker/Dockerfile
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    environment:
+      SPRING_PROFILES_ACTIVE: default,native,docker
+      OTEL_RESOURCE_ATTRIBUTES: "service.name=config-server,deployment.environment=dev,service.namespace=config,service.version=1.0.0,service.instance.id=config-server:8080"
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://opentelemetry-collector:4317
+    volumes:
+      - ./instrumentation/opentelemetry-javaagent.jar:/opentelemetry-javaagent.jar
+    ports:
+      - 8888:8888
+    healthcheck:
+      test: curl --fail http://localhost:8890/actuator/health
+      interval: 5s
+      timeout: 4s
+      retries: 10
+      start_period: 5s
+    entrypoint: java -javaagent:/opentelemetry-javaagent.jar -cp app:app/lib/* com.worldline.easypay.configserver.ConfigServerApplication
+
+  discovery-server:
+    image: discovery-server:latest
+    hostname: discovery-server
+    container_name: discovery-server
+    build:
+      context: .
+      dockerfile: ./discovery-server/src/main/docker/Dockerfile
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    ports:
+      - 8761:8761
+    environment:
+      CONFIG_SERVER_URL: http://config-server:8888
+      SPRING_PROFILES_ACTIVE: default,docker,json-logging
+      OTEL_RESOURCE_ATTRIBUTES: "service.name=discovery-server,deployment.environment=dev,service.namespace=discovery,service.version=1.0.0,service.instance.id=discovery-server:8080"
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://opentelemetry-collector:4317
+    volumes:
+      - ./instrumentation/opentelemetry-javaagent.jar:/opentelemetry-javaagent.jar
+    depends_on:
+      config-server:
+        condition: service_healthy
+    healthcheck:
+      test: curl --fail http://localhost:8761/actuator/health
+      interval: 5s
+      timeout: 4s
+      retries: 10
+      start_period: 5s
+    entrypoint: java -javaagent:/opentelemetry-javaagent.jar -cp app:app/lib/* com.worldline.easypay.discoveryserver.DiscoveryServerApplication
+    
+  api-gateway:
+    image: api-gateway:latest
+    hostname: api-gateway
+    container_name: api-gateway
+    build:
+      context: .
+      dockerfile: ./api-gateway/src/main/docker/Dockerfile
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    ports:
+      - 8080:8080
+    environment:
+      CONFIG_SERVER_URL: http://config-server:8888
+      SPRING_PROFILES_ACTIVE: default,docker
+      OTEL_RESOURCE_ATTRIBUTES: "service.name=api-gateway,deployment.environment=dev,service.namespace=gateway,service.version=1.0.0,service.instance.id=api-gateway:8080"
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://opentelemetry-collector:4317
+    volumes:
+      - ./instrumentation/opentelemetry-javaagent.jar:/opentelemetry-javaagent.jar
+    depends_on:
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+    healthcheck:
+      test: curl --fail http://localhost:8080/actuator/health
+      interval: 5s
+      timeout: 4s
+      retries: 10
+      start_period: 5s
+    entrypoint: java -javaagent:/opentelemetry-javaagent.jar -cp app:app/lib/* com.worldline.easypay.apigateway.ApiGatewayApplication
+  
+  smartbank-gateway:
+    image: smartbank-gateway:latest
+    hostname: smartbank-gateway
+    container_name: smartbank-gateway
+    build:
+      context: .
+      dockerfile: ./smartbank-gateway/src/main/docker/Dockerfile
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    environment:
+      CONFIG_SERVER_URL: http://config-server:8888
+      SPRING_PROFILES_ACTIVE: default,docker
+      OTEL_RESOURCE_ATTRIBUTES: "service.name=smartbank-gateway,deployment.environment=dev,service.namespace=gateway,service.version=1.0.0,service.instance.id=smartbank-gateway:8080"
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://opentelemetry-collector:4317
+    volumes:
+      - ./instrumentation/opentelemetry-javaagent.jar:/opentelemetry-javaagent.jar
+    depends_on:
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      postgres-smartbank:
+        condition: service_healthy
+    healthcheck:
+      test: curl --fail http://localhost:8080/actuator/health
+      interval: 5s
+      timeout: 4s
+      retries: 10
+      start_period: 5s
+    entrypoint: java -Xmx4g -javaagent:/opentelemetry-javaagent.jar -cp app:app/lib/* com.worldline.easypay.smartbank.SmartbankGatewayApplication
+
+  fraudetect-service:
+    image: fraudetect-service:latest
+    hostname: fraudetect
+    container_name: fraudetect
+    build:
+      context: .
+      dockerfile: ./fraudetect-service/src/main/docker/Dockerfile
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    environment:
+      CONFIG_SERVER_URL: http://config-server:8888
+      SPRING_PROFILES_ACTIVE: default,docker
+      SERVER_PORT: 8080
+      OTEL_RESOURCE_ATTRIBUTES: "service.name=fraudetect-service,deployment.environment=dev,service.namespace=service,service.version=1.0.0,service.instance.id=fraudetect-service:8080"
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://opentelemetry-collector:4317
+    volumes:
+      - ./instrumentation/opentelemetry-javaagent.jar:/opentelemetry-javaagent.jar
+    depends_on:
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      postgres-fraudetect:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test: curl --fail http://localhost:8080/actuator/health
+      interval: 3s
+      timeout: 1s
+      retries: 5
+      start_period: 3s
+    entrypoint: java -javaagent:/opentelemetry-javaagent.jar -cp app:app/lib/* com.worldline.easypay.fraudetect.FraudetectServiceApplication
+  
+  merchant-backoffice:
+    image: merchant-backoffice:latest
+    hostname: merchant-backoffice
+    container_name: merchant-backoffice
+    build:
+      context: .
+      dockerfile: ./merchant-backoffice/src/main/docker/Dockerfile
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    environment:
+      CONFIG_SERVER_URL: http://config-server:8888
+      SPRING_PROFILES_ACTIVE: default,docker,json-logging
+      OTEL_RESOURCE_ATTRIBUTES: "service.name=merchant-backoffice,deployment.environment=dev,service.namespace=backoffice,service.version=1.0.0,service.instance.id=merchant-backoffice:8080"
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://opentelemetry-collector:4317
+    volumes:
+      - ./instrumentation/opentelemetry-javaagent.jar:/opentelemetry-javaagent.jar
+    depends_on:
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      postgres-merchantbo:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test: curl --fail http://localhost:8080/actuator/health
+      interval: 3s
+      timeout: 1s
+      retries: 5
+      start_period: 3s
+    entrypoint: java -javaagent:/opentelemetry-javaagent.jar -cp app:app/lib/* com.worldline.easypay.merchantbo.MerchantBackofficeApplication
+

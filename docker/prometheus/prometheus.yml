@@ -3,42 +3,27 @@ global:
   scrape_timeout: 2s
   evaluation_interval: 5s
 
-# scrape metrics from the prometheus server itself
-scrape_configs:
-  - job_name: prometheus
-    scrape_interval: 5s
-    scrape_timeout: 5s
-    metrics_path: /metrics
-    static_configs:
-      - targets:
-          - localhost:9090
-  
-  - job_name: prometheus-config-server
-    scrape_interval: 5s
-    scrape_timeout: 5s
-    metrics_path: /actuator/prometheus
-    static_configs:
-      - targets:
-          - config-server:8890
-  
-  - job_name: prometheus-eureka-server
-    scrape_interval: 5s
-    scrape_timeout: 5s
-    metrics_path: /actuator/prometheus
-    static_configs:
-      - targets:
-          - discovery-server:8761
+storage:
+  tsdb:
+    out_of_order_time_window: 30m
 
-  # Discover targets from Eureka and scrape metrics from them (Whitebox monitoring)
-  - job_name: eureka-discovery
-    scrape_interval: 5s
-    scrape_timeout: 5s
-    eureka_sd_configs:
-      - server: http://discovery-server:8761/eureka
-        refresh_interval: 5s
-    relabel_configs:
-      - source_labels: [__meta_eureka_app_instance_metadata_metrics_path]
-        target_label: __metrics_path__
-      - source_labels: [__meta_eureka_app_name] # Ignore easypay-service, for workshop purpose
-        regex: EASYPAY-SERVICE
-        action: drop
+otlp:
+  # Recommended attributes to be promoted to labels.
+  promote_resource_attributes:
+    - service.instance.id
+    - service.name
+    - service.namespace
+    - cloud.availability_zone
+    - cloud.region
+    - container.name
+    - deployment.environment.name
+    - k8s.cluster.name
+    - k8s.container.name
+    - k8s.cronjob.name
+    - k8s.daemonset.name
+    - k8s.deployment.name
+    - k8s.job.name
+    - k8s.namespace.name
+    - k8s.pod.name
+    - k8s.replicaset.name
+    - k8s.statefulset.name

@@ -17,7 +17,7 @@ public class BankAuthorService {
 
     private static final Logger LOG = LoggerFactory.getLogger(BankAuthorService.class);
 
-    @Value("${payment.author.merchantId:RivieraDev Swag Store}")
+    @Value("${payment.author.merchantId:Snowcamp Swag Store}")
     String merchantId;
 
     @Value("${payment.max.amount.fallback:20000}")
@@ -45,6 +45,7 @@ public class BankAuthorService {
             context.bankCalled = true;
             context.authorId = Optional.of(response.authorId());
             context.authorized = response.authorized();
+            LOG.info("Bank answered with authorId: {}, authorized: {}", response.authorId(), response.authorized());
             return context.authorized;
         } catch (Exception e) {
             LOG.warn("Exception while requesting bank, operation will be retried or fallback: {}", e.getMessage());
