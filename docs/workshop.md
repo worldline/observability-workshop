@@ -1021,7 +1021,7 @@ Let’s take control of our application’s metrics!
 We target to collect metrics from our services and forward them to the Prometheus time-series database.
 As with logs, we will use the OpenTelemetry collector as a gateway to collect and forward these metrics.
 
-TODO: Schema again
+![Metrics architecture](./img/archi-metrics.png)
 
 ### Expose metrics of our Java application
 
@@ -1034,8 +1034,6 @@ With Spring Boot, there are several ways to expose application metrics:
 
 We will continue to use the OpenTelemetry Agent, as it is a straightforward way to collect metrics, and we already
 configured it!
-
-![Metrics architecture](./img/archi-metrics.png)
 
 #### Configure the OpenTelemetry Agent
 
@@ -1463,9 +1461,9 @@ It provides some dashboards we have created from the new metrics you exposed in 
 * `Payment request count total (rated)`: represents the number of hit per second in our application computed from our
   counter,
 * ``Payment Duration distribution``: represents the various percentiles of our application computed from the
-  ``rivieradev_payment_process`` timer and its histogram,
+  ``snowcamp_payment_process`` histogram,
 * ``Requests process performance`` and ``Requests store performance``: are a visualization of the buckets of the two
-  timers we created previously.
+  histograms we created previously.
 
 🛠️ You can generate some load to view your dashboards evolving live:
 
@@ -1502,6 +1500,8 @@ and independent of the libraries we use.
 
 The OpenTelemetry Collector will be used once again, tasked with receiving traces and forwarding them to the Tempo
 backend.
+
+![Architecture with traces](./img/archi-traces.png)
 
 > aside positive
 >
