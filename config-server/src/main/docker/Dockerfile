@@ -34,5 +34,4 @@ RUN chown -R javauser:javauser /app
 
 USER javauser
 
-ENTRYPOINT ["java","-cp","app:app/lib/*","
-"]
+ENTRYPOINT ["java","-cp","app:app/lib/*","com.worldline.easypay.configserver.ConfigServerApplication"]

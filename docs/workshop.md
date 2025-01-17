@@ -1,12 +1,12 @@
 authors: David Pequegnot & Alexandre Touret
-summary: Let your Java application be truly observable! Let's dive into logs, traces and monitoring with OpenTelemetry
+summary: Observability from Development: Master Your Java Applications in Production with Open Telemetry
 id: observability-workshop
 categories: observability, java
 environments: Web
 status: Published
 feedback link: https://github.com/worldline/observability-workshop/issues
 
-# Make your Java application fully observable with the OpenTelemetry & Grafana
+# Observability from Development: Master Your Java Applications in Production with Open Telemetry
 
 ## Introduction
 
@@ -128,33 +128,33 @@ You **MUST** have set up these tools first:
 
 **Java**
 
-```jshelllanguage
+```bash
 $ java -version
 
-    openjdk version "21.0.3" 2024 - 04 - 16 LTS
-    OpenJDK Runtime Environment Temurin-21.0.3 + 9 (build 21.0.3 + 9 - LTS)
-    OpenJDK 64-Bit Server VM Temurin-21.0.3+9(build21.0.3+9-LTS,mixed mode,sharing)
+openjdk version "21.0.3" 2024-04-16 LTS
+OpenJDK Runtime Environment Temurin-21.0.3+9 (build 21.0.3+9-LTS)
+OpenJDK 64-Bit Server VM Temurin-21.0.3+9 (build 21.0.3+9-LTS, mixed mode, sharing)
 ```
 
 **Gradle**
 
 🛠️ If you use the wrapper, you won't have troubles. Otherwise...:
 
-```jshelllanguage
+```bash
 $ gradle -version
 
-        ------------------------------------------------------------
-    Gradle 8.7
-            ------------------------------------------------------------
+------------------------------------------------------------
+Gradle 8.7
+------------------------------------------------------------
 
-    Build time:2024-03-22 15:52:46UTC
-    Revision:650af14d7653aa949fce5e886e685efc9cf97c10
+Build time:   2024-03-22 15:52:46 UTC
+Revision:     650af14d7653aa949fce5e886e685efc9cf97c10
 
-    Kotlin:1.9.22
-    Groovy:3.0.17
-    Ant:Apache Ant(TM)version1.10.13compiled on January 4 2023
-    JVM:21.0.3(Eclipse Adoptium21.0.3+9-LTS)
-    OS:Linux5.15.146.1-microsoft-standard-WSL2 amd64
+Kotlin:       1.9.22
+Groovy:       3.0.17
+Ant:          Apache Ant(TM) version 1.10.13 compiled on January 4 2023
+JVM:          21.0.3 (Eclipse Adoptium 21.0.3+9-LTS)
+OS:           Linux 5.15.146.1-microsoft-standard-WSL2 amd64
 ```
 
 **Docker Compose**
@@ -225,25 +225,25 @@ For instance:
 
 ```bash
 ❯ docker compose ps
-NAME                                           IMAGE                         COMMAND                  SERVICE               CREATED         STATUS                     PORTS
-api-gateway                                    api-gateway:latest            "java -javaagent:/ap…"   api-gateway           8 minutes ago   Up 7 minutes (healthy)     0.0.0.0:8080->8080/tcp, :::8080->8080/tcp
-config-server                                  config-server:latest          "java -javaagent:/ap…"   config-server         8 minutes ago   Up 7 minutes (healthy)     0.0.0.0:8888->8888/tcp, :::8888->8888/tcp
-discovery-server                               discovery-server:latest       "java -javaagent:/ap…"   discovery-server      8 minutes ago   Up 7 minutes (healthy)     0.0.0.0:8761->8761/tcp, :::8761->8761/tcp
-easypay-service                                easypay-service:latest        "java -javaagent:/ap…"   easypay-service       8 minutes ago   Up 7 minutes (healthy)     
-fraudetect                                     fraudetect-service:latest     "java -javaagent:/ap…"   fraudetect-service    8 minutes ago   Up 7 minutes (healthy)     
-kafka                                          confluentinc/cp-kafka:7.6.1   "/etc/confluent/dock…"   kafka                 8 minutes ago   Up 8 minutes (healthy)     9092/tcp, 0.0.0.0:19092->19092/tcp, :::19092->19092/tcp
-merchant-backoffice                            merchant-backoffice:latest    "java -javaagent:/ap…"   merchant-backoffice   8 minutes ago   Up 7 minutes (healthy)     
-observability-workshop-collector-1             grafana/alloy:latest          "/bin/alloy run --se…"   collector             8 minutes ago   Up 8 minutes               0.0.0.0:4317-4318->4317-4318/tcp, :::4317-4318->4317-4318/tcp, 0.0.0.0:12345->12345/tcp, :::12345->12345/tcp
-observability-workshop-grafana-1               grafana/grafana:latest        "sh -xeuc 'mkdir -p …"   grafana               8 minutes ago   Up 7 minutes               0.0.0.0:3000->3000/tcp, :::3000->3000/tcp
-observability-workshop-loki-1                  grafana/loki:latest           "/usr/bin/loki -conf…"   loki                  8 minutes ago   Up 7 minutes               0.0.0.0:3100->3100/tcp, :::3100->3100/tcp
-observability-workshop-postgres-easypay-1      postgres:16                   "docker-entrypoint.s…"   postgres-easypay      8 minutes ago   Up 8 minutes (healthy)     0.0.0.0:5432->5432/tcp, :::5432->5432/tcp
-observability-workshop-postgres-fraudetect-1   postgres:16                   "docker-entrypoint.s…"   postgres-fraudetect   8 minutes ago   Up 7 minutes (healthy)     0.0.0.0:5434->5432/tcp, :::5434->5432/tcp
-observability-workshop-postgres-merchantbo-1   postgres:16                   "docker-entrypoint.s…"   postgres-merchantbo   8 minutes ago   Up 8 minutes (healthy)     0.0.0.0:5435->5432/tcp, :::5435->5432/tcp
-observability-workshop-postgres-smartbank-1    postgres:16                   "docker-entrypoint.s…"   postgres-smartbank    8 minutes ago   Up 7 minutes (healthy)     0.0.0.0:5433->5432/tcp, :::5433->5432/tcp
-observability-workshop-prometheus-1            prom/prometheus:v2.52.0       "/bin/prometheus --c…"   prometheus            8 minutes ago   Up 8 minutes               0.0.0.0:9090->9090/tcp, :::9090->9090/tcp
-observability-workshop-tempo-1                 grafana/tempo:latest          "/tempo -config.file…"   tempo                 8 minutes ago   Up 7 minutes               0.0.0.0:3200->3200/tcp, :::3200->3200/tcp, 0.0.0.0:9095->9095/tcp, :::9095->9095/tcp, 0.0.0.0:9411->9411/tcp, :::9411->9411/tcp, 0.0.0.0:14268->14268/tcp, :::14268->14268/tcp
-smartbank-gateway                              smartbank-gateway:latest      "java -Xmx4g -javaag…"   smartbank-gateway     8 minutes ago   Up 7 minutes (unhealthy)   
-
+NAME                                               IMAGE                                         COMMAND                  SERVICE                   CREATED         STATUS                        PORTS
+api-gateway                                        api-gateway:latest                            "java -javaagent:/op…"   api-gateway               3 minutes ago   Up 2 minutes (healthy)        0.0.0.0:8080->8080/tcp, :::8080->8080/tcp
+config-server                                      config-server:latest                          "java -javaagent:/op…"   config-server             3 minutes ago   Up 3 minutes (healthy)        0.0.0.0:8888->8888/tcp, :::8888->8888/tcp
+discovery-server                                   discovery-server:latest                       "java -javaagent:/op…"   discovery-server          3 minutes ago   Up 3 minutes (healthy)        0.0.0.0:8761->8761/tcp, :::8761->8761/tcp
+easypay-service                                    easypay-service:latest                        "java -cp app:app/li…"   easypay-service           3 minutes ago   Up 2 minutes (healthy)        
+fraudetect                                         fraudetect-service:latest                     "java -javaagent:/op…"   fraudetect-service        3 minutes ago   Up 2 minutes (healthy)        
+kafka                                              confluentinc/cp-kafka:7.6.1                   "/etc/confluent/dock…"   kafka                     3 minutes ago   Up 3 minutes (healthy)        9092/tcp, 0.0.0.0:19092->19092/tcp, :::19092->19092/tcp
+merchant-backoffice                                merchant-backoffice:latest                    "java -javaagent:/op…"   merchant-backoffice       3 minutes ago   Up 2 minutes (healthy)        
+observability-workshop-grafana-1                   grafana/grafana:latest                        "sh -xeuc 'mkdir -p …"   grafana                   3 minutes ago   Up 3 minutes                  0.0.0.0:3000->3000/tcp, :::3000->3000/tcp
+observability-workshop-loki-1                      grafana/loki:latest                           "/usr/bin/loki -conf…"   loki                      3 minutes ago   Up 3 minutes                  0.0.0.0:3100->3100/tcp, :::3100->3100/tcp
+observability-workshop-opentelemetry-collector-1   otel/opentelemetry-collector-contrib:latest   "/otelcol-contrib --…"   opentelemetry-collector   3 minutes ago   Up 3 minutes                  0.0.0.0:4317-4318->4317-4318/tcp, :::4317-4318->4317-4318/tcp, 55678-55679/tcp
+observability-workshop-postgres-easypay-1          postgres:16                                   "docker-entrypoint.s…"   postgres-easypay          3 minutes ago   Up 3 minutes (healthy)        0.0.0.0:5432->5432/tcp, :::5432->5432/tcp
+observability-workshop-postgres-fraudetect-1       postgres:16                                   "docker-entrypoint.s…"   postgres-fraudetect       3 minutes ago   Up 3 minutes (healthy)        0.0.0.0:5434->5432/tcp, [::]:5434->5432/tcp
+observability-workshop-postgres-merchantbo-1       postgres:16                                   "docker-entrypoint.s…"   postgres-merchantbo       3 minutes ago   Up 3 minutes (healthy)        0.0.0.0:5435->5432/tcp, [::]:5435->5432/tcp
+observability-workshop-postgres-smartbank-1        postgres:16                                   "docker-entrypoint.s…"   postgres-smartbank        3 minutes ago   Up 3 minutes (healthy)        0.0.0.0:5433->5432/tcp, [::]:5433->5432/tcp
+observability-workshop-prometheus-1                prom/prometheus:latest                        "/bin/prometheus --c…"   prometheus                3 minutes ago   Up 3 minutes                  0.0.0.0:9090->9090/tcp, :::9090->9090/tcp
+observability-workshop-pyroscope-1                 grafana/pyroscope:latest                      "/usr/bin/pyroscope …"   pyroscope                 12 hours ago    Exited (255) 38 minutes ago   0.0.0.0:4040->4040/tcp, :::4040->4040/tcp
+observability-workshop-tempo-1                     grafana/tempo:latest                          "/tempo -config.file…"   tempo                     3 minutes ago   Up 3 minutes                  0.0.0.0:3200->3200/tcp, :::3200->3200/tcp, 0.0.0.0:9095->9095/tcp, :::9095->9095/tcp, 0.0.0.0:9411->9411/tcp, :::9411->9411/tcp
+smartbank-gateway                                  smartbank-gateway:latest                      "java -Xmx4g -cp app…"   smartbank-gateway         3 minutes ago   Up 2 minutes (healthy)
 ```
 
 #### Validation
@@ -498,6 +498,14 @@ public boolean isActive(String posId) {
 }
 ```
 
+🛠️ You can redeploy the `easypay-service` with the following commands:
+
+```bash
+$ docker compose up -d --build easypay-service
+```
+
+🛠️ Now you can run the same commands ran earlier and check again the logs (`http POST…`).
+
 This is most likely an issue with some data in the database… Thanks to logs, we may quickly get the idea that the
 problem comes from the point of sale with ID `POS-02`.
 
@@ -526,15 +534,6 @@ of sale is causing this error...
 >
 > Let’s keep the issue as it is for now.
 
-### Check your code
-
-🛠️ You can redeploy the `easypay-service` with the following commands:
-
-```bash
-$ docker compose up -d --build easypay-service
-```
-
-🛠️ Now you can run the same commands ran earlier and check again the logs (`http POST…`).
 
 ### Using Mapped Diagnostic Context (MDC) to get more insights
 
@@ -555,20 +554,20 @@ to all the logs related to a request.
 the method ``processPayment()`` to instantiate the [MDC](https://logback.qos.ch/manual/mdc.html):
 
 ```java
-public ResponseEntity<PaymentResponse> processPayment(PaymentRequest paymentRequest)
-  MDC.
-
-put("cardNumber",paymentRequest.cardNumber());
-        MDC.
-
-put("pos",paymentRequest.posId());
-
-        [...]
-        MDC.
-
-clear();
-return httpResponse;
-
+public ResponseEntity<PaymentResponse> processPayment(PaymentRequest paymentRequest) {
+    // Add cardNumber to SLF4J MDC 
+    MDC.put("cardNumber",paymentRequest.cardNumber());
+    // Add Point Of Sale identifier to SLF4J MDC
+    MDC.put("pos",paymentRequest.posId());
+            
+    try { // Add a try-finally construct and wrap the initial code here 
+        //...
+        return httpResponse;
+    } finally {
+        // Clear MDC at the end
+        MDC.clear();
+    }
+}
 ```
 
 > aside negative
@@ -596,7 +595,7 @@ logging:
 # Alternative to print specific fields instead
 logging:
   pattern:
-    level = "%5p [%X{cardNumber} - %X{pos}]"
+    level: "%5p [%X{cardNumber} - %X{pos}]"
 ```
 
 > aside positive
@@ -699,11 +698,11 @@ Loki can ingest logs using its own API or using the OpenTelemetry protocol. So w
   the [OpenTelemetry Java Agent](https://opentelemetry.io/docs/zero-code/java/agent/).
 
 We will use the latter as we focus on what OpenTelemetry can bring to us for the observability of our Java applications
-😉
+😉, and not only Spring Boot ones!
 
 ##### Target Architecture
 
-TODO: add a schema with the application, the agent, the collector and the target Loki backend
+![Logs Architecture](img/archi-logs.png)
 
 The OpenTelemetry Collector is an important component in our architecture: it acts as an ETL (Extract, Transform, Load)
 process for
@@ -761,6 +760,8 @@ services:
 By default, the OpenTelemetry Agent target endpoint is configured to `localhost:4317`.
 It is overridable by setting the system property `otel.exporter.otlp.endpoint` or by using
 the `OTEL_EXPORTER_OTLP_ENDPOINT` environment variable.
+
+ℹ️ Our collector is listening on `http://opentelemetry-collector:4317`.
 
 📝 Add the following environment variables to the `easypay-service` service in the `compose.yml` file such as:
 
@@ -820,6 +821,16 @@ services:
 
 ##### OpenTelemetry Collector
 
+> aside positive
+>
+> Utilizing collectors offers several advantages for managing telemetry data:
+> - Reduces the need for complicated application configurations: just send data to `localhost`,
+> - Centralizes configuration to a single point: the collector,
+> - Acts as a buffer to prevent resource overuse,
+> - Can transform data before ingestion,
+> - Supports data intake from various protocols and can relay them to any backend,
+> - ...
+
 ℹ️ The OpenTelemetry collector is already configured to receive logs and forward metrics to the Loki backend.
 
 👀 You can check the collector configuration located in the `docker/otelcol/otelcol.yaml` file.
@@ -827,7 +838,7 @@ services:
 ```yaml
 receivers:
   # Listen for telemetry data via OpenTelemetry protocol
-  otlp:
+  otlp: # (1)
     protocols:
       grpc:
         endpoint: 0.0.0.0:4317
@@ -835,11 +846,11 @@ receivers:
         endpoint: 0.0.0.0:4318
 
 processors:
-  batch:
+  batch: # (2)
 
 exporters:
   # Configure an exporter using the OpenTelemetry protocol over HTTP to send logs to Loki
-  otlphttp/loki:
+  otlphttp/loki: # (3)
     endpoint: http://loki:3100/otlp
 
 service:
@@ -848,11 +859,19 @@ service:
     # 1. Receive logs via the OpenTelemetry protocol
     # 2. Optimize data by batching them (optional but recommended)
     # 3. Export logs to Loki
-    logs:
+    logs: # (4)
       receivers: [ otlp ]
       processors: [ batch ]
       exporters: [ otlphttp/loki ]
 ```
+
+1. Declare an input receiver to listen for telemetry data via the OpenTelemetry protocol on ports 4317 (GRPC) and 4318 (HTTP/PROTOBUF),
+2. Declare a processor of type batch to optimize data by batching them,
+3. Declare an exporter to send logs to Loki using the OpenTelemetry protocol over HTTP,
+  * Exporter name here contains its type (otlphttp) and a key (loki),
+  * The key is optional, and is used to differentiate exporters of the same type,
+  * You should use the full exporter name in the pipeline configuration.
+4. Configure the logs pipeline by defining the receivers, processors, and exporters to use.
 
 🛠️ Redeploy the `easypay-service`:
 
@@ -999,7 +1018,7 @@ With Spring Boot, there are several ways to expose application metrics:
 We will continue to use the OpenTelemetry Agent, as it is a straightforward way to collect metrics, and we already
 configured it!
 
-TODO: add
+![Metrics architecture](./img/archi-metrics.png)
 
 #### Configure the OpenTelemetry Agent
 
@@ -1153,7 +1172,7 @@ We were talking about an incident, isn’t it?
 
 🛠️ Create a query with the following parameters to get error logs of the ``smartbank-gateway`` service:
 
-* Label filters: ``application`` = ``smartbank-gateway``
+* Label filters: ``service_name`` = ``smartbank-gateway``
 * line contains/Json: ``expression``= ``level="level"``
 * label filter expression: ``label`` = ``level ; ``operator`` = ``=~`` ; ``value`` = ``WARN|ERROR``
 
@@ -1244,7 +1263,7 @@ public class PaymentService {
         OpenTelemetry openTelemetry = GlobalOpenTelemetry.get(); // (2)
 
         processHistogram = openTelemetry.getMeter(EasypayServiceApplication.class.getName())  //(3)
-                .histogramBuilder("rivieradev.payment.process")  // (4)
+                .histogramBuilder("snowcamp.payment.process")  // (4)
                 .setDescription("Payment processing time") // (5)
                 .setUnit("ms") // (6)
                 .ofLongs() // (7)
@@ -1460,7 +1479,7 @@ With Spring Boot, there are a couple of approaches to incorporate distributed tr
   provided by the OpenTelemetry project, which automatically instruments our code when attached to our JVM regardless of
   the framework you use.
 
-For this workshop, we'll use the Java Agent approach, as it's the most straightforward way to instrument our application
+For this workshop, we'll keep to use the Java Agent approach, as it's the most straightforward way to instrument our application
 and independent of the libraries we use.
 
 The OpenTelemetry Collector will be used once again, tasked with receiving traces and forwarding them to the Tempo
@@ -1585,7 +1604,7 @@ You should see the full stack of the corresponding transaction.
 
 🛠️ Grafana allows to display a graph of spans as interconnected nodes:
 
-* Modifiy the Tempo data source:
+* Modify the Tempo data source:
     * Go to `Additional settings`,
     * Check the `Enable node graph` option.
 * Go back to the same kind of trace,
@@ -1726,6 +1745,9 @@ public class PaymentService {
     private void store(PaymentProcessingContext context) {
         //...
     }
+    
+    // ...
+}
 ```
 
 📝 We can also provide additional information to the span, such as method parameters using the ``@SpanAttribute``
@@ -1749,6 +1771,8 @@ public class PaymentService {
     private void store(@SpanAttribute("context") PaymentProcessingContext context) { // <-- HERE
         // ...
     }
+    // ...
+}
 ```
 
 This will provide the whole PaymentProcessingContext into the trace.
