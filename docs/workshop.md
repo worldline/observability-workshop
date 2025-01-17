@@ -700,6 +700,23 @@ Loki can ingest logs using its own API or using the OpenTelemetry protocol. So w
 We will use the latter as we focus on what OpenTelemetry can bring to us for the observability of our Java applications
 😉, and not only Spring Boot ones!
 
+##### 2 ways of instrumentation: Pros & Cons
+
+There is two ways to instrument the byte code and broadcast telemetry : Using a library or through a Java Agent
+Here is a short summary of the pros & cons
+
+**Java Agent**
+
+* It is the default choice for instrumenting a Java program
+* Enable loose coupling between the the artifact & the agent
+
+**Library / Starter**
+
+* Faster than using an agent
+* Mandatory with native mode
+
+If you want to know more about this topic, you can [check out this documentation](https://opentelemetry.io/docs/zero-code/java/spring-boot-starter/).
+
 ##### Target Architecture
 
 ![Logs Architecture](img/archi-logs.png)
