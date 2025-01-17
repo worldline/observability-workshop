@@ -1126,13 +1126,14 @@ metric related to the application named easypay-service.
 
 ### Dashboards
 
-With Grafana, you can either create your own dashboards or import some provided by the community from Grafana’s website.
+With Grafana, you can either create your own dashboards or import some provided by the community from 
+[Grafana’s dashboards collection](https://grafana.com/grafana/dashboards/).
 
 We will choose the second solution right now and import the following dashboards:
 
-* [JVM Micrometer](https://grafana.com/grafana/dashboards/12271-jvm-micrometer/), which ID is `12271`,
-* [Spring Boot JDBC & HikariCP](https://grafana.com/grafana/dashboards/20729-spring-boot-jdbc-hikaricp/), which ID is
-  `20729`.
+* [JMX Overview (Opentelemetry)](https://grafana.com/grafana/dashboards/12271-jvm-micrometer/), which ID is `17582`,
+* [OpenTelemetry JDBC Dashboard](https://grafana.com/grafana/dashboards/20729-spring-boot-jdbc-hikaricp/), which ID is
+  `19732`.
 
 🛠️ To import these dashboards:
 
@@ -1146,10 +1147,10 @@ We will choose the second solution right now and import the following dashboards
 >
 > Imported dashboards are available directly from the ``Dashboards`` section of Grafana.
 
-👀 Explore the ``JVM Micrometer`` dashboard: it works almost out of box.  
+👀 Explore the ``JMX Overview`` dashboard: it works almost out of box.  
 It contains a lot of useful information about JVMs running our services.
 
-The ``application`` filter (top of the dashboard) let you select the service you want to explore metrics.
+The ``job`` filter (top of the dashboard) let you select the service you want to explore metrics.
 
 ### Incident!
 
@@ -1163,7 +1164,7 @@ $ k6 run -u 5 -d 2m k6/02-payment-smartbank.js
 
 * Explore the dashboard for the ``easypay-service``, especially the Garbage collector and CPU statistics.
 
-* Look around the other ``Spring Boot JDBC & HikariCP`` dashboard then and see what happens on the database connection
+* Look around the other ``OpenTelemetry JDBC`` dashboard then and see what happens on the database connection
   pool for ``easypay-service``.
 
 We were talking about an incident, isn’t it?
@@ -1180,7 +1181,7 @@ We were talking about an incident, isn’t it?
 
 Normally you would get a ``java.lang.OutOfMemoryError`` due to a saturated Java heap space.
 
-👀 To get additional insights, you can go back to the JVM dashboard and select the ``smartbank-gateway`` application.
+👀 To get additional insights, you can go back to the `JMX Overview` dashboard and select the ``smartbank-gateway`` application.
 
 Normally you will see the used JVM Heap reaching the maximum allowed.
 
