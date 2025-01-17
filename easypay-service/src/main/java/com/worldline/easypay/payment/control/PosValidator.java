@@ -27,15 +27,15 @@ public class PosValidator {
         List<PosRef> posList = posRefRepository.findAll(Example.of(probe));
      
         if (posList.isEmpty()) {
-//            LOG.warn( "Check POS does not pass: unknown posId {}", posId);
+            LOG.warn( "Check POS does not pass: unknown posId {}", posId);
             return false;
         }
 
         boolean result = posList.get(0).active;
 
-//        if (!result) {
-//            LOG.warn( "Check POS does not pass: inactive posId {}", posId);
-//        }
+        if (!result) {
+            LOG.warn( "Check POS does not pass: inactive posId {}", posId);
+        }
 
         return result;
 
