@@ -19,7 +19,8 @@
       "installDockerComposeSwitch": true,
       "version": "latest",
       "dockerDashComposeVersion": "latest"
-    }
+    },
+    "ghcr.io/grafana/devcontainer-features/k6:1": {}
   },
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
   "forwardPorts": [
