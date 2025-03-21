@@ -40,7 +40,11 @@ RUN apt-get clean \
 
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
-USER ubuntu
+# Create the workshop user. UID must be 1002.
+ARG USER=workshop
+RUN useradd -l -u 1002 -G sudo -md /home/workshop -s /bin/bash -p "$(openssl passwd -1 workshop)" workshop
+USER ${USER}
+WORKDIR /home/${USER}
 
 # Install SDKMAN
 RUN curl -ks "https://get.sdkman.io" | bash
