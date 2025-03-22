@@ -1,6 +1,6 @@
 services:
   opentelemetry-collector:
-    image: otel/opentelemetry-collector-contrib:latest
+    image: otel/opentelemetry-collector-contrib:0.122.0
     ports:
       - "4317:4317"
       - "4318:4318"
@@ -9,7 +9,7 @@ services:
     command: --config /etc/otelcol/config.yaml
   
   loki:
-   image: grafana/loki:latest
+   image: grafana/loki:3.4.2
    ports:
      - "3100:3100"
    volumes:
@@ -18,7 +18,7 @@ services:
      - -config.file=/etc/loki/local-config.yaml
 
   prometheus:
-   image: prom/prometheus:latest
+   image: prom/prometheus:v3.2.1
    ports:
      - "9090:9090"
    volumes:
@@ -32,7 +32,7 @@ services:
      - --log.level=debug
 
   tempo:
-   image: grafana/tempo:latest
+   image: grafana/tempo:2.7.1
    ports:
      - "3200:3200"   # tempo
      - "9095:9095" # tempo grpc
@@ -99,7 +99,7 @@ services:
            keepCookies: [pyroscope_git_session]
        EOF
        /run.sh
-   image: grafana/grafana:latest
+   image: grafana/grafana:11.5.2
    ports:
      - "3000:3000"
 
