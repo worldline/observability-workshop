@@ -46,6 +46,7 @@ RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 # Create the workshop user. UID must be 1002.
 ARG USER=workshop
 RUN useradd -l -u 1002 -G sudo -md /home/workshop -s /bin/bash -p "$(openssl passwd -1 workshop)" workshop
+RUN groupadd -f docker && usermod -aG docker ${USER}
 USER ${USER}
 WORKDIR /home/${USER}
 
