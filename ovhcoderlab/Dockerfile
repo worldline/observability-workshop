@@ -14,6 +14,9 @@ RUN apt-get update && apt-get install -y git \
     ca-certificates
 
 # Docker CE APT Repository setup
+
+RUN for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove -y $pkg; done
+
 RUN install -m 0755 -d /etc/apt/keyrings \
     && curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc \
     && chmod a+r /etc/apt/keyrings/docker.asc \
@@ -40,7 +43,11 @@ RUN apt-get clean \
 
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
-USER ubuntu
+# Create the workshop user. UID must be 1002.
+ARG USER=workshop
+RUN useradd -l -u 1002 -G sudo -md /home/workshop -s /bin/bash -p "$(openssl passwd -1 workshop)" workshop
+USER ${USER}
+WORKDIR /home/${USER}
 
 # Install SDKMAN
 RUN curl -ks "https://get.sdkman.io" | bash
