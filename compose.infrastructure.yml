@@ -1,107 +1,121 @@
 services:
   opentelemetry-collector:
-    image: otel/opentelemetry-collector-contrib:0.122.0
+    image: otel/opentelemetry-collector-contrib:observability-workshop
+    build:
+      context: ./docker/otelcol
+      dockerfile: Dockerfile
+      args:
+        VERSION: 0.122.0
     ports:
       - "4317:4317"
       - "4318:4318"
-    volumes:
-      - ./docker/otelcol/otelcol.yaml:/etc/otelcol/config.yaml
-    command: --config /etc/otelcol/config.yaml
-  
+
   loki:
-   image: grafana/loki:3.4.2
-   ports:
-     - "3100:3100"
-   volumes:
-     - ./docker/loki/local-config.yaml:/etc/loki/local-config.yaml
-   command:
-     - -config.file=/etc/loki/local-config.yaml
+    image: grafana/loki:observability-workshop
+    build:
+      context: ./docker/loki
+      dockerfile: Dockerfile
+      args:
+        VERSION: 3.4.2
+    ports:
+      - "3100:3100"
+    command:
+      - -config.file=/etc/loki/local-config.yaml
 
   prometheus:
-   image: prom/prometheus:v3.2.1
-   ports:
-     - "9090:9090"
-   volumes:
-     - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-   command:
-     - --config.file=/etc/prometheus/prometheus.yml
-     - --web.enable-lifecycle
-     - --web.enable-remote-write-receiver
-     - --web.enable-otlp-receiver
-     - --enable-feature=exemplar-storage
-     - --log.level=debug
+    image: prom/prometheus:observability-workshop
+    build:
+      context: ./docker/prometheus
+      dockerfile: Dockerfile
+      args:
+        VERSION: v3.2.1
+    ports:
+      - "9090:9090"
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --web.enable-lifecycle
+      - --web.enable-remote-write-receiver
+      - --web.enable-otlp-receiver
+      - --enable-feature=exemplar-storage
+      - --log.level=debug
 
   tempo:
-   image: grafana/tempo:2.7.1
-   ports:
-     - "3200:3200"   # tempo
-     - "9095:9095" # tempo grpc
-     - "9411:9411"   # zipkin
-   volumes:
-     - ./docker/tempo/config.yaml:/etc/tempo/config.yaml
-   command:
-     - -config.file=/etc/tempo/config.yaml
+    image: grafana/tempo:observability-workshop
+    build:
+      context: ./docker/tempo
+      dockerfile: Dockerfile
+      args:
+        VERSION: 2.7.1
+    ports:
+      - "3200:3200" # tempo
+      - "9095:9095" # tempo grpc
+      - "9411:9411" # zipkin
+    command:
+      - -config.file=/etc/tempo/config.yaml
 
   grafana:
-   environment:
-     - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
-     - GF_AUTH_ANONYMOUS_ENABLED=true
-     - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
-   volumes:
-     - ./docker/grafana/datasources:/etc/grafana/provisioning/dashboards
-   entrypoint:
-     - sh
-     - -xeuc
-     - |
-       mkdir -p /etc/grafana/provisioning/datasources
-       cat <<EOF > /etc/grafana/provisioning/datasources/ds.yaml
-       apiVersion: 1
-       datasources:
-       - name: Loki
-         type: loki
-         access: proxy
-         orgId: 1
-         url: http://loki:3100
-         basicAuth: false
-         isDefault: true
-         version: 1
-         editable: true
-       - name: Prometheus
-         type: prometheus
-         uid: prometheus
-         access: proxy
-         orgId: 1
-         url: http://prometheus:9090
-         basicAuth: false
-         isDefault: false
-         version: 1
-         editable: true
-       - name: Tempo
-         type: tempo
-         access: proxy
-         orgId: 1
-         url: http://tempo:3200
-         basicAuth: false
-         isDefault: false
-         version: 1
-         editable: true
-         apiVersion: 1
-         uid: tempo
-         jsonData:
-           httpMethod: GET
-           serviceMap:
-             datasourceUid: prometheus
-       - name: Pyroscope
-         type: grafana-pyroscope-datasource
-         url: http://pyroscope:4040
-         uid: pyroscope
-         jsonData:
-           keepCookies: [pyroscope_git_session]
-       EOF
-       /run.sh
-   image: grafana/grafana:11.5.2
-   ports:
-     - "3000:3000"
+    image: grafana/grafana:observability-workshop
+    build:
+      context: ./docker/grafana
+      dockerfile: Dockerfile
+      args:
+        VERSION: 11.5.2
+    environment:
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    entrypoint:
+      - sh
+      - -xeuc
+      - |
+        mkdir -p /etc/grafana/provisioning/datasources
+        cat <<EOF > /etc/grafana/provisioning/datasources/ds.yaml
+        apiVersion: 1
+        datasources:
+        - name: Loki
+          type: loki
+          access: proxy
+          orgId: 1
+          url: http://loki:3100
+          basicAuth: false
+          isDefault: true
+          version: 1
+          editable: true
+        - name: Prometheus
+          type: prometheus
+          uid: prometheus
+          access: proxy
+          orgId: 1
+          url: http://prometheus:9090
+          basicAuth: false
+          isDefault: false
+          version: 1
+          editable: true
+        - name: Tempo
+          type: tempo
+          access: proxy
+          orgId: 1
+          url: http://tempo:3200
+          basicAuth: false
+          isDefault: false
+          version: 1
+          editable: true
+          apiVersion: 1
+          uid: tempo
+          jsonData:
+            httpMethod: GET
+            serviceMap:
+              datasourceUid: prometheus
+        - name: Pyroscope
+          type: grafana-pyroscope-datasource
+          url: http://pyroscope:4040
+          uid: pyroscope
+          jsonData:
+            keepCookies: [pyroscope_git_session]
+        EOF
+        /run.sh
+    ports:
+      - "3000:3000"
 
   postgres-easypay:
     image: postgres:16
@@ -112,11 +126,11 @@ services:
       POSTGRES_USER: easypay
       POSTGRES_PASSWORD: easypay
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U easypay"]
+      test: [ "CMD-SHELL", "pg_isready -U easypay" ]
       interval: 5s
       timeout: 1s
       retries: 5
-  
+
   postgres-smartbank:
     image: postgres:16
     ports:
@@ -126,11 +140,11 @@ services:
       POSTGRES_USER: smartbank
       POSTGRES_PASSWORD: smartbank
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U smartbank"]
+      test: [ "CMD-SHELL", "pg_isready -U smartbank" ]
       interval: 5s
       timeout: 1s
       retries: 5
-  
+
   postgres-fraudetect:
     image: postgres:16
     ports:
@@ -140,7 +154,7 @@ services:
       POSTGRES_USER: fraudetect
       POSTGRES_PASSWORD: fraudetect
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U fraudetect"]
+      test: [ "CMD-SHELL", "pg_isready -U fraudetect" ]
       interval: 5s
       timeout: 1s
       retries: 5
@@ -154,11 +168,11 @@ services:
       POSTGRES_USER: merchantbo
       POSTGRES_PASSWORD: merchantbo
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U merchantbo"]
+      test: [ "CMD-SHELL", "pg_isready -U merchantbo" ]
       interval: 5s
       timeout: 1s
       retries: 5
-      
+
   kafka:
     image: confluentinc/cp-kafka:7.6.1
     hostname: kafka
@@ -184,7 +198,7 @@ services:
       # See https://docs.confluent.io/kafka/operations-tools/kafka-tools.html#kafka-storage-sh
       CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
     healthcheck:
-      test: ["CMD-SHELL", "kafka-topics --bootstrap-server kafka:9092 --list"]
+      test: [ "CMD-SHELL", "kafka-topics --bootstrap-server kafka:9092 --list" ]
       interval: 30s
       timeout: 10s
       retries: 5

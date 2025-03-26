@@ -14,8 +14,6 @@ services:
       OTEL_RESOURCE_ATTRIBUTES: "service.name=config-server,deployment.environment=dev,service.namespace=config,service.version=1.0.0,service.instance.id=config-server:8080"
       OTEL_EXPORTER_OTLP_PROTOCOL: grpc
       OTEL_EXPORTER_OTLP_ENDPOINT: http://opentelemetry-collector:4317
-    volumes:
-      - ./instrumentation/opentelemetry-javaagent.jar:/opentelemetry-javaagent.jar
     ports:
       - 8888:8888
     healthcheck:
@@ -44,8 +42,6 @@ services:
       OTEL_RESOURCE_ATTRIBUTES: "service.name=discovery-server,deployment.environment=dev,service.namespace=discovery,service.version=1.0.0,service.instance.id=discovery-server:8080"
       OTEL_EXPORTER_OTLP_PROTOCOL: grpc
       OTEL_EXPORTER_OTLP_ENDPOINT: http://opentelemetry-collector:4317
-    volumes:
-      - ./instrumentation/opentelemetry-javaagent.jar:/opentelemetry-javaagent.jar
     depends_on:
       config-server:
         condition: service_healthy
@@ -75,8 +71,6 @@ services:
       OTEL_RESOURCE_ATTRIBUTES: "service.name=api-gateway,deployment.environment=dev,service.namespace=gateway,service.version=1.0.0,service.instance.id=api-gateway:8080"
       OTEL_EXPORTER_OTLP_PROTOCOL: grpc
       OTEL_EXPORTER_OTLP_ENDPOINT: http://opentelemetry-collector:4317
-    volumes:
-      - ./instrumentation/opentelemetry-javaagent.jar:/opentelemetry-javaagent.jar
     depends_on:
       config-server:
         condition: service_healthy
@@ -106,8 +100,6 @@ services:
       OTEL_RESOURCE_ATTRIBUTES: "service.name=smartbank-gateway,deployment.environment=dev,service.namespace=gateway,service.version=1.0.0,service.instance.id=smartbank-gateway:8080"
       OTEL_EXPORTER_OTLP_PROTOCOL: grpc
       OTEL_EXPORTER_OTLP_ENDPOINT: http://opentelemetry-collector:4317
-    volumes:
-      - ./instrumentation/opentelemetry-javaagent.jar:/opentelemetry-javaagent.jar
     depends_on:
       config-server:
         condition: service_healthy
@@ -140,8 +132,6 @@ services:
       OTEL_RESOURCE_ATTRIBUTES: "service.name=fraudetect-service,deployment.environment=dev,service.namespace=service,service.version=1.0.0,service.instance.id=fraudetect-service:8080"
       OTEL_EXPORTER_OTLP_PROTOCOL: grpc
       OTEL_EXPORTER_OTLP_ENDPOINT: http://opentelemetry-collector:4317
-    volumes:
-      - ./instrumentation/opentelemetry-javaagent.jar:/opentelemetry-javaagent.jar
     depends_on:
       config-server:
         condition: service_healthy
@@ -175,8 +165,6 @@ services:
       OTEL_RESOURCE_ATTRIBUTES: "service.name=merchant-backoffice,deployment.environment=dev,service.namespace=backoffice,service.version=1.0.0,service.instance.id=merchant-backoffice:8080"
       OTEL_EXPORTER_OTLP_PROTOCOL: grpc
       OTEL_EXPORTER_OTLP_ENDPOINT: http://opentelemetry-collector:4317
-    volumes:
-      - ./instrumentation/opentelemetry-javaagent.jar:/opentelemetry-javaagent.jar
     depends_on:
       config-server:
         condition: service_healthy

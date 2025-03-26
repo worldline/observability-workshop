@@ -34,6 +34,9 @@ RUN apk add --no-cache curl
 
 USER javauser
 
-# COPY instrumentation/grafana-opentelemetry-java.jar /app/grafana-opentelemetry-java.jar
+ENV OTEL_AGENT_VERSION "v2.14.0"
+ENV OTEL_AGENT_URL "https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/${OTEL_AGENT_VERSION}/opentelemetry-javaagent.jar"
+
+ADD --chown=$UID:$GID ${OTEL_AGENT_URL} /opentelemetry-javaagent.jar
 
 ENTRYPOINT ["java", "-Xmx4g", "-cp","app:app/lib/*","com.worldline.easypay.smartbank.SmartbankGatewayApplication"]
