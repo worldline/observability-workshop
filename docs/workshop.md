@@ -1258,6 +1258,12 @@ Normally you will see the used JVM Heap reaching the maximum allowed.
 > using [Grafana Alertmanager](https://grafana.com/docs/grafana/latest/alerting/set-up/configure-alertmanager/).  
 > For instance, if CPU usage is greater than 80%, free memory is less than 1GB, used heap is greater than 80%, etc.
 
+🛠️ You may have to restart smartbank:
+
+```bash
+$ docker compose restart smartbank-gateway
+```
+
 ### Business metrics
 
 Observability is not only about incidents. You can also define your own metrics.
@@ -1306,9 +1312,9 @@ dependencies {
 
 We need to declare two timers in our code:
 
-* ``processTimer`` to record the ``snowcamp.payment.process`` metric: it represents the payment processing time and
+* ``processTimer`` to record the ``devoxx.payment.process`` metric: it represents the payment processing time and
   record the time spent in the `process` method,
-* ``storeTimer`` to record the ``snowcamp.payment.store`` metric: it represents the time required to store a payment
+* ``storeTimer`` to record the ``devoxx.payment.store`` metric: it represents the time required to store a payment
   in database by recording the time spent in the `store` method.
 
 📝 Let’s modify the ``com.worldline.easypay.payment.control.PaymentService`` class to declare them:
@@ -1331,13 +1337,13 @@ public class PaymentService {
         OpenTelemetry openTelemetry = GlobalOpenTelemetry.get(); // (2)
 
         processHistogram = openTelemetry.getMeter(EasypayServiceApplication.class.getName())  //(3)
-                .histogramBuilder("snowcamp.payment.process")  // (4)
+                .histogramBuilder("devoxx.payment.process")  // (4)
                 .setDescription("Payment processing time") // (5)
                 .setUnit("ms") // (6)
                 .ofLongs() // (7)
                 .build();
         storeHistogram = openTelemetry.getMeter(EasypayServiceApplication.class.getName())
-                .histogramBuilder("snowcamp.payment.store")
+                .histogramBuilder("devoxx.payment.store")
                 .setDescription("Payment storing time")
                 .setUnit("ms")
                 .ofLongs()
@@ -1407,7 +1413,7 @@ public class PaymentService {
     public PaymentService(/* ... */) {
         // ...
         requestCounter = openTelemetry.getMeter(EasypayServiceApplication.class.getName()) // (2)
-                .counterBuilder("snowcamp.payment.requests")
+                .counterBuilder("devoxx.payment.requests")
                 .setDescription("Payment requests counter")
                 .build();
     }
@@ -1435,16 +1441,10 @@ public void accept(PaymentProcessingContext paymentContext) {
 
 #### 5. Redeploy easypay
 
-🛠️ Rebuild the easypay-service:
+🛠️ Rebuild and redeploy `easypay-service`:
 
 ```bash
-$ docker compose build easypay-service
-```
-
-🛠️ Redeploy easypay:
-
-```bash
-$ docker compose up -d easypay-service
+$ docker compose up -d --build easypay-service
 ```
 
 🛠️ Once easypay is started (you can check logs with the ``docker compose logs -f easypay-service`` command and wait for
@@ -1453,16 +1453,16 @@ an output like ``Started EasypayServiceApplication in 32.271 seconds``):
 * Execute some queries:
 
 ```bash
-$ http POST :8080/api/easypay/payments posId=POS-01 cardNumber=5555567898780008 expiryDate=789456123 amount:=40000
+$ k6 run -u 1 -d 1m k6/01-payment-only.js
 ```
 
 🛠️ Then go to Grafana and explore Metrics to find your newly created metrics:
 
-* Search for metric with base name `snowcamp_payment_process`,
+* Search for metric with base name `devoxx_payment_process`,
 * 👀 You should get 3 new metrics:
-    * `snowcamp_payment_process_milliseconds_bucket`,
-    * `snowcamp_payment_process_milliseconds_count`,
-    * `snowcamp_payment_process_milliseconds_sum`.
+    * `devoxx_payment_process_milliseconds_bucket`,
+    * `devoxx_payment_process_milliseconds_count`,
+    * `devoxx_payment_process_milliseconds_sum`.
 
 👀 Explore them, especially the `_bucket` one.
 
@@ -1477,7 +1477,7 @@ Especially:
 * We can get the average time spent in the method by dividing the `sum` by the `count`,
 * We can calculate the latency percentile thanks to the buckets.
 
-Finally, our ``Counter`` becomes a metric suffixed with ``_total``: `snowcamp_payment_requests_total`.
+Finally, our ``Counter`` becomes a metric suffixed with ``_total``: `devoxx_payment_requests_total`.
 
 #### 6. Compute percentiles
 
@@ -1488,9 +1488,9 @@ query Prometheus to display the percentiles of our application:
 
 🛠️ Go to Grafana, to explore Metrics again.
 
-🛠️ To compute the percentiles for the `snowcamp_payment_process` histogram we have created:
+🛠️ To compute the percentiles for the `devoxx_payment_process` histogram we have created:
 
-* Select the `snowcamp_payment_process_milliseconds_bucket` metric,
+* Select the `devoxx_payment_process_milliseconds_bucket` metric,
 * Click on `Operations` and select `Aggregations` > `Histogram quantile`,
 * Select a Quantile value,
 * Click on `Run query`.
@@ -1513,7 +1513,7 @@ It provides some dashboards we have created from the new metrics you exposed in 
 * `Payment request count total (rated)`: represents the number of hit per second in our application computed from our
   counter,
 * ``Payment Duration distribution``: represents the various percentiles of our application computed from the
-  ``snowcamp_payment_process`` histogram,
+  ``devoxx_payment_process`` histogram,
 * ``Requests process performance`` and ``Requests store performance``: are a visualization of the buckets of the two
   histograms we created previously.
 
@@ -1748,7 +1748,7 @@ service:
 🛠️ Restart the collector:
 
 ```bash
-$ docker compose restart opentelemetry-collector
+$ docker compose up -d --build opentelemetry-collector
 ```
 
 Starting from this moment, you should no longer see traces related to `actuator/health` endpoints.
@@ -1806,12 +1806,12 @@ import io.opentelemetry.instrumentation.annotations.WithSpan;
 public class PaymentService {
     // ...
 
-    @WithSpan("Snowcamp: Payment processing method")
+    @WithSpan("devoxx: Payment processing method")
     private void process(PaymentProcessingContext context) {
         //...
     }
 
-    @WithSpan("Snowcamp: Payment store method")
+    @WithSpan("devoxx: Payment store method")
     private void store(PaymentProcessingContext context) {
         //...
     }
@@ -1832,12 +1832,12 @@ import io.opentelemetry.instrumentation.annotations.SpanAttribute;
 public class PaymentService {
     // ...
 
-    @WithSpan("Snowcamp: Payment processing method")
+    @WithSpan("devoxx: Payment processing method")
     private void process(@SpanAttribute("context") PaymentProcessingContext context) { // <-- HERE
         // ...
     }
 
-    @WithSpan("Snowcamp: Payment store method")
+    @WithSpan("devoxx: Payment store method")
     private void store(@SpanAttribute("context") PaymentProcessingContext context) { // <-- HERE
         // ...
     }
@@ -2092,7 +2092,7 @@ In this section, we will configure the Tempo data source to link our traces to t
     * Data source: `Prometheus`,
     * Span start time shift: `-2m`,
     * Span end time shift: `2m`,
-    * Tags: `service.name` as `application`
+    * Tags: `service.name` as `service_name`
 
 🛠️ Now, we will add some metric queries (click on `+ Add query` for each query):
 
