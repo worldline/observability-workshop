@@ -2201,20 +2201,17 @@ $ docker compose --profile=profiling up -d
 Let’s use an agent again to profile our application, and the Pyroscope extension for OpenTelemetry agent
 to match span with profiling data. 
 
-🛠️ First, download the [agent](https://grafana.com/docs/pyroscope/latest/configure-client/language-sdks/java/). You can
-use the provided script to download it as `instrumentation/pyroscope.jar`:
+✅ Both `pyroscope.jar` agent and `pyroscope-otel.jar` were downloaded for you in the `/` of the container (`easypay-service/src/main/docker/Dockerfile`):
 
-```bash
-$ bash ./scripts/download-pyroscope-agent.sh
+```Dockerfile
+ENV PYROSCOPE_VERSION=v2.0.0
+ENV PYROSCOPE_URL="https://github.com/grafana/pyroscope-java/releases/download/${PYROSCOPE_VERSION}/pyroscope.jar"
+ENV PYROSCOPE_OTEL_VERSION=v1.0.1
+ENV PYROSCOPE_OTEL_URL="https://github.com/grafana/otel-profiling-java/releases/download/${PYROSCOPE_OTEL_VERSION}/pyroscope-otel.jar"
 
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
-100 9782k  100 9782k    0     0  10.2M      0 --:--:-- --:--:-- --:--:-- 13.9M
-Grafana Pyroscope agent downloaded successfully in ./scripts/../instrumentation
+ADD --chown=$UID:$GID ${PYROSCOPE_URL} /pyroscope.jar
+ADD --chown=$UID:$GID ${PYROSCOPE_OTEL_URL} /pyroscope-otel.jar
 ```
-
-✅ It should have downloaded both `pyroscope.jar` and `pyroscope-otel.jar` in the `instrumentation` directory.
 
 📝 Just like for logs and metrics, we should modify the `compose.yml` deployment file for the `easypay-service` to enable
 and configure profiling with Pyroscope:
@@ -2222,11 +2219,6 @@ and configure profiling with Pyroscope:
 ```yaml
 services:
   easypay-service:
-    # ...
-    volumes:
-      - ./instrumentation/opentelemetry-javaagent.jar
-      - ./instrumentation/pyroscope.jar:/pyroscope.jar # < Add
-      - ./instrumentation/pyroscope-otel.jar:/pyroscope-otel.jar # < Add  
     # ...
     environment:
       # ...
