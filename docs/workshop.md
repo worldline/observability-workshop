@@ -196,24 +196,13 @@ Docker Compose version v2.24.7
 
 #### If you don't want to bother with a local setup
 
-It's strongly recommended to use [Gitpod](https://gitpod.io)
-or [GitHub Codespaces](https://github.com/features/codespaces).
+It's strongly recommended to use [GitHub Codespaces](https://github.com/features/codespaces).
 You must create an account first.
 You then can open this project in either your local VS Code or directly in your browser:
-
-[![Open in Gitpod](img/open-in-gitpod.svg)](https://gitpod.io/#github.com/worldline/observability-workshop.git)
 
 ## Environment Setup
 
 In this chapter, you will learn how to start either GitPod or GitHub Codespaces.
-
-### Open GitPod
-
-We will assume you will use GitPod for this workshop :)
-
-[![Open in Gitpod](img/open-in-gitpod.svg)](https://gitpod.io/#github.com/worldline/observability-workshop.git)
-
-When a messages invites you making an URL public, select and validate it.
 
 ### 🛠  Open Github CodeSpaces
 
@@ -472,7 +461,7 @@ requests in this workshop.
 📝 Modify the `easypay-service/src/main/java/com/worldline/easypay/payment/boundary/PaymentResource.java` class by
 uncommenting all `// LOG.…` lines (keep MDC lines for later 😉).
 
-### Ze technical issue
+### The technical issue
 
 Another issue was raised for the POS (Point of Sell) ``POS-02`` (but we didn’t know yet!).
 
@@ -623,7 +612,7 @@ public ResponseEntity<PaymentResponse> processPayment(PaymentRequest paymentRequ
 
 Now, we want to print these values when a log line is printed in the console.
 
-📝 Modify to the spring configuration file (``easypay-service/src/main/resources/application.yaml``) and modify the
+📝 Modify to the spring configuration file (``easypay-service/src/main/resources/application.yaml``) and add the
 `logging.level.pattern` property to add both the ``cardNumber`` & ``pos``fields to all logs:
 
 ```yaml
@@ -733,7 +722,7 @@ $ docker compose up -d --build easypay-service
 
 It is also possible to send logs directly to a log collector by configuring an appender in your logging framework.
 
-This has the advantage of being more real-time than the previous approach.
+This approach offers a more real-time experience compared to the previous method.
 
 Loki can ingest logs using its own API or using the OpenTelemetry protocol. So we have several options:
 
@@ -1048,7 +1037,8 @@ service:
 🛠 Restart the collector to take into account the new configuration:
 
 ```bash
-docker compose restart opentelemetry-collector
+$ docker compose build opentelemetry-collector
+$ docker compose restart opentelemetry-collector
 ```
 
 🛠️ Generate some logs with curl/httpie or k6.
@@ -1301,9 +1291,9 @@ dependencies {
 
 We need to declare two timers in our code:
 
-* ``processTimer`` to record the ``snowcamp.payment.process`` metric: it represents the payment processing time and
+* ``processTimer`` to record the ``devoxx.payment.process`` metric: it represents the payment processing time and
   record the time spent in the `process` method,
-* ``storeTimer`` to record the ``snowcamp.payment.store`` metric: it represents the time required to store a payment
+* ``storeTimer`` to record the ``devoxx.payment.store`` metric: it represents the time required to store a payment
   in database by recording the time spent in the `store` method.
 
 📝 Let’s modify the ``com.worldline.easypay.payment.control.PaymentService`` class to declare them:
@@ -1326,13 +1316,13 @@ public class PaymentService {
         OpenTelemetry openTelemetry = GlobalOpenTelemetry.get(); // (2)
 
         processHistogram = openTelemetry.getMeter(EasypayServiceApplication.class.getName())  //(3)
-                .histogramBuilder("snowcamp.payment.process")  // (4)
+                .histogramBuilder("devoxx.payment.process")  // (4)
                 .setDescription("Payment processing time") // (5)
                 .setUnit("ms") // (6)
                 .ofLongs() // (7)
                 .build();
         storeHistogram = openTelemetry.getMeter(EasypayServiceApplication.class.getName())
-                .histogramBuilder("snowcamp.payment.store")
+                .histogramBuilder("devoxx.payment.store")
                 .setDescription("Payment storing time")
                 .setUnit("ms")
                 .ofLongs()
@@ -1402,7 +1392,7 @@ public class PaymentService {
     public PaymentService(/* ... */) {
         // ...
         requestCounter = openTelemetry.getMeter(EasypayServiceApplication.class.getName()) // (2)
-                .counterBuilder("snowcamp.payment.requests")
+                .counterBuilder("devoxx.payment.requests")
                 .setDescription("Payment requests counter")
                 .build();
     }
@@ -1453,11 +1443,11 @@ $ http POST :8080/api/easypay/payments posId=POS-01 cardNumber=5555567898780008 
 
 🛠️ Then go to Grafana and explore Metrics to find your newly created metrics:
 
-* Search for metric with base name `snowcamp_payment_process`,
+* Search for metric with base name `devoxx_payment_process`,
 * 👀 You should get 3 new metrics:
-    * `snowcamp_payment_process_milliseconds_bucket`,
-    * `snowcamp_payment_process_milliseconds_count`,
-    * `snowcamp_payment_process_milliseconds_sum`.
+    * `devoxx_payment_process_milliseconds_bucket`,
+    * `devoxx_payment_process_milliseconds_count`,
+    * `devoxx_payment_process_milliseconds_sum`.
 
 👀 Explore them, especially the `_bucket` one.
 
@@ -1472,7 +1462,7 @@ Especially:
 * We can get the average time spent in the method by dividing the `sum` by the `count`,
 * We can calculate the latency percentile thanks to the buckets.
 
-Finally, our ``Counter`` becomes a metric suffixed with ``_total``: `snowcamp_payment_requests_total`.
+Finally, our ``Counter`` becomes a metric suffixed with ``_total``: `devoxx_payment_requests_total`.
 
 #### 6. Compute percentiles
 
@@ -1483,9 +1473,9 @@ query Prometheus to display the percentiles of our application:
 
 🛠️ Go to Grafana, to explore Metrics again.
 
-🛠️ To compute the percentiles for the `snowcamp_payment_process` histogram we have created:
+🛠️ To compute the percentiles for the `devoxx_payment_process` histogram we have created:
 
-* Select the `snowcamp_payment_process_milliseconds_bucket` metric,
+* Select the `devoxx_payment_process_milliseconds_bucket` metric,
 * Click on `Operations` and select `Aggregations` > `Histogram quantile`,
 * Select a Quantile value,
 * Click on `Run query`.
@@ -1508,7 +1498,7 @@ It provides some dashboards we have created from the new metrics you exposed in 
 * `Payment request count total (rated)`: represents the number of hit per second in our application computed from our
   counter,
 * ``Payment Duration distribution``: represents the various percentiles of our application computed from the
-  ``snowcamp_payment_process`` histogram,
+  ``devoxx_payment_process`` histogram,
 * ``Requests process performance`` and ``Requests store performance``: are a visualization of the buckets of the two
   histograms we created previously.
 
@@ -1743,6 +1733,7 @@ service:
 🛠️ Restart the collector:
 
 ```bash
+$ docker compose build opentelemetry-collector
 $ docker compose restart opentelemetry-collector
 ```
 
@@ -1801,12 +1792,12 @@ import io.opentelemetry.instrumentation.annotations.WithSpan;
 public class PaymentService {
     // ...
 
-    @WithSpan("Snowcamp: Payment processing method")
+    @WithSpan("devoxx: Payment processing method")
     private void process(PaymentProcessingContext context) {
         //...
     }
 
-    @WithSpan("Snowcamp: Payment store method")
+    @WithSpan("devoxx: Payment store method")
     private void store(PaymentProcessingContext context) {
         //...
     }
@@ -1827,12 +1818,12 @@ import io.opentelemetry.instrumentation.annotations.SpanAttribute;
 public class PaymentService {
     // ...
 
-    @WithSpan("Snowcamp: Payment processing method")
+    @WithSpan("devoxx: Payment processing method")
     private void process(@SpanAttribute("context") PaymentProcessingContext context) { // <-- HERE
         // ...
     }
 
-    @WithSpan("Snowcamp: Payment store method")
+    @WithSpan("devoxx: Payment store method")
     private void store(@SpanAttribute("context") PaymentProcessingContext context) { // <-- HERE
         // ...
     }

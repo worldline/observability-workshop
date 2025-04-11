@@ -17,7 +17,7 @@ public class BankAuthorService {
 
     private static final Logger LOG = LoggerFactory.getLogger(BankAuthorService.class);
 
-    @Value("${payment.author.merchantId:Snowcamp Swag Store}")
+    @Value("${payment.author.merchantId:Devoxx Swag Store}")
     String merchantId;
 
     @Value("${payment.max.amount.fallback:20000}")
