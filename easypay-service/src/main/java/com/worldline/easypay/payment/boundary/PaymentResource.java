@@ -73,18 +73,22 @@ public class PaymentResource {
     @Operation(description = "Process a payment: can be accepted or denied", summary = "Process a payment")
     @ApiResponse(responseCode = "201", description = "Payment processed", content = @Content(mediaType = "application/json"))
     public ResponseEntity<PaymentResponse> processPayment(@Parameter(description = "The payment to be processed", required = true) @Valid @NotNull @RequestBody PaymentRequest paymentRequest) {
-        // MDC.put("cardNumber",paymentRequest.cardNumber());
-        // MDC.put("pos",paymentRequest.posId());
-        // LOG.info("Processing new payment: {}", paymentRequest);
-        PaymentProcessingContext paymentContext = new PaymentProcessingContext(paymentRequest);
+        try {
+            // MDC.put("cardNumber",paymentRequest.cardNumber());
+            // MDC.put("pos",paymentRequest.posId());
+            // LOG.info("Processing new payment: {}", paymentRequest);
+            PaymentProcessingContext paymentContext = new PaymentProcessingContext(paymentRequest);
 
-        paymentService.accept(paymentContext);
+            paymentService.accept(paymentContext);
 
-        PaymentResponse response = paymentContext.generateResponse();
+            PaymentResponse response = paymentContext.generateResponse();
 
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(response.paymentId()).toUri();
-        var httpResponse = ResponseEntity.created(location).body(response);
-        // MDC.clear();
-        return httpResponse;
+            URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(response.paymentId()).toUri();
+            var httpResponse = ResponseEntity.created(location).body(response);
+            
+            return httpResponse;
+        } finally {
+            // MDC.clear();
+        }
     }
 }
