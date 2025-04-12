@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21-jdk-alpine as build
+FROM eclipse-temurin:21-jdk-alpine AS build
 
 WORKDIR /workspace/app
 
@@ -38,5 +38,13 @@ ENV OTEL_AGENT_VERSION "v2.14.0"
 ENV OTEL_AGENT_URL "https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/${OTEL_AGENT_VERSION}/opentelemetry-javaagent.jar"
 
 ADD --chown=$UID:$GID ${OTEL_AGENT_URL} /opentelemetry-javaagent.jar
+
+ENV PYROSCOPE_VERSION=v2.0.0
+ENV PYROSCOPE_URL="https://github.com/grafana/pyroscope-java/releases/download/${PYROSCOPE_VERSION}/pyroscope.jar"
+ENV PYROSCOPE_OTEL_VERSION=v1.0.1
+ENV PYROSCOPE_OTEL_URL="https://github.com/grafana/otel-profiling-java/releases/download/${PYROSCOPE_OTEL_VERSION}/pyroscope-otel.jar"
+
+ADD --chown=$UID:$GID ${PYROSCOPE_URL} /pyroscope.jar
+ADD --chown=$UID:$GID ${PYROSCOPE_OTEL_URL} /pyroscope-otel.jar
 
 ENTRYPOINT ["java", "-cp","app:app/lib/*","com.worldline.easypay.EasypayServiceApplication"]
