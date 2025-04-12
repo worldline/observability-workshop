@@ -196,24 +196,13 @@ Docker Compose version v2.24.7
 
 #### If you don't want to bother with a local setup
 
-It's strongly recommended to use [Gitpod](https://gitpod.io)
-or [GitHub Codespaces](https://github.com/features/codespaces).
+It's strongly recommended to use [GitHub Codespaces](https://github.com/features/codespaces).
 You must create an account first.
 You then can open this project in either your local VS Code or directly in your browser:
-
-[![Open in Gitpod](img/open-in-gitpod.svg)](https://gitpod.io/#github.com/worldline/observability-workshop.git)
 
 ## Environment Setup
 
 In this chapter, you will learn how to start either GitPod or GitHub Codespaces.
-
-### Open GitPod
-
-We will assume you will use GitPod for this workshop :)
-
-[![Open in Gitpod](img/open-in-gitpod.svg)](https://gitpod.io/#github.com/worldline/observability-workshop.git)
-
-When a messages invites you making an URL public, select and validate it.
 
 ### 🛠  Open Github CodeSpaces
 
@@ -469,7 +458,7 @@ requests in this workshop.
 📝 Modify the `easypay-service/src/main/java/com/worldline/easypay/payment/boundary/PaymentResource.java` class by
 uncommenting all `// LOG.…` lines (keep MDC lines for later 😉).
 
-### Ze technical issue
+### The technical issue
 
 Another issue was raised for the POS (Point of Sell) ``POS-02`` (but we didn’t know yet!).
 
@@ -624,7 +613,7 @@ public ResponseEntity<PaymentResponse> processPayment(PaymentRequest paymentRequ
 
 Now, we want to print these values when a log line is printed in the console.
 
-📝 Modify to the spring configuration file (``easypay-service/src/main/resources/application.yaml``) and modify the
+📝 Modify to the spring configuration file (``easypay-service/src/main/resources/application.yaml``) and add the
 `logging.level.pattern` property to add both the ``cardNumber`` & ``pos``fields to all logs:
 
 ```yaml
@@ -742,7 +731,7 @@ easypay-service  | {"@timestamp":"2025-04-11T21:02:40.175088520Z","log.level":"I
 
 It is also possible to send logs directly to a log collector by configuring an appender in your logging framework.
 
-This has the advantage of being more real-time than the previous approach.
+This approach offers a more real-time experience compared to the previous method.
 
 Loki can ingest logs using its own API or using the OpenTelemetry protocol. So we have several options:
 
