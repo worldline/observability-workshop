@@ -1,6 +1,11 @@
 services:
   pyroscope:
-    image: grafana/pyroscope:latest
+    image: grafana/pyroscope:observability-workshop
+    build:
+      context: ./docker/pyroscope
+      dockerfile: Dockerfile
+    environment:
+      - VSCODE_PROXY_URI=${VSCODE_PROXY_URI}
     ports:
       - "4040:4040"
     profiles:
