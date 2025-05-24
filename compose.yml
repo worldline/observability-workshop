@@ -17,6 +17,9 @@ services:
     environment:
       CONFIG_SERVER_URL: http://config-server:8888
       SPRING_PROFILES_ACTIVE: default,docker
+      OTEL_RESOURCE_ATTRIBUTES: "service.name=easypay-service,deployment.environment=dev,service.namespace=service,service.version=1.0.0,service.instance.id=easypay-service:8080" # (1)
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc # (2)
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://opentelemetry-collector:4317 # (3)
     depends_on:
       config-server:
         condition: service_healthy
@@ -32,6 +35,11 @@ services:
       start_period: 5s
     entrypoint:
       - java
+      - -javaagent:/opentelemetry-javaagent.jar # < Add this line 
+      - -javaagent:/opentelemetry-javaagent.jar
+      - -Dotel.instrumentation.logback-appender.experimental-log-attributes=true       # < Add this line
+      - -Dotel.instrumentation.logback-appender.experimental.capture-mdc-attributes=*  # < Add this line      
+      - -Dotel.metric.export.interval=5000 # < Add this line
       - -cp
       - app:app/lib/*
       - com.worldline.easypay.EasypayServiceApplication
