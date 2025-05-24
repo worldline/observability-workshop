@@ -39,7 +39,7 @@ service:
     # Receive logs using the OpenTelemetry Protocol and export to Loki
     logs:
       receivers: [ otlp ]
-      processors: [batch] # (2)
+      processors: [ batch ] 
       exporters: [ otlphttp/loki ]
 
     # Receive metrics using the OpenTelemetry Protocol and export to Prometheus
