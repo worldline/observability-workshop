@@ -351,7 +351,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "rate(devoxx_payment_requests_total{service_name=\"easypay-service\"}[$__interval])",
+          "expr": "rate(easypay_payment_requests_total{service_name=\"easypay-service\"}[$__interval])",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -450,7 +450,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.50, sum(rate(devoxx_payment_process_milliseconds_bucket[$__rate_interval])) by (le))",
+          "expr": "histogram_quantile(0.50, sum(rate(easypay_payment_process_milliseconds_bucket[$__rate_interval])) by (le))",
           "legendFormat": "50th",
           "range": true,
           "refId": "C"
@@ -461,7 +461,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.90, sum(rate(devoxx_payment_process_milliseconds_bucket[$__rate_interval])) by (le))",
+          "expr": "histogram_quantile(0.90, sum(rate(easypay_payment_process_milliseconds_bucket[$__rate_interval])) by (le))",
           "legendFormat": "90th",
           "range": true,
           "refId": "D"
@@ -472,7 +472,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum(rate(devoxx_payment_process_milliseconds_bucket[$__rate_interval])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(easypay_payment_process_milliseconds_bucket[$__rate_interval])) by (le))",
           "legendFormat": "95th",
           "range": true,
           "refId": "A"
@@ -483,7 +483,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.99, sum(rate(devoxx_payment_process_milliseconds_bucket[$__rate_interval])) by (le))",
+          "expr": "histogram_quantile(0.99, sum(rate(easypay_payment_process_milliseconds_bucket[$__rate_interval])) by (le))",
           "legendFormat": "99th",
           "range": true,
           "refId": "B"
@@ -494,7 +494,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.999, sum(rate(devoxx_payment_process_milliseconds_bucket[$__rate_interval])) by (le))",
+          "expr": "histogram_quantile(0.999, sum(rate(easypay_payment_process_milliseconds_bucket[$__rate_interval])) by (le))",
           "legendFormat": "999th",
           "range": true,
           "refId": "E"
@@ -609,7 +609,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "sum(devoxx_payment_process_milliseconds_bucket) by (le)",
+          "expr": "sum(easypay_payment_process_milliseconds_bucket) by (le)",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -728,7 +728,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sort(sum(devoxx_payment_store_milliseconds_bucket) by (le))",
+          "expr": "sort(sum(easypay_payment_store_milliseconds_bucket) by (le))",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"

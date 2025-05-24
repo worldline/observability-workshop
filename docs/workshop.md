@@ -1093,7 +1093,7 @@ services:
       - -javaagent:/opentelemetry-javaagent.jar
       - -Dotel.instrumentation.logback-appender.experimental-log-attributes=true
       - -Dotel.instrumentation.logback-appender.experimental.capture-mdc-attributes=*
-      - -Dotel.metric.export.interval=5000 # < Add this line
+      - -Dotel.metric.export.interval=5000
       - -cp
       - app:app/lib/*
       - com.worldline.easypay.EasypayServiceApplication
@@ -1102,6 +1102,14 @@ services:
 ℹ️ The `otel.metric.export.interval` system property is used to define the frequency at which metrics are sent to the
 target endpoint in milliseconds. As a reminder, you can also use environment variables to configure the Agent
 (`otel.metric.export.interval` becomes `OTEL_METRIC_EXPORT_INTERVAL` environment variable name).
+
+
+🛠 Restart the easypay-service to take into account the new configuration:
+
+```bash
+docker compose up -d --build easypay-service
+```
+
 
 ### Export metrics to Prometheus
 
@@ -1301,9 +1309,9 @@ dependencies {
 
 We need to declare two timers in our code:
 
-* ``processTimer`` to record the ``devoxx.payment.process`` metric: it represents the payment processing time and
+* ``processTimer`` to record the ``easypay.payment.process`` metric: it represents the payment processing time and
   record the time spent in the `process` method,
-* ``storeTimer`` to record the ``devoxx.payment.store`` metric: it represents the time required to store a payment
+* ``storeTimer`` to record the ``easypay.payment.store`` metric: it represents the time required to store a payment
   in database by recording the time spent in the `store` method.
 
 📝 Let’s modify the ``com.worldline.easypay.payment.control.PaymentService`` class to declare them:
@@ -1313,6 +1321,9 @@ We need to declare two timers in our code:
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.GlobalOpenTelemetry;
+
 
 @Service
 public class PaymentService {
@@ -1326,13 +1337,13 @@ public class PaymentService {
         OpenTelemetry openTelemetry = GlobalOpenTelemetry.get(); // (2)
 
         processHistogram = openTelemetry.getMeter(EasypayServiceApplication.class.getName())  //(3)
-                .histogramBuilder("devoxx.payment.process")  // (4)
+                .histogramBuilder("easypay.payment.process")  // (4)
                 .setDescription("Payment processing time") // (5)
                 .setUnit("ms") // (6)
                 .ofLongs() // (7)
                 .build();
         storeHistogram = openTelemetry.getMeter(EasypayServiceApplication.class.getName())
-                .histogramBuilder("devoxx.payment.store")
+                .histogramBuilder("easypay.payment.store")
                 .setDescription("Payment storing time")
                 .setUnit("ms")
                 .ofLongs()
@@ -1393,6 +1404,9 @@ private void store(PaymentProcessingContext context) {
 // ...
 
 import io.micrometer.core.instrument.Counter;
+import io.opentelemetry.api.metrics.LongCounter;
+import io.opentelemetry.api.metrics.LongHistogram;
+
 
 @Service
 public class PaymentService {
@@ -1402,7 +1416,7 @@ public class PaymentService {
     public PaymentService(/* ... */) {
         // ...
         requestCounter = openTelemetry.getMeter(EasypayServiceApplication.class.getName()) // (2)
-                .counterBuilder("devoxx.payment.requests")
+                .counterBuilder("easypay.payment.requests")
                 .setDescription("Payment requests counter")
                 .build();
     }
@@ -1447,11 +1461,11 @@ $ k6 run -u 1 -d 1m k6/01-payment-only.js
 
 🛠️ Then go to Grafana and explore Metrics to find your newly created metrics:
 
-* Search for metric with base name `devoxx_payment_process`,
+* Search for metric with base name `easypay_payment_process`,
 * 👀 You should get 3 new metrics:
-    * `devoxx_payment_process_milliseconds_bucket`,
-    * `devoxx_payment_process_milliseconds_count`,
-    * `devoxx_payment_process_milliseconds_sum`.
+    * `easypay_payment_process_milliseconds_bucket`,
+    * `easypay_payment_process_milliseconds_count`,
+    * `easypay_payment_process_milliseconds_sum`.
 
 👀 Explore them, especially the `_bucket` one.
 
@@ -1466,7 +1480,7 @@ Especially:
 * We can get the average time spent in the method by dividing the `sum` by the `count`,
 * We can calculate the latency percentile thanks to the buckets.
 
-Finally, our ``Counter`` becomes a metric suffixed with ``_total``: `devoxx_payment_requests_total`.
+Finally, our ``Counter`` becomes a metric suffixed with ``_total``: `easypay_payment_requests_total`.
 
 #### 6. Compute percentiles
 
@@ -1477,9 +1491,9 @@ query Prometheus to display the percentiles of our application:
 
 🛠️ Go to Grafana, to explore Metrics again.
 
-🛠️ To compute the percentiles for the `devoxx_payment_process` histogram we have created:
+🛠️ To compute the percentiles for the `easypay_payment_process` histogram we have created:
 
-* Select the `devoxx_payment_process_milliseconds_bucket` metric,
+* Select the `easypay_payment_process_milliseconds_bucket` metric,
 * Click on `Operations` and select `Aggregations` > `Histogram quantile`,
 * Select a Quantile value,
 * Click on `Run query`.
@@ -1502,7 +1516,7 @@ It provides some dashboards we have created from the new metrics you exposed in 
 * `Payment request count total (rated)`: represents the number of hit per second in our application computed from our
   counter,
 * ``Payment Duration distribution``: represents the various percentiles of our application computed from the
-  ``devoxx_payment_process`` histogram,
+  ``easypay_payment_process`` histogram,
 * ``Requests process performance`` and ``Requests store performance``: are a visualization of the buckets of the two
   histograms we created previously.
 
@@ -1795,12 +1809,12 @@ import io.opentelemetry.instrumentation.annotations.WithSpan;
 public class PaymentService {
     // ...
 
-    @WithSpan("devoxx: Payment processing method")
+    @WithSpan("easypay: Payment processing method")
     private void process(PaymentProcessingContext context) {
         //...
     }
 
-    @WithSpan("devoxx: Payment store method")
+    @WithSpan("easypay: Payment store method")
     private void store(PaymentProcessingContext context) {
         //...
     }
@@ -1821,12 +1835,12 @@ import io.opentelemetry.instrumentation.annotations.SpanAttribute;
 public class PaymentService {
     // ...
 
-    @WithSpan("devoxx: Payment processing method")
+    @WithSpan("easypay: Payment processing method")
     private void process(@SpanAttribute("context") PaymentProcessingContext context) { // <-- HERE
         // ...
     }
 
-    @WithSpan("devoxx: Payment store method")
+    @WithSpan("easypay: Payment store method")
     private void store(@SpanAttribute("context") PaymentProcessingContext context) { // <-- HERE
         // ...
     }
