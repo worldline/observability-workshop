@@ -1,10 +1,9 @@
 name: Export and Deploy Sites
 
 on:
-  workflow_run:
-    workflows: ["Build Codelab (PROD)", "Build Hugo (PROD)"]
-    types:
-      - completed
+  push:
+    branches: ["main"]
+  pull_request:
   workflow_dispatch:
 
 defaults:
