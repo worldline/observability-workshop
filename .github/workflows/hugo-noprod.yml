@@ -46,8 +46,3 @@ jobs:
             --baseURL "${{ steps.pages.outputs.base_url }}/devoxxpl/" \
             -s docs \
             -d public/devoxxpl
-      - name: Upload Hugo artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: hugo-site
-          path: public/devoxxpl
