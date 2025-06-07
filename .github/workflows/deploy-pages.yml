@@ -1,0 +1,42 @@
+name: Export and Deploy Sites
+
+on:
+  workflow_run:
+    workflows: ["Build CLAAT Site", "Build Hugo Site"]
+    types:
+      - completed
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Download CLAAT artifact
+      - name: Download CLAAT artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: claat-site
+          path: ./public
+
+      # Download Hugo artifact
+      - name: Download Hugo artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: hugo-site
+          path: ./public/devoxxpl
+
+      # Deploy to GitHub Pages
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+        
+      - name: Upload artifact
+        if: github.ref == 'refs/heads/main' # Authorize the deployment for the main branch only
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./public
+      - name: Deploy to GitHub Pages
+        if: github.ref == 'refs/heads/main' # Authorize the deployment for the main branch only
+        id: deployment
+        uses: actions/deploy-pages@v4

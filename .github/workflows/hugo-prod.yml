@@ -2,7 +2,7 @@ name: Export Hugo (NO PROD)
 
 on:
   push:
-    branches: ["!main"]
+    branches: ["main"]
   pull_request:
   workflow_dispatch:
 
@@ -16,7 +16,7 @@ permissions:
       id-token: write
 
 jobs:
-  test-hugo-devoxxpl:
+  publish-hugo-devoxxpl:
     runs-on: ubuntu-latest
     env:
       HUGO_VERSION: '0.147.2'
@@ -46,8 +46,3 @@ jobs:
             --baseURL "${{ steps.pages.outputs.base_url }}/devoxxpl/" \
             -s docs \
             -d public/devoxxpl
-      - name: Upload Hugo artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: hugo-site
-          path: public/devoxxpl

@@ -25,15 +25,10 @@ jobs:
       - run: go install github.com/googlecodelabs/tools/claat@latest
       - name: Export with CLAAT
         run: mkdir -p ./public/ && claat export -f html -o public docs/workshop.md
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
       - name: Upload artifact
         if: github.ref == 'refs/heads/main' # Authorize the deployment for the main branch only
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
         # Upload entire repository
-          path: './public/observability-workshop'
-      - name: Deploy to GitHub Pages
-        if: github.ref == 'refs/heads/main' # Authorize the deployment for the main branch only
-        id: deployment
-        uses: actions/deploy-pages@v4
+          name: claat-site
+          path: './public/'
