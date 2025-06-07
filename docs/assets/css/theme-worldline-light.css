@@ -1,0 +1,5 @@
+@import "theme-relearn-light.css";
+
+:root {
+    --PRIMARY-color: rgb(90, 190, 170); /* brand primary color */
+}
