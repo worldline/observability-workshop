@@ -1,4 +1,4 @@
-name: Export Codelab (PROD)
+name: Build Codelab (PROD)
 
 on:
   push:

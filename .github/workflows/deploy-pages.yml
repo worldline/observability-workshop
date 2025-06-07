@@ -2,7 +2,7 @@ name: Export and Deploy Sites
 
 on:
   workflow_run:
-    workflows: ["Build CLAAT Site", "Build Hugo Site"]
+    workflows: ["Build Codelab (PROD)", "Build Hugo (PROD)"]
     types:
       - completed
   workflow_dispatch:
@@ -30,7 +30,7 @@ jobs:
       # Deploy to GitHub Pages
       - name: Setup Pages
         uses: actions/configure-pages@v5
-        
+
       - name: Upload artifact
         if: github.ref == 'refs/heads/main' # Authorize the deployment for the main branch only
         uses: actions/upload-pages-artifact@v3

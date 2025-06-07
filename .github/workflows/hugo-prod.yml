@@ -1,4 +1,4 @@
-name: Export Hugo (NO PROD)
+name: Build Hugo (PROD)
 
 on:
   push:
