@@ -44,5 +44,5 @@ jobs:
             --gc \
             --minify \
             --baseURL "${{ steps.pages.outputs.base_url }}/devoxxpl/" \
-            -s docs \
-            -d public/devoxxpl
+            -s ./docs \
+            -d ../public/devoxxpl
