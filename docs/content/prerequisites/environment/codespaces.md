@@ -1,6 +1,6 @@
 +++
 date = '2025-06-05T23:19:30+02:00'
-title = 'GitHub Codespaces'
+title = 'GitHub Codespaces CDE'
 weight = 2
 +++
 

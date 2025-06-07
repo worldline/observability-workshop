@@ -3,6 +3,7 @@ date = '2025-06-05T22:56:29+02:00'
 draft = false
 title = 'Target Platform'
 weight = 2
+description = "Defines the target architecture with Observability enabled."
 +++
 
 ## To a fully observable platform

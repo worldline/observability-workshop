@@ -1,6 +1,6 @@
 +++
 date = '2025-06-06T23:24:44+02:00'
-title = 'Mapped Diagnostic Context'
+title = 'Mapped Diagnostic Context (MDC)'
 weight = 2
 +++
 
@@ -13,6 +13,8 @@ As it is attached to a Thread, we can put values at the beginning of a request a
 this request.
 That can give you a lot of information about the context of the request, without having to add them to all logs
 manually.
+
+## Implement MDC
 
 A good sketch is better than a long speech. In the next section, we will use MDC to add the card number and the POS ID
 to all the logs related to a request.
@@ -42,12 +44,12 @@ public ResponseEntity<PaymentResponse> processPayment(PaymentRequest paymentRequ
 ```
 
 > [!CAUTION]
-> Don’t forget to clear the MDC at the end of the method to avoid any memory leak.
+> Don’t forget to clear the MDC at the end of the method to avoid any data leak.
 
 Now, we want to print these values when a log line is printed in the console.
 
 📝 Modify to the spring configuration file (``easypay-service/src/main/resources/application.yaml``) and add the
-`logging.level.pattern` property to add both the ``cardNumber`` & ``pos``fields to all logs:
+`logging.level.pattern` property to add both the `cardNumber` & `pos` fields to all logs:
 
 ```yaml
 logging:
@@ -79,7 +81,7 @@ logging:
 $ docker compose up -d --build easypay-service
 ```
 
-### Adding more content in our logs
+## Adding more content in our logs
 
 🛠️ To have more logs, we will run several HTTP requests using [K6](https://k6.io/). Run the following command:
 
@@ -88,3 +90,14 @@ $ k6 run -u 5 -d 5s k6/01-payment-only.js
 ```
 
 👀 Check then the logs to pinpoint some exceptions.
+
+### Logs Correlation
+
+> [!TIP]
+> You are probably wondering how to smartly debug in production when you have plenty of logs for several users and by
+> the way different transactions?
+>
+> One approach would be to correlate all of your logs using a correlation Id.
+> If an incoming request has no correlation id header, the API creates it. If there is one, it uses it instead.
+>
+> ℹ️ This is a topic we will address in the tracing section.

@@ -1,6 +1,6 @@
 +++
 date = '2025-06-05T23:19:40+02:00'
-title = 'CodeSandbox'
+title = 'CodeSandbox CDE'
 weight = 1
 +++
 

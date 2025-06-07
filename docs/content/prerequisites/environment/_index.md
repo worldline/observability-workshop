@@ -30,4 +30,4 @@ A **DevContainer** is a development environment defined by configuration files t
 
 Follow the instructions which suits you the most:
 
-{{% children containerstyle="div" style="h3" description=false %}}
+{{% children containerstyle="div"  description=false %}}

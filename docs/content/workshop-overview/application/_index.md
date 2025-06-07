@@ -2,6 +2,7 @@
 date = '2025-06-05T22:52:13+02:00'
 draft = false
 title = 'Our Application: EasyPay'
+description = "Describes EasyPay architecture and components."
 weight = 1
 +++
 

@@ -5,5 +5,5 @@ type = "chapter"
 weight = 1
 +++
 
-{{% children containerstyle="div" style="h3" description=false %}}
+{{% children containerstyle="div" style="h3" description=true %}}
 

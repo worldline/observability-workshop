@@ -25,4 +25,4 @@ We will also cover the:
   then the data coming from our microservices,
 * And obviously the OpenTelemetry Java instrumentation to collect all the telemetry data of our application.
 
-{{% children containerstyle="div" style="h3" description=true %}}
+## [Start with Workshop Overview](./workshop-overview/_index.md)
