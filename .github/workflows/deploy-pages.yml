@@ -82,11 +82,11 @@ jobs:
             -s docs \
             -d public/devoxxpl
       - name: Upload Hugo artifact
-          uses: actions/upload-artifact@v4
-          with:
-            name: hugo-site
-            path: public/devoxxpl
-  
+        uses: actions/upload-artifact@v4
+        with:
+          name: hugo-site
+          path: public/devoxxpl
+
   deploy:
     runs-on: ubuntu-latest
     steps:
