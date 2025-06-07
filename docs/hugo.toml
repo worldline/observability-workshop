@@ -1,0 +1,9 @@
+baseURL = 'https://example.org/'
+languageCode = 'en-us'
+title = 'Observability Workshop'
+
+theme = 'hugo-theme-relearn'
+
+[params]
+showVisitedLinks = true
+themeVariant = ['worldline-light', 'worldline-dark']
