@@ -23,22 +23,22 @@
     "ghcr.io/grafana/devcontainer-features/k6:1": {}
   },
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
-  "forwardPorts": [
-    8080
-  ],
+  //"forwardPorts": [
+  //  8080
+  //],
   // Use 'postCreateCommand' to run commands after the container is created.
   // "postCreateCommand": "sudo apt update -y && sudo apt install -y httpie && bash scripts/download-agent.sh && ./gradlew tasks && docker compose up -d --build",
 
   // Configure tool-specific properties.
-  "customizations": {
+  //"customizations": {
     // Configure properties specific to VS Code.
-    "vscode": {
+    //"vscode": {
       // Add the IDs of extensions you want installed when the container is created.
-      "extensions": [
-        "vscjava.vscode-java-pack"
-      ]
-    }
-  }
+      //"extensions": [
+        //"vscjava.vscode-java-pack"
+      //]
+    //}
+  //}
 
 
   // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
