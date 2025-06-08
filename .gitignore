@@ -63,9 +63,6 @@ out/
 /nbdist/
 /.nb-gradle/
 
-### VS Code ###
-.vscode/
-
 ### Project ###
 logs/*.log
 logs/*.json
