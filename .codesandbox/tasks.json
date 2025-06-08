@@ -1,0 +1,24 @@
+{
+  // These tasks will run in order when initializing your CodeSandbox project.
+  "setupTasks": [
+    {
+      "name": "Install httpie",
+      "command": "sudo apt update -y && sudo apt install -y httpie"
+    },
+    {
+      "name": "Install latest compose version",
+      "command": "./scripts/download-compose.sh"
+    },
+    {
+      "name": "Setup Gradle",
+      "command": "./gradlew tasks"
+    },
+    {
+      "name": "Start compose infrastructure",
+      "command": "docker compose up -d --build"
+    }
+  ],
+
+  // These tasks can be run from CodeSandbox. Running one will open a log in the app.
+  "tasks": {}
+}
