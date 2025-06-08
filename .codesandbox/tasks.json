@@ -15,7 +15,7 @@
     },
     {
       "name": "Start compose infrastructure",
-      "command": "docker compose up -d --build"
+      "command": "cd /project/workspace; docker compose up -d --build"
     }
   ],
 
