@@ -5,7 +5,7 @@ services:
       context: ./docker/otelcol
       dockerfile: Dockerfile
       args:
-        VERSION: 0.122.0
+        VERSION: 0.123.0
     ports:
       - "4317:4317"
       - "4318:4318"

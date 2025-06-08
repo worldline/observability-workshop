@@ -113,7 +113,7 @@ services:
       timeout: 4s
       retries: 10
       start_period: 5s
-    entrypoint: java -Xmx4g -javaagent:/opentelemetry-javaagent.jar -cp app:app/lib/* com.worldline.easypay.smartbank.SmartbankGatewayApplication
+    entrypoint: java -Xmx2g -javaagent:/opentelemetry-javaagent.jar -cp app:app/lib/* com.worldline.easypay.smartbank.SmartbankGatewayApplication
 
   fraudetect-service:
     image: fraudetect-service:latest
