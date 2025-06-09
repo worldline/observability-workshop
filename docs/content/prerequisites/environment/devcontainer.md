@@ -37,5 +37,19 @@ $ docker version
 {{% notice tip %}}
 This workshop was tested with:
 * [Rancher Desktop](https://rancherdesktop.io/) as Docker environment,
-* IDEs: VSCode and JetBrains IntelliJ.
+* IDEs: VSCode.
 {{% /notice %}}
+
+## VSCode Open Project with DevContainer
+
+You can use this command in VSCode (`CTRL-SHIFT-P`):
+
+- `Dev Containers: Clone Repository in Container Volume...`
+- Select `GitHub`,
+- Repository name: `worldline/observability-workshop`
+
+## Wait for startup!
+
+It will take some time to the project start, so please be patient.
+
+Before starting the infrastructure, you should wait that VSCode has correctly imported all the Java modules and packages.
