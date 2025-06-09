@@ -1,0 +1,124 @@
+name: Export and Deploy Sites
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+jobs:
+  build-codelab:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    concurrency:
+      group: "pages"
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22.2' # The Go version to download (if necessary) and use.
+      - run: go install github.com/googlecodelabs/tools/claat@latest
+      - name: Export with CLAAT
+        run: mkdir -p ./public/ && claat export -f html -o public docs/workshop.md
+      - name: Move all files from observability-workshop to public
+        run: |
+          shopt -s dotglob nullglob
+          mv ./public/observability-workshop/* ./public/
+          rmdir ./public/observability-workshop
+          shopt -u dotglob nullglob
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+        # Upload entire repository
+          name: claat-site
+          path: ./public
+  
+  build-hugo-devoxxpl:
+    runs-on: ubuntu-latest
+    env:
+      HUGO_VERSION: '0.147.2'
+      HUGO_ENVIRONMENT: 'production'
+      TZ: 'Europe/Paris'
+    steps:
+      - name: Install Hugo CLI
+        run: |
+          wget -O ${{ runner.temp }}/hugo.deb https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_linux-amd64.deb \
+          && sudo dpkg -i ${{ runner.temp }}/hugo.deb
+      - name: Install Dart Sass
+        run: sudo snap install dart-sass
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v5
+      - name: Install Node.js dependencies
+        run: "[[ -f package-lock.json || -f npm-shrinkwrap.json ]] && npm ci || true"
+      - name: Configure Git
+        run: git config core.quotepath false
+      - name: Build with Hugo
+        run: |
+          hugo \
+            --gc \
+            --minify \
+            --baseURL "${{ steps.pages.outputs.base_url }}/devoxxpl/" \
+            -s ./docs \
+            -d ../public/devoxxpl
+      - name: Upload Hugo artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hugo-site
+          path: public/devoxxpl
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [build-codelab, build-hugo-devoxxpl]
+    if: github.ref == 'refs/heads/main' # Ensure deployment only occurs on the main branch
+    steps:
+      - uses: actions/checkout@v4
+
+      # Download CLAAT artifact
+      - name: Download CLAAT artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: claat-site
+          path: ./public
+
+      # Download Hugo artifact
+      - name: Download Hugo artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: hugo-site
+          path: ./public/devoxxpl
+
+      # Deploy to GitHub Pages
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        if: github.ref == 'refs/heads/main' # Authorize the deployment for the main branch only
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./public
+      - name: Deploy to GitHub Pages
+        if: github.ref == 'refs/heads/main' # Authorize the deployment for the main branch only
+        id: deployment
+        uses: actions/deploy-pages@v4
