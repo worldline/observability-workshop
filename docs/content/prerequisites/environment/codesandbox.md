@@ -52,7 +52,7 @@ It will take some time to the project start, so please be patient.
 
 Before starting the infrastructure, you should wait that VSCode has correctly imported all the Java modules and packages.
 
-![CodeSandbox VSCode is ready](../codesandbox_vscode_ready.png)
+![VSCode is ready](../vscode_ready.png)
 
 ### Troubleshooting: Gradle or Java error?
 

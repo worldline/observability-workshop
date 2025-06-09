@@ -53,3 +53,11 @@ You can use this command in VSCode (`CTRL-SHIFT-P`):
 It will take some time to the project start, so please be patient.
 
 Before starting the infrastructure, you should wait that VSCode has correctly imported all the Java modules and packages.
+
+![VSCode is ready](../vscode_ready.png)
+
+## Troubleshooting: Gradle or Java error?
+If Java state is in “Error” or see some Gradle issues, you can try the following VSCode commands (CTRL-SHIFT-P):
+
+- `Gradle: Refresh Gradle Projects View`
+- `Java: Clean Java Language Server Workspace`
