@@ -285,8 +285,7 @@ easypay-service  | [otel.javaagent 2025-01-16 15:41:46:550 +0000] [main] INFO io
 
 ## Explore logs with Grafana
 
-> aside positive
->
+> [!INFO]
 > For this workshop, we have already configured the Loki datasource in Grafana.  
 > You can take a look at its configuration in Grafana (port `3000`) by navigating to the `Connections` > `Data sources`
 > section.  
@@ -382,8 +381,7 @@ docker compose up -d --build opentelemetry-collector
 
 ✅ Check the card numbers are now obfuscated with the ``****`` content.
 
-> aside positive
->
+> [!TIP]
 > Having a collector located near to your application provides several benefits:
 > * It reduces latency between the application and the collector,
 > * You can have a collector configuration tailored to your application needs (here by redacting sensitive data).

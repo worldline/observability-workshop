@@ -45,3 +45,24 @@ New Virtual Machine specifications should have been applied without restart.
 
 > [!IMPORTANT]
 > During the first startup, the gradle build is automatically started. Please wait until it is completely finished.
+
+## Wait for startup!
+
+It will take some time to the project start, so please be patient.
+
+Before starting the infrastructure, you should wait that VSCode has correctly imported all the Java modules and packages.
+
+![CodeSandbox VSCode is ready](../codesandbox_vscode_ready.png)
+
+### Troubleshooting: Gradle or Java error?
+
+If Java state is in "Error" or see some Gradle issues, you can try the following VSCode commands (`CTRL-SHIFT-P`):
+
+- `Gradle: Refresh Gradle Projects View`
+- `Java: Clean Java Language Server Workspace`
+
+### Environment Error: Failed to load DevContainer or Workspace?
+
+You can reload your CodeSandbox environment with the following VSCode command (`CTRL-SHIFT-P`):
+
+- `Developer: Reload Window`

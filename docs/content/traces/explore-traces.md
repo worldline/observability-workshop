@@ -23,8 +23,7 @@ $ k6 run -u 1 -d 5m k6/01-payment-only.js
 * Go to Grafana and open an ``Explore`` dashboard,
 * Select the `Tempo` data source and click on ``Run query`` to refresh the view.
 
-> aside negative
->
+> [!CAUTION]
 > You may need to wait one or two minutes to allow Tempo to ingest some traces…
 
 👀 Click on `Service Graph` and explore the `Node graph`: this view is extremely helpful for visualizing and

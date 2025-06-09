@@ -14,11 +14,7 @@ The "infrastructure stack" is composed of the following components:
   of our microservices.
 * The following microservices: API Gateway, Merchant BO, Fraud Detect, Smart Bank Gateway
 
-
-> [!IMPORTANT]
-> If you run your application on a CDE (GitPod, Codespaces, Coder…), the following step are automatically started during the provisioning of your environment.
-
-🛠️ Otherwise, to run it on your desktop, execute the following commands
+🛠️ Execute the following commands
 
 ``` bash
 $ ./gradlew tasks
@@ -59,3 +55,14 @@ observability-workshop-prometheus-1                prom/prometheus:latest       
 observability-workshop-tempo-1                     grafana/tempo:latest                          "/tempo -config.file…"   tempo                     3 minutes ago   Up 3 minutes                  0.0.0.0:3200->3200/tcp, :::3200->3200/tcp, 0.0.0.0:9095->9095/tcp, :::9095->9095/tcp, 0.0.0.0:9411->9411/tcp, :::9411->9411/tcp
 smartbank-gateway                                  smartbank-gateway:latest                      "java -Xmx4g -cp app…"   smartbank-gateway         3 minutes ago   Up 2 minutes (healthy)
 ```
+
+## Troubleshooting
+
+### Gradle build error
+
+You may encounter Gradle build errors due to a timeout when trying to get the lock on some files (as all the services are built concurrently). You can either:
+
+- Execute the `docker compose up -d --build` command each time you have the error until the environment is started,
+- Or disable concurrency by executing the two following commands:
+  - `./scripts/build-services.sh` (takes a long time as all services are built one by one),
+  - `docker compose up -d --build` (should work this time as all services are built by the previous command).
