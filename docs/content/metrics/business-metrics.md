@@ -60,11 +60,9 @@ We need to declare two timers in our code:
 ```java
 // ...
 
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Timer;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.GlobalOpenTelemetry;
-
 
 @Service
 public class PaymentService {
