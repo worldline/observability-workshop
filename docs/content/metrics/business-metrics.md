@@ -142,7 +142,6 @@ private void store(PaymentProcessingContext context) {
 ```java
 // ...
 
-import io.micrometer.core.instrument.Counter;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongHistogram;
 
