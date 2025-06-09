@@ -8,14 +8,6 @@
     {
       "name": "Install latest compose version",
       "command": "./scripts/download-compose.sh"
-    },
-    {
-      "name": "Setup Gradle",
-      "command": "./gradlew tasks"
-    },
-    {
-      "name": "Start compose infrastructure",
-      "command": "cd /project/workspace; docker compose up -d --build"
     }
   ],
 
