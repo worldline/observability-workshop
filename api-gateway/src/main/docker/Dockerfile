@@ -10,7 +10,7 @@ COPY gradle gradle
 COPY gradlew .
 COPY settings.gradle.kts .
 
-RUN --mount=type=cache,target=/root/.gradle ./gradlew :${SERVICE}:clean :${SERVICE}:build -x test --info
+RUN --mount=type=cache,target=/root/.gradle ./gradlew :${SERVICE}:clean :${SERVICE}:build -x test
 RUN mkdir -p ${SERVICE}/build/dependency && (cd ${SERVICE}/build/dependency && jar -xf ../libs/*-SNAPSHOT.jar)
 
 FROM eclipse-temurin:21-jre-alpine

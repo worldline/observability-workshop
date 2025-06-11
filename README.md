@@ -5,3 +5,5 @@ Make your Java application be truly observable! Let's dive into logs, traces and
 ## Workshop
 
 Go to https://worldline.github.io/observability-workshop/
+
+**Devoxx Poland**: https://worldline.github.io/observability-workshop/devoxxpl
