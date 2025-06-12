@@ -27,7 +27,7 @@
     8080
   ],
   // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": "sudo apt update -y && sudo apt install -y httpie && bash scripts/download-agent.sh && ./gradlew tasks && docker compose up -d --build",
+  "postCreateCommand": "sudo apt update -y && sudo apt install -y httpie && bash scripts/download-agent.sh && ./gradlew build --parallel -x test && docker compose up -d --build",
 
   // Configure tool-specific properties.
   "customizations": {
