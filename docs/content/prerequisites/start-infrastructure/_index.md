@@ -17,11 +17,11 @@ The "infrastructure stack" is composed of the following components:
 🛠️ Execute the following commands
 
 ``` bash
-$ ./gradlew tasks
+./gradlew build --parallel -x test
 ```
 
 ``` bash
-$ docker compose up -d --build --remove-orphans
+docker compose up -d --build --remove-orphans
 ```
 
 ✅ To check if all the services are up, you can run this command:
